@@ -1,9 +1,10 @@
 #!/bin/bash
 
 gunzip $1
+unz=${1%.gz}
 
-python ~/github/zincfinger/tablenamechange.py ${1%.gz}
+python ~/github/zincfinger/tablenamechange.py $unz
 
-gzip ${1%.gz}
-
-
+gzip $unz			#rezips the previously unzipped file
+unz2=${unz%.csv}"_hc.csv"	#name of file changed by python script
+gzip $unz2			#zips new file
