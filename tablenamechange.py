@@ -4,24 +4,20 @@ table headers so that spaces are removed and replaced by
 underscores. This makes the table headers usable in SQL.
 '''
 
-import csv, sys
+import sys
 
 db = sys.argv[1]
-
-#r = csv.reader(open(db))
 r=open(db)
 o = open(db[:-4] + "_hc.csv","w")
 
-header=r.next().strip().split(',')
-
-for h in header:
-	newh = h.replace(' ','_')
-	o.write(newh + ",")
+header=r.next().strip().split(',')	# first line contains table headers; converted into list
+for h in header:			
+	newh = h.replace(' ','_')	# replaces spaces with underscores
+	o.write(newh + ",")		# converts list back into csv
 o.write("\n")
 
 for l in r:
-	o.write(l)
-
+	o.write(l)			# includes the rest of the file in the output
 o.close()
 
 
