@@ -2,10 +2,10 @@ from Bio import motifs
 from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
 from Bio.motifs import Instances
-#m=motifs.Motif(alphabet=IUPAC.unambiguous_dna)
 
 memeout = open("/home/barbara/Dropbox/zinc_finger_data/meme.txt")
 fastadb = open("/home/barbara/Dropbox/zinc_finger_data/databases/zfonly-dmel-aaseq.fa")
+outputdb = open("motifhits.csv", "w")
 
 ### DEFINE MOTIFS ###
 # 2-8-3
@@ -17,14 +17,14 @@ fastadb = open("/home/barbara/Dropbox/zinc_finger_data/databases/zfonly-dmel-aas
 # 4-15-3
 # C2HC
 # P-DLS
-
 motifsM = list(motifs.parse(memeout, "MEME"))
-mainmotif = motifsM[0].consensus#.instances[1].pvalue
+motifname = "2-12-3"
+mainmotif = motifsM[0].consensus
 allmotifs = motifsM[0].instances
 
 ### SEARCH SEQUENCES ###
 # for each motif: go through fasta file (or go through fasta file and search for multiple?)
-# at each iteration of this motif: note start and end site on .csv file 
+# at each iteration of this motif: note start site on .csv file 
 # also note: name, spp, sequence, motif type, group
 # iteration of motif (order in the protein; for alignment purposes?)
 
@@ -44,13 +44,22 @@ fastadict[header] = sequence
 
 for key in fastadict:
 	test_seq = Seq(fastadict[key],mainmotif.alphabet)
+	hits = [key]
+	seqs = [fastadict[key]]
+	outputdb.write("%s,%s" %(key,motifname))
 	for pos,seq in Instances(allmotifs).search(test_seq):
-		print pos,seq#.tostring()
+		hits.append(pos)
+		seqs.append(seq)
+		#print pos,seq#.tostring()
+	outputdb.write(",%s" %(len(hits)-1))
+	if len(hits) > 1:
+		print hits
+		for i in range(len(hits)-1):
+			pos = hits[i+1]
+			seq = seqs[i+1]
+			outputdb.write(",%s,%s" %(pos,seq))
+	outputdb.write("\n")
 
-#Instances.search(Instances,test_seq)
-
-#for pos,seq in mainmotif.search.Instances(test_seq):
-#	print pos,seq.tostring()
 
 
 ### DRAW IMAGE ###
