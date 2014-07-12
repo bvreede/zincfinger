@@ -4,33 +4,12 @@ from Bio.Alphabet import IUPAC
 from Bio.motifs import Instances
 import matplotlib
 
-fastadb = open("/home/barbara/Dropbox/zinc_finger_data/databases/zfonly-dmel-aaseq.fa")
+fastadb = open("/home/barbara/Dropbox/zinc_finger_data/data/databases/zfonly-dmel-aaseq.fa")
 outputdb = open("motifhits.csv", "w")
 
-### DEFINE MOTIFS ###
-# 2-8-3
-meme_2_8_3 = open("/home/barbara/Dropbox/zinc_finger_data/meme/2_8_3.txt")
-# 2-12-3
-meme_2_12_3 = open("/home/barbara/Dropbox/zinc_finger_data/2_12_3.txt")
-# 2-12-4
-meme_2_12_4 = open("/home/barbara/Dropbox/zinc_finger_data/2_12_4.txt")
-# 2-12-5
-meme_2_12_5 = open("/home/barbara/Dropbox/zinc_finger_data/2_12_5txt")
-# 4-12-3
-meme_4_12_3 = open("/home/barbara/Dropbox/zinc_finger_data/4_12_3.txt")
-# 4-12-4
-meme_4_12_4 = open("/home/barbara/Dropbox/zinc_finger_data/4_12_4.txt")
-# 4-15-3
-meme_4_15_3 = open("/home/barbara/Dropbox/zinc_finger_data/4_15_3.txt")
-# C2HC
-meme_C2HC = open("/home/barbara/Dropbox/zinc_finger_data/C2HC.txt")
-# P-DLS
-meme_PDLS = open("/home/barbara/Dropbox/zinc_finger_data/PDLS.txt")
 
-motifsM = list(motifs.parse(memeout, "MEME"))
-motifname = "2-12-3"
-mainmotif = motifsM[0].consensus
-allmotifs = motifsM[0].instances
+
+
 
 ### SEARCH SEQUENCES ###
 # for each motif: go through fasta file (or go through fasta file and search for multiple?)
@@ -51,6 +30,19 @@ for line in fastadb:
 	else:
 		sequence += line.strip()
 fastadict[header] = sequence
+
+# define motifs
+motiflist = ['2_12_3','2_12_4','4_12_3','4_15_3']
+#motiflist = ['2_8_3','2_12_3','2_12_4','2_12_5','4_12_3','4_12_4','4_15_3','C2HC','PDLS']
+
+for m in motiflist:
+	memeout = open("/home/barbara/Dropbox/zinc_finger_data/data/meme/%s.txt" %(m))
+	motifsM = list(motifs.parse(memeout, "MEME"))
+	motifname = m
+	mainmotif = motifsM[0].consensus
+	allmotifs = motifsM[0].instances
+	print motifname
+
 
 for key in fastadict:
 	test_seq = Seq(fastadict[key],mainmotif.alphabet)
@@ -74,8 +66,38 @@ for key in fastadict:
 
 
 
+
+
 ### DRAW IMAGE ###
 # for each group:
 # draw line for length of sequence
 # draw coloured box for each motif
 # 
+
+
+
+
+
+
+'''
+### DEFINE MOTIFS ###
+# 2-8-3
+#meme_2_8_3 = open("/home/barbara/Dropbox/zinc_finger_data/meme/2_8_3.txt")
+# 2-12-3
+meme_2_12_3 = open("/home/barbara/Dropbox/zinc_finger_data/meme/2_12_3.txt")
+# 2-12-4
+meme_2_12_4 = open("/home/barbara/Dropbox/zinc_finger_data/meme/2_12_4.txt")
+# 2-12-5
+#meme_2_12_5 = open("/home/barbara/Dropbox/zinc_finger_data/meme/2_12_5txt")
+# 4-12-3
+meme_4_12_3 = open("/home/barbara/Dropbox/zinc_finger_data/meme/4_12_3.txt")
+# 4-12-4
+#meme_4_12_4 = open("/home/barbara/Dropbox/zinc_finger_data/meme/4_12_4.txt")
+# 4-15-3
+meme_4_15_3 = open("/home/barbara/Dropbox/zinc_finger_data/meme/4_15_3.txt")
+# C2HC
+#meme_C2HC = open("/home/barbara/Dropbox/zinc_finger_data/meme/C2HC.txt")
+# P-DLS
+#meme_PDLS = open("/home/barbara/Dropbox/zinc_finger_data/meme/PDLS.txt")
+'''
+
