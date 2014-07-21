@@ -1,0 +1,65 @@
+import re
+
+dbfolder = "/home/barbara/Dropbox/zinc_finger_data/data/"
+species = ["dmel","tcas","dpul","isca","smar"]
+motiflist = ['2_8_3','2_12_3','2_12_4','2_12_5','4_12_3','4_12_4','4_15_3']#,'C2HC','PDLS'] --- use only numbers C-H distances separated by _
+
+'''
+Define regular expressions for all zf-domains (by the C-H distances), and save in a
+dictionary. Each domain is represented both as a forward and an inverse.
+'''
+motifdict = {}
+for m in motiflist:
+	cc,ch,hh = m.split('_')
+	motif = 'C[A-Z]{%s}C[A-Z]{%s}H[A-Z]{%s}H' %(cc,ch,hh)
+	motif_inv = 'H[A-Z]{%s}H[A-Z]{%s}C[A-Z]{%s}C' %(hh,ch,cc)
+	remotif = re.compile(motif)
+	remotif_inv = re.compile(motif_inv)
+	motifdict[m] = remotif	
+	minv = m + "_inv"
+	motifdict[minv] = remotif_inv
+
+'''
+From an open fasta file, generate a dictionary containing the header as key, and the
+sequence as value.
+'''
+def fastadicter(fastadb):
+	fastadict = {}
+	sequence = ""
+	header = ""
+	for line in fastadb:
+		if line[0] == ">":
+			if header != "":
+				fastadict[header] = sequence
+			header = line[1:].strip()
+			sequence = ""
+		else:
+			sequence += line.strip()
+	fastadict[header] = sequence
+	return fastadict
+
+'''
+Per species, read the fasta file, open an output file, and scan all sequences for the presence of
+motifs.
+'''
+for sp in species:
+	fastadb = open("%sdatabases/140720-SM00355-%s_seq.fasta" %(dbfolder,sp))
+	outputdb = open("%sresults/motifhits_%s.csv" %(dbfolder,sp), "w")
+	outputdb.write("Gene_stable_ID,Gene_name,Protein_stable_ID,")
+	for m in motifdict:
+		outputdb.write("%s," %m)
+	outputdb.write("\n")
+	fastadict = fastadicter(fastadb)
+	for key in fastadict:
+		ids = key.split('|')
+		outputdb.write("%s,%s,%s," %(ids[0],ids[1],ids[2])) #turn the header name into gene ID/name/prot ID
+		for m in motifdict: #go through each motif and find all instances in the sequence
+			domain = motifdict[m]
+			positions = ''
+			for i in domain.finditer(fastadict[key]):
+				positions += str(i.start())
+				positions += '|'
+			outputdb.write('%s,' %(positions[:-1]))
+		outputdb.write("\n")
+
+
