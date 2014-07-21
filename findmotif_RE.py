@@ -39,11 +39,36 @@ def fastadicter(fastadb):
 	return fastadict
 
 '''
+Turn the csv file into a matrix with single genes in the rows, and a motif count
+in the columns.
+Only takes into account the first protein per gene
+'''
+def matrix(sp):
+	prev_output = open("%sresults/motifhits_%s.csv" %(dbfolder,sp))
+	new_output = open("%sresults/motifhits_%s-count.csv" %(dbfolder,sp), "w")
+	testID = "Gene_stable_ID"
+	for line in prev_output:
+		l = line.strip().split(',')
+		if l[0] == testID:
+			if l[0] == "Gene_stable_ID":
+				new_output.write(line)
+			continue
+		else:
+			new_output.write("%s,%s,%s," %(l[0],l[1],l[2]))
+			for i in range(3,len(l)-1):
+				if len(l[i]) != 0:
+					new_output.write(str(len(l[i].split('|'))))
+					new_output.write(",")
+				else:
+					new_output.write("0,")
+			new_output.write("\n")
+
+'''
 Per species, read the fasta file, open an output file, and scan all sequences for the presence of
 motifs.
 '''
 for sp in species:
-	fastadb = open("%sdatabases/140720-SM00355-%s_seq.fasta" %(dbfolder,sp))
+	fastadb = open("%ssequences/140720-SM00355-%s_seq.fasta" %(dbfolder,sp))
 	outputdb = open("%sresults/motifhits_%s.csv" %(dbfolder,sp), "w")
 	outputdb.write("Gene_stable_ID,Gene_name,Protein_stable_ID,")
 	for m in motifdict:
@@ -61,5 +86,8 @@ for sp in species:
 				positions += '|'
 			outputdb.write('%s,' %(positions[:-1]))
 		outputdb.write("\n")
+	outputdb.close()
+	matrix(sp)
+	
 
 
