@@ -4,8 +4,8 @@ in a separate csv file, where each GO term has a column.
 '''
 
 #definition of terms and files:
-gofile = "/home/barbara/Dropbox/zinc_finger_data/data/goterms.csv" #file that contains the GO-terms
-pg = "P" #"P" = protein; "G" = gene
+gofile = "/home/barbara/Dropbox/zinc_finger_data/data/goterms_curated3.csv" #file that contains the GO-terms
+pg = "G" #"P" = protein; "G" = gene
 dbfolder = "/home/barbara/Dropbox/zinc_finger_data/data/databases/" #folder for the in and output dbs
 species = ['smar','dmel','tcas','isca','dpul'] # species abbreviations used in file names
 
@@ -14,8 +14,9 @@ species = ['smar','dmel','tcas','isca','dpul'] # species abbreviations used in f
 goterms = open(gofile)
 golist = []
 for line in goterms:
-	golist.append(line.split(',')[0])
+	golist.append(line.split(',')[1])
 golist.sort()
+print len(golist)
 
 # goes through GO list and scores whether the term occurs in the protein
 def gocheck(querylist,outdb):
