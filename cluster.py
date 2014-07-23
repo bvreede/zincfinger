@@ -38,12 +38,5 @@ L = sch.fclusterdata(GOmatrix, cutoff, criterion='maxclust', method='weighted')
 S = set(L) #turns the clustering into a set so as to remove duplicates
 Llist = list(L) #turns the clustering into a list, so it may be indexed
 
-
-print len(S)
-print Counter(Llist)
-'''
-for i in range(len(S)):
-	if Llist.count(i+1) > 10:
-		print i+1, Llist.count(i+1)
-
-'''
+print len(S) #returns the total number of categories (should be equal to cutoff)
+print Counter(Llist) #counts instances per category
