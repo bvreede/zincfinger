@@ -11,11 +11,14 @@ import scipy.cluster.hierarchy as sch
 Defining which files to use: use comment-out to switch between visualizing GO-term clustering
 and motif clustering.
 '''
+organism = "dmel" #organisms are: dmel,tcas,isca,dpul,smar
+clustermeth = "ward" #methods are: weighted, single, average, complete, centroid, median, ward
+
 dbfolder = "/home/barbara/Dropbox/zinc_finger_data/data"
 # The motifs file path
-GOfile = csv.reader(open("%s/results/motifhits_dmel-count.csv" %(dbfolder))) 
+GOfile = csv.reader(open("%s/databases/140720-SM00355-%s-motifhits-G.csv" %(dbfolder,organism))) 
 # the Go terms path
-#GOfile = csv.reader(open("%s/databases/140720-SM00355-dmel-GO-G.csv" %(dbfolder)))
+#GOfile = csv.reader(open("%s/databases/140720-SM00355-%s-GO-G.csv" %(dbfolder,organism)))
 
 
 '''
@@ -45,9 +48,9 @@ GOmatrix = scipy.array(observations) # matrixify the observations
 '''
 Create the actual dendrogram
 '''
-fig = pylab.figure(figsize=(10, 20)) # create the figure, sizes are in inches
+fig = pylab.figure(figsize=(10, 15)) # create the figure, sizes are in inches
 axdendro = fig.add_axes([0.09,0.1,0.2,0.8]) # add axes as: left bottom width height
-Y = sch.linkage(GOmatrix, method='weighted') # calculate the clustering; methods are: weighted, single, average, complete, centroid, median, ward
+Y = sch.linkage(GOmatrix, method=clustermeth) # calculate the clustering 
 cutoff = 4
 Z = sch.dendrogram(Y, color_threshold=cutoff, orientation='right') #create the dendrogram. Optional: add 'labels=termlabels,' (but especially with larger matrices it makes sense to add them later!)
 
@@ -59,14 +62,14 @@ GOmatrix = GOmatrix[index,:]
 axdendro.set_xticks([])
 #axdendro.set_yticks([])
 #axdendro.set_yticks(range(len(genenames)))
-axdendro.set_yticklabels(genenames, fontsize=2)
+axdendro.set_yticklabels(genenames, fontsize=2.5)
 
 '''
 Create the heatmap
 '''
 x_start = 0.45
 axmatrix = fig.add_axes([x_start, 0.1,1-x_start-0.15,0.8])
-im = axmatrix.matshow(GOmatrix, aspect='auto', origin='right', cmap='PuRd') #cmap = color pattern. Play with this :)
+im = axmatrix.matshow(GOmatrix, aspect='auto', origin='right', cmap='OrRd') #cmap = color pattern. Play with this :)
 
 axmatrix.set_yticks([]) # hides all t ticks
 axmatrix.set_xticks([])
@@ -79,5 +82,5 @@ pylab.colorbar(im, cax=axcolor)
 '''
 That's it! Save the figure...
 '''
-fig.savefig("dendrogram.png", dpi=1200)
+fig.savefig("%s/results/dendrogram_%s_%s.png" %(dbfolder,organism,clustermeth), dpi=1200)
 
