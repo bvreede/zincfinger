@@ -5,6 +5,7 @@ dbfolder = "/home/barbara/Dropbox/zinc_finger_data/data"
 files = ['dmel','tcas','smar','dpul','isca']
 image_width = 500
 image_height = 500
+label_align = 50 #x axis of label
 
 
 
@@ -22,16 +23,14 @@ def draw_arrow(motif,L,drx,X,Y):
 	arrow = '<path style="fill:%s;fill-opacity:1;stroke:none" d="m %s,%s 0,20 %s z" />' %(colordict[motif],Xa,Y,arrowhead)
 	return block,arrow
 
-def draw_gene:
+#def draw_gene(name,seqlen,linecount):
 	
 
 ### PREPARING DRAW, CALCULATE PARAMETERS. DRAW MOTIF ###
 def draw(motif,p,Y,outputimg):
 	Lm = motif.split('_')
 	L = int(Lm[0])+int(Lm[1])+int(Lm[2])+4 #size of the motif: four residues plus nucleotides between
-	X = 
-	Y = linecount * 50
-
+	X = label_align + p
 	drx = 'fwd' #default direction
 	if motif[-4:] == "_inv":
 		motif = motif[:-4]
@@ -53,13 +52,14 @@ for s in files:
 		else:
 			Y = linecount * 50
 			name,seqlen = l[1],l[3]
-			gene,label = draw_gene(name,seqlen,linecount)
-			outputimg.write("%s\n%s\n" %(gene,label))
+			#gene,label = draw_gene(name,seqlen,Y)
+			#outputimg.write("%s\n%s\n" %(gene,label))
 			motifpos = l[4:] #list of positions for a certain motif.
 			for k in range(len(motifpos)): #for each motif:
 				if len(motifpos[k]) > 0: #if the motif actually has hits in this gene
-					positions = motifpost[k].split('|')
+					positions = motifpos[k].split('|')
 					for p in positions:
+						p = int(p)
 						draw(motiflist[k],p,Y,outputimg)
 	outputimg.write('</svg>')
 
