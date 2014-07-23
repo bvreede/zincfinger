@@ -12,14 +12,41 @@ for line in inputfile:
 		outputfile.write(line)
 		continue
 	M.append(l)
+M.sort() # sort the genes so that similar genes are grouped together
 
-M.sort()
+'''
+takes gene-specific matrix with all observations
+related to that matrix, and reduce them to a single line.
+Also add up the _inv with the fwd motifs.
+'''
+def matrix_to_list(gm):
+	a= len(gm)
+	b= len(gm[0])
+	mtl = gm[0][0:3] # writes the first three terms (gene ID, name, protID) to the output list
+	gmt = zip(*gm) # transposes the matrix
+	for m in range(3,b-1): #from first to last column of results (which is now in rows); -1 because last trailing comma causes empty field
+		mtl.append(max(gmt[m]))
+	return mtl
 
+'''
+go through local memory to generate individual matrices
+of all genes, and reduce them to single lines.
+Write single lines to final document.
+'''
 lcheck = ""
+gm = []
 for line in M:
 	if line[0] == lcheck:
+		gm.append(line)
 		continue
 	lcollect = ""
+	if gm != []:
+		mtl = matrix_to_list(gm)
+		for q in mtl:
+			outputfile.write("%s," %q)
+		outputfile.write("\n")
+	gm = []
+	gm.append(line)
 	for i in line:
 		lcollect += i
 		lcollect += ','
