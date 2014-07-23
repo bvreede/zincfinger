@@ -1,4 +1,6 @@
-# marc needs to do this for shit to work
+'''
+Marc-specific specifications
+'''
 #import matplotlib
 #matplotlib.use('Agg')
 
@@ -7,83 +9,77 @@ import pylab
 import csv
 import scipy.cluster.hierarchy as sch
 
+'''
+Defining which files to use: use comment-out to switch between visualizing GO-term clustering
+and motif clustering.
+'''
 dbfolder = "/home/barbara/Dropbox/zinc_finger_data/data"
-
-#generate array of csv file
 # The motifs file path
 GOfile = csv.reader(open("%s/results/motifhits_dmel-count.csv" %(dbfolder))) 
 # the Go terms path
 #GOfile = csv.reader(open("%s/databases/140720-SM00355-dmel-GO-G.csv" %(dbfolder)))
 
-GOmatrix = []
-genes = []
-feature_labelsU = []
+
+'''
+Read the input file and extract:
+- matrix of observations (GOmatrix)
+- labels of GOterms or motifs
+- labels of genes (both numbers and names)
+provides options to 
+'''
+observations = [] #will collect the actual matrix of observations
+genenumbers = [] #will collect gene numbers (column 1)
+genenames = [] #will collect gene names
 for line in GOfile:
-        if line[0] == "Gene_stable_ID":
-            # gather GOterm labels, skipping the first 3 columns, and 
-            # ignoring the last column (which is '' due to the trailing comma)
-            feature_labelsT = line[3:]
-            feature_labelsT = feature_labelsT[:-1]
+        if line[0] == "Gene_stable_ID": # gather GOterm/motif labels
+            termlabels = line[3:] # skipping the first 3 columns
+            termlabels = termlabels[:-1] # ignoring the last column (which is '' due to the trailing comma)
             continue
-	feature_labelsU.append(line[1]) #for labels of untransposed matrix: gene names
-        GOline = []
-
-        for i in range(3,len(line)-1): #line ends in comma, so this removes the last empty item, and removes the first line
+	genenumbers.append(line[0])
+	genenames.append(line[1])
+        GOline = [] #collects the observations per line
+        for i in range(3,len(line)-1): #line ends in comma, so this removes the last empty item, and removes the first identifiers
             GOline.append(float(line[i]))
-        GOmatrix.append(GOline)
+        observations.append(GOline)
+GOmatrix = scipy.array(observations) # matrixify the observations
+#GOmatrix = scipy.transpose(GOmatrix) # flips the matrix --- comment out if necessary!
 
-        # add the gene identifier to labels
-        genes.append(line[0])
-
-
-D = scipy.array(GOmatrix)
-
-# flippin' da matrix!!!!
-#D = scipy.transpose(D)
-
-# Compute and plot dendrogram.
-
-# create a wide figure, sizes are in "inches" WTF???
-fig = pylab.figure(figsize=(10, 20))
-
-# add axes as: left bottom width height
-axdendro = fig.add_axes([0.09,0.1,0.2,0.8])
-
-Y = sch.linkage(D, method='weighted')
+'''
+Create the actual dendrogram
+'''
+fig = pylab.figure(figsize=(10, 20)) # create the figure, sizes are in inches
+axdendro = fig.add_axes([0.09,0.1,0.2,0.8]) # add axes as: left bottom width height
+Y = sch.linkage(GOmatrix, method='weighted') # calculate the clustering; methods are: weighted, single, average, complete, centroid, median, ward
 cutoff = 4
-Z = sch.dendrogram(Y, color_threshold=cutoff, orientation='right') #labels=feature_labelsU,
-
+Z = sch.dendrogram(Y, color_threshold=cutoff, orientation='right') #create the dendrogram. Optional: add 'labels=termlabels,' (but especially with larger matrices it makes sense to add them later!)
 
 # get correct row label orders
 index = Z['leaves']
-D = D[index,:]
-#D = D[:,index]
+GOmatrix = GOmatrix[index,:]
+#GOmatrix = GOmatrix[:,index] # this makes it crash, but keeping it because it was in the original download...
 
 axdendro.set_xticks([])
 #axdendro.set_yticks([])
-#axdendro.set_yticks(4*range(len(feature_labelsU)))
-axdendro.set_yticklabels(feature_labelsU, fontsize=2)
+#axdendro.set_yticks(range(len(genenames)))
+axdendro.set_yticklabels(genenames, fontsize=2)
 
-# Plot distance matrix.
+'''
+Create the heatmap
+'''
 x_start = 0.45
 axmatrix = fig.add_axes([x_start, 0.1,1-x_start-0.15,0.8])
+im = axmatrix.matshow(GOmatrix, aspect='auto', origin='right', cmap='PuRd') #cmap = color pattern. Play with this :)
 
-im = axmatrix.matshow(D, aspect='auto', origin='right', cmap='PuRd')
-
-# hide all t ticks
-axmatrix.set_yticks([])
+axmatrix.set_yticks([]) # hides all t ticks
 axmatrix.set_xticks([])
+axmatrix.set_xticks(range(len(termlabels))) 
+axmatrix.set_xticklabels(termlabels, rotation=90, fontsize=10) # writes the labels on the heatmap. Make sure to pick the right labels when the matrix is transposed!
 
-
-# draw super tiny gene names here
-#axmatrix.set_xticks(range(len(genes)))
-#axmatrix.set_xticklabels(genes, rotation=270, fontsize=0.2)
-
-# Plot colorbar.
-axcolor = fig.add_axes([0.91,0.1,0.02,0.8])
+axcolor = fig.add_axes([0.91,0.1,0.02,0.8]) # Plots the colorbar
 pylab.colorbar(im, cax=axcolor)
 
-# Display and save figure.
-# fig.show()
+'''
+That's it! Save the figure...
+'''
 fig.savefig("dendrogram.png", dpi=1200)
 
