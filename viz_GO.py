@@ -4,9 +4,7 @@ Marc-specific specifications
 #import matplotlib
 #matplotlib.use('Agg')
 
-import scipy
-import pylab
-import csv
+import scipy, pylab, csv
 import scipy.cluster.hierarchy as sch
 
 '''
@@ -25,7 +23,7 @@ Read the input file and extract:
 - matrix of observations (GOmatrix)
 - labels of GOterms or motifs
 - labels of genes (both numbers and names)
-provides options to 
+provides options to transpose the matrix
 '''
 observations = [] #will collect the actual matrix of observations
 genenumbers = [] #will collect gene numbers (column 1)
