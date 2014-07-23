@@ -44,8 +44,8 @@ in the columns.
 Only takes into account the first protein per gene
 '''
 def matrix(sp):
-	prev_output = open("%sresults/motifhits_%s.csv" %(dbfolder,sp))
-	new_output = open("%sresults/motifhits_%s-count.csv" %(dbfolder,sp), "w")
+	prev_output = open("%sresults/motifhits_%s.csv" %(dbfolder,sp)) # outputfile that saves motif locations and sequence length
+	new_output = open("%sresults/motifhits_%s-count.csv" %(dbfolder,sp), "w") #outputfile that saves n motifs
 	testID = "Gene_stable_ID"
 	for line in prev_output:
 		l = line.strip().split(',')
@@ -55,7 +55,7 @@ def matrix(sp):
 			continue
 		else:
 			new_output.write("%s,%s,%s," %(l[0],l[1],l[2]))
-			for i in range(3,len(l)-1):
+			for i in range(4,len(l)-1):
 				if len(l[i]) != 0:
 					new_output.write(str(len(l[i].split('|'))))
 					new_output.write(",")
@@ -70,21 +70,22 @@ motifs.
 for sp in species:
 	fastadb = open("%ssequences/140720-SM00355-%s_seq.fasta" %(dbfolder,sp))
 	outputdb = open("%sresults/motifhits_%s.csv" %(dbfolder,sp), "w")
-	outputdb.write("Gene_stable_ID,Gene_name,Protein_stable_ID,")
+	outputdb.write("Gene_stable_ID,Gene_name,Protein_stable_ID,Sequence_length,")
 	for m in motifdict:
 		outputdb.write("%s," %m)
 	outputdb.write("\n")
 	fastadict = fastadicter(fastadb)
 	for key in fastadict:
 		ids = key.split('|')
-		outputdb.write("%s,%s,%s," %(ids[0],ids[1],ids[2])) #turn the header name into gene ID/name/prot ID
+		seqlen = len(fastadict[key]) #length of the sequence
+		outputdb.write("%s,%s,%s,%s," %(ids[0],ids[1],ids[2],seqlen)) #turn the header name into gene ID/name/prot ID
 		for m in motifdict: #go through each motif and find all instances in the sequence
 			domain = motifdict[m]
 			positions = ''
 			for i in domain.finditer(fastadict[key]):
 				positions += str(i.start())
 				positions += '|'
-			outputdb.write('%s,' %(positions[:-1]))
+			outputdb.write('%s,' %(positions[:-1])) #remove final pipe from total positions
 		outputdb.write("\n")
 	outputdb.close()
 	matrix(sp)
