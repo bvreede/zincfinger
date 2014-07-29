@@ -1,6 +1,6 @@
 import re
 
-dbfolder = "/home/barbara/Dropbox/zinc_finger_data/data/"
+dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/"
 species = ["dmel","tcas","dpul","isca","smar"]
 motiflist = ['2_8_3','2_12_3','2_12_4','2_12_5','4_12_3','4_12_4','4_15_3']#,'C2HC','PDLS'] --- use only numbers C-H distances separated by _
 
@@ -17,7 +17,7 @@ for m in motiflist:
 	remotif_inv = re.compile(motif_inv)
 	motifdict[m] = remotif	
 	minv = m + "_inv"
-	motifdict[minv] = remotif_inv
+	#motifdict[minv] = remotif_inv
 
 '''
 From an open fasta file, generate a dictionary containing the header as key, and the
