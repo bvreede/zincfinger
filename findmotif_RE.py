@@ -51,7 +51,8 @@ def matrix(sp):
 		l = line.strip().split(',')
 		if l[0] == testID:
 			if l[0] == "Gene_stable_ID":
-				new_output.write(line)
+				lr = line.replace('Sequence_length,','')
+				new_output.write(lr)
 			continue
 		else:
 			new_output.write("%s,%s,%s," %(l[0],l[1],l[2]))
