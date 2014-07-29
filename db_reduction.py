@@ -1,4 +1,4 @@
-dbfolder = "/home/barbara/Dropbox/zinc_finger_data/data"
+dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
 inputfile = open("%s/results/motifhits_dmel-count.csv" %dbfolder)
 outputfile = open("%s/databases/140720-SM00355-dmel-motifhits-G.csv" %dbfolder, "w")
 
@@ -35,8 +35,8 @@ def collapseinv(head,line):
 		cdict[head[i]] = line[i]
 	for m in motiflist:
 		m_inv = m + "_inv"
-		total = int(cdict[m]) + int(cdict[m_inv])
-		print cdict[m], cdict[m_inv], total
+		total = int(cdict[m]) #+ int(cdict[m_inv])
+		#print cdict[m], cdict[m_inv], total
 		cl.append(total)
 	return cl
 
