@@ -85,19 +85,21 @@ def matrix(sp):
 			new_output.write("\n")
 
 '''
-INFO FOR THE FASTA README!
+INFO FOR THE FASTA README! Collects all motifs and combinations of ~
+to give a 'legend' to the information
 '''
-domaindict = {"space (undefined length)": 'O'}
-domains = ['A','B','C','D','E','F','G','H','I','J']
-for i in range(len(motiflist)):
-	domaindict[motiflist[i]] = domains[i]
-readmetxt = "The attached fasta file contains the sequence of different C2H2 zinc finger \
-domains in the provided source file. They are encoded as follows:\n"
-for k in domaindict:
-	rm = "%s = %s\n" %(domaindict[k],k)
-	readmetxt += rm
-
-
+def makereadme(motiflist):
+	domaindict = {"space (undefined length)": 'O'}
+	domains = "ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijklmnpqrstuvwxyz"
+	motiflist = list(set(motiflist))
+	for i in range(len(motiflist)):
+		domaindict[motiflist[i]] = domains[i]
+	readmetxt = "The attached fasta file contains the sequence of different C2H2 zinc finger \
+	domains in the provided source file. They are encoded as follows:\n"
+	for k in domaindict:
+		rm = "%s = %s\n" %(domaindict[k],k)
+		readmetxt += rm
+	return readmetxt,domaindict
 
 '''
 Per species, read the fasta file, open an output file, and scan all sequences for the presence of
@@ -107,21 +109,17 @@ for sp in species:
 	fastadb = open("%s/%s/%s-%s_%s" %(dbfolder,seqfolder,prefix,sp,suffix))
 	outputdb = open("%s/%s/motifhits_%s.csv" %(dbfolder,resfolder,sp), "w")
 	outfasta = open("%s/%s/motifseq_%s.fasta" %(dbfolder,resfolder,sp), "w")
-	#MAKE README
-	readme = open("%s/%s/motifseq_%s-README.txt" %(dbfolder,resfolder,sp), "w")
-	readme.write(readmetxt)
-	readme.close()
-	#END README
 	outputdb.write("Gene_stable_ID,Gene_name,Protein_stable_ID,Sequence_length,")
 	for m in motifdict:
 		outputdb.write("%s," %m)
 	outputdb.write("\n")
 	fastadict = fastadicter(fastadb)
+	seqdict = {}
 	for key in fastadict:
 		ids = key.split('|')
 		seqlen = len(fastadict[key]) #length of the sequence
 		outputdb.write("%s,%s,%s,%s," %(ids[0],ids[1],ids[2],seqlen)) #turn the header name into gene ID/name/prot ID
-		seqdict = {} #for the fasta file: collect positions as key and the corresponding domain at that position as value
+		seqdict.clear() #for the fasta file: collect positions as key and the corresponding domain at that position as value
 		seqlist = [] #for the fasta file: collect all positions to put them in order later on
 		for m in motifdict: #go through each motif and find all instances in the sequence
 			domain = motifdict[m]
@@ -130,21 +128,38 @@ for sp in species:
 				strt = i.start()
 				positions += str(strt)
 				positions += '|'
-				seqdict[strt] = m
-				seqlist.append(strt)
+				if strt in seqdict:
+					nm = seqdict[strt] + "/" + m
+					motiflist.append(nm)
+					seqdict[strt] = nm
+				else:
+					seqdict[strt] = m
+					seqlist.append(strt)
 			outputdb.write('%s,' %(positions[:-1])) #remove final pipe from total positions
 		outputdb.write("\n")
 		outfasta.write(">%s\n" %key) #start collecting the info for the fasta file
 		seqlist.sort()
 		cl = 0
+		readmetxt,domaindict = makereadme(motiflist)
 		for n in seqlist:
-			if cl != 0:
-				if int(n) - cl > 11:
-					outfasta.write("O")
-			if cl < int(n) + motiflength[seqdict[n]]:
+			if cl != 0 and int(n) - cl > 11:
+				outfasta.write("O")
+			if len(seqdict[n].split('/')) > 1: #if we're dealing with a double or triple motif
+				lmot = seqdict[n].split('/')
+				lencol = []
+				for lm in lmot:
+					lencol.append(motiflength[lm])
+				l3 = max(lencol)
+				cl = int(n) + l3
+			elif cl < int(n) + motiflength[seqdict[n]]:
 				cl = int(n) + motiflength[seqdict[n]]
 			outfasta.write(domaindict[seqdict[n]])
 		outfasta.write("\n\n")
+	#MAKE README
+	readme = open("%s/%s/motifseq_%s-README.txt" %(dbfolder,resfolder,sp), "w")
+	readme.write(readmetxt)
+	readme.close()
+	#END README
 	outputdb.close()
 	outfasta.close()
 	matrix(sp)
