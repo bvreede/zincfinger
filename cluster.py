@@ -1,20 +1,22 @@
-import scipy, pylab, csv
+import scipy, pylab
 import scipy.cluster.hierarchy as sch
 from collections import Counter
 
 species = "dmel"
-dbfolder = "/home/barbara/Dropbox/zinc_finger_data/data"
-motiffile = "%s/databases/140720-SM00355-%s-motifhits-G.csv" %(dbfolder,species) #the file used for the clustering
-infile = "%s/results/motifhits_%s.csv" %(dbfolder,species) #the file to apply the clustering to, and split into new files
+dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
+motiffile = "%s/results/motifseq_%s.fasta" %(dbfolder,species) #the file used for the clustering
+infile = "%s/databases/GO_%s_old.csv" %(dbfolder,species) #the file to apply the clustering to, and split into new files
 inputfile = csv.reader(open(motiffile)) 
 clustermeth = "weighted"
-clusterorder = "%s/results/clustering_%s-%s.csv" %(dbfolder,species,clustermeth)
+clusterorder = "%s/results/clustering-string_%s-%s.csv" %(dbfolder,species,clustermeth)
+cutoff = 37
+
 orderfile = open(clusterorder, "w")
 
 '''
 Read the input file and extract:
 - matrix of observations (GOmatrix)
-- labels of GOterms or motifs
+- string with motif data (sequence of motifs in the protein)
 - labels of genes (both numbers and names)
 provides options to transpose the matrix
 '''
@@ -39,7 +41,7 @@ GOmatrix = scipy.array(observations) # matrixify the observations
 Calculate the clusters. Uses a cutoff value to define the number
 of clustered categories that will be made.
 '''
-cutoff = 25 # determine cutoff: number of categories to be formed(1.1547)
+#cutoff = 25 # determine cutoff: number of categories to be formed(1.1547)
 L = sch.fclusterdata(GOmatrix, cutoff, criterion='maxclust', method=clustermeth) 
 S = set(L) #turns the clustering into a set so as to remove duplicates
 Llist = list(L) #turns the clustering into a list, so it may be indexed
