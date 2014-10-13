@@ -3,7 +3,7 @@ import scipy.cluster.hierarchy as sch
 from collections import Counter
 
 species = "dmel"
-dbfolder = "/home/barbara/Dropbox/zinc_finger_data/data"
+dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
 motiffile = "%s/databases/140720-SM00355-%s-motifhits-G.csv" %(dbfolder,species) #the file used for the clustering
 infile = "%s/results/motifhits_%s.csv" %(dbfolder,species) #the file to apply the clustering to, and split into new files
 inputfile = csv.reader(open(motiffile)) 
