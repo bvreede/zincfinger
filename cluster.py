@@ -54,7 +54,7 @@ of clustered categories that will be made.
 '''
 C = sch.linkage(matrix, method=clustermeth)
 
-L = sch.fcluster(C,cutoff,criterion='maxclust')
+L = sch.fcluster(C,cutoff,criterion='inconsistent')
 
 print L
 S = set(L) #turns the clustering into a set so as to remove duplicates
