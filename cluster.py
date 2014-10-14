@@ -1,12 +1,15 @@
 import scipy, pylab
 import scipy.cluster.hierarchy as sch
 from collections import Counter
+from jellyfish import jaro_distance as jeljar
+from numpy import triu_indices as nti
+from numpy import apply_along_axis as naaa
 
 species = "dmel"
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
 motiffile = "%s/results/motifseq_%s.fasta" %(dbfolder,species) #the file used for the clustering
 infile = "%s/databases/GO_%s_old.csv" %(dbfolder,species) #the file to apply the clustering to, and split into new files
-inputfile = csv.reader(open(motiffile)) 
+inputfile = open(motiffile)
 clustermeth = "weighted"
 clusterorder = "%s/results/clustering-string_%s-%s.csv" %(dbfolder,species,clustermeth)
 cutoff = 37
@@ -23,29 +26,42 @@ provides options to transpose the matrix
 observations = [] #will collect the actual matrix of observations
 genenumbers = [] #will collect gene numbers (column 1)
 genenames = [] #will collect gene names
+
 for line in inputfile:
-        if line[0] == "Gene_stable_ID": # gather GOterm/motif labels
-            termlabels = line[3:] # skipping the first 3 columns
-            termlabels = termlabels[:-1] # ignoring the last column (which is '' due to the trailing comma)
-            continue
-	genenumbers.append(line[0])
-	genenames.append(line[1])
-        GOline = [] #collects the observations per line
-        for i in range(3,len(line)-1): #line ends in comma, so this removes the last empty item, and removes the first identifiers
-            GOline.append(float(line[i]))
-        observations.append(GOline)
-GOmatrix = scipy.array(observations) # matrixify the observations
-#GOmatrix = scipy.transpose(GOmatrix) # flips the matrix --- comment out if necessary!
+	if line[0] == ">":
+		header = line.strip()[1:].split('|')
+		genenumbers.append(header[0])
+		genenames.append(header[1])
+	elif len(line.strip()) > 0:
+		observations.append(line.strip())
+#GOmatrix = scipy.array(observations) # matrixify the observations
+
+# set up the measurement of jaro distance of a combination of words
+def wordcomp(coord):
+	i,j = coord
+	return 1-jeljar(observations[i],observations[j])
+
+# make the array of coordinates for reciprocal comparisons
+ar = nti(len(observations),0)
+
+# actually run the comparisons over the entire length of the array
+matrix = naaa(wordcomp,0,ar)
+
 
 '''
 Calculate the clusters. Uses a cutoff value to define the number
 of clustered categories that will be made.
 '''
-#cutoff = 25 # determine cutoff: number of categories to be formed(1.1547)
-L = sch.fclusterdata(GOmatrix, cutoff, criterion='maxclust', method=clustermeth) 
-S = set(L) #turns the clustering into a set so as to remove duplicates
-Llist = list(L) #turns the clustering into a list, so it may be indexed
+C = sch.linkage(matrix)
+print C
 
+#L = sch.fclusterdata(matrix, cutoff, criterion='maxclust', method=clustermeth) 
+#S = set(L) #turns the clustering into a set so as to remove duplicates
+#Llist = list(L) #turns the clustering into a list, so it may be indexed
+
+#print Llist
+
+'''
 cldict = {}
 for i in range(len(genenumbers)):
 	orderfile.write("%s,%s\n" %(genenumbers[i],Llist[i]))
@@ -70,3 +86,4 @@ for c in range(1,cutoff+1):
 				selection.write(line)
 	selection.close()
 	to_select.close()
+'''
