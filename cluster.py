@@ -12,7 +12,7 @@ infile = "%s/databases/GO_%s_old.csv" %(dbfolder,species) #the file to apply the
 inputfile = open(motiffile)
 clustermeth = "weighted"
 clusterorder = "%s/results/clustering-string_%s-%s.csv" %(dbfolder,species,clustermeth)
-cutoff = 37
+cutoff = 50
 
 orderfile = open(clusterorder, "w")
 
@@ -52,14 +52,15 @@ matrix = naaa(wordcomp,0,ar)
 Calculate the clusters. Uses a cutoff value to define the number
 of clustered categories that will be made.
 '''
-C = sch.linkage(matrix)
-print C
+C = sch.linkage(matrix, method=clustermeth)
 
-#L = sch.fclusterdata(matrix, cutoff, criterion='maxclust', method=clustermeth) 
-#S = set(L) #turns the clustering into a set so as to remove duplicates
-#Llist = list(L) #turns the clustering into a list, so it may be indexed
+L = sch.fcluster(C,cutoff,criterion='maxclust')
 
-#print Llist
+print L
+S = set(L) #turns the clustering into a set so as to remove duplicates
+Llist = list(L) #turns the clustering into a list, so it may be indexed
+print Counter(Llist) #counts instances per category
+
 
 '''
 cldict = {}
@@ -67,10 +68,6 @@ for i in range(len(genenumbers)):
 	orderfile.write("%s,%s\n" %(genenumbers[i],Llist[i]))
 	cldict[genenumbers[i]] = Llist[i]
 orderfile.close()
-
-
-print len(S) #returns the total number of categories (should be equal to cutoff)
-print Counter(Llist) #counts instances per category
 
 #for each category, go into GO and motif files, and save the genes seperately
 for c in range(1,cutoff+1):
