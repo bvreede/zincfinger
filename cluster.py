@@ -1,9 +1,10 @@
 import scipy, pylab
 import scipy.cluster.hierarchy as sch
 from collections import Counter
-from jellyfish import jaro_distance as jeljar
+from jellyfish import levenshtein_distance as jeljar
 from numpy import triu_indices as nti
 from numpy import apply_along_axis as naaa
+from matplotlib.pyplot import show
 
 species = "dmel"
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
@@ -12,16 +13,14 @@ infile = "%s/databases/GO_%s_old.csv" %(dbfolder,species) #the file to apply the
 inputfile = open(motiffile)
 clustermeth = "weighted"
 clusterorder = "%s/results/clustering-string_%s-%s.csv" %(dbfolder,species,clustermeth)
-cutoff = 0.25
+cutoff = 150
 
 orderfile = open(clusterorder, "w")
 
 '''
 Read the input file and extract:
-- matrix of observations (GOmatrix)
 - string with motif data (sequence of motifs in the protein)
 - labels of genes (both numbers and names)
-provides options to transpose the matrix
 '''
 observations = [] #will collect the actual matrix of observations
 genenumbers = [] #will collect gene numbers (column 1)
@@ -40,22 +39,22 @@ for line in inputfile:
 # set up the measurement of jaro distance of a combination of words
 def wordcomp(coord):
 	i,j = coord
-	return 1 - jeljar(observations[i],observations[j])
+	return jeljar(observations[i],observations[j])
 
 # make the array of coordinates for reciprocal comparisons
-ar = nti(len(observations),0)
-print len(ar)
+ar = nti(len(observations),1)
 
 # actually run the comparisons over the entire length of the array
 matrix = naaa(wordcomp,0,ar)
-print len(matrix)
 
 '''
 Calculate the clusters. Uses a cutoff value to define the number
 of clustered categories that will be made.
 '''
 C = sch.linkage(matrix, method=clustermeth)
-L = sch.fcluster(C,cutoff,criterion='distance')
+L = sch.fcluster(C,cutoff,criterion='maxclust')
+sch.dendrogram(C,labels=observations)
+show()
 
 S = set(L) #turns the clustering into a set so as to remove duplicates
 Llist = list(L) #turns the clustering into a list, so it may be indexed
