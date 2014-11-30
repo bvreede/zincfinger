@@ -1,78 +1,126 @@
+'''
+This script can be used to create clusters of a fasta file with
+strings (without regard for the exact meaning of the individual elements!).
+It works through calculating Levenshtein distances, and therefore
+clusters longer strings more efficiently.
+It returns a csv file with several cluster options based on the cluster
+threshold.
+The script requires the following python modules:
+- scipy
+- pylab
+- collections
+- jellyfish
+- numpy
+- matplotlib
+Author: Barbara Vreede
+Contact: b.vreede@gmail.com
+Date: 15 October 2014
+'''
+
 import scipy, pylab
 import scipy.cluster.hierarchy as sch
 from collections import Counter
-from jellyfish import levenshtein_distance as jeljar
+from jellyfish import levenshtein_distance as jld
 from numpy import triu_indices as nti
 from numpy import apply_along_axis as naaa
 from matplotlib.pyplot import show
 
-species = "dmel"
+
+##### INPUT SPECIFICATIONS: CUSTOMIZE HERE! #####
+species = "allz"
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
 motiffile = "%s/results/motifseq_%s.fasta" %(dbfolder,species) #the file used for the clustering
 infile = "%s/databases/GO_%s_old.csv" %(dbfolder,species) #the file to apply the clustering to, and split into new files
 inputfile = open(motiffile)
 clustermeth = "weighted"
 clusterorder = "%s/results/clustering-string_%s-%s.csv" %(dbfolder,species,clustermeth)
-cutoff = 150
-
+thresholdlist = [1,2,4,6,10]
 orderfile = open(clusterorder, "w")
+#### END OF CUSTOMIZATION! PLEASE DON'T EDIT BELOW #####
+
 
 '''
-Read the input file and extract:
-- string with motif data (sequence of motifs in the protein)
-- labels of genes (both numbers and names)
+Read the input fasta file; extract:
+- string [with motif data]
+- ID labels [customized to separate on | character]
 '''
-observations = [] #will collect the actual matrix of observations
-genenumbers = [] #will collect gene numbers (column 1)
-genenames = [] #will collect gene names
+strings = [] #will collect the clusterable data
+gID = [] #will collect header information
 
 for line in inputfile:
-	if line[0] == ">":
+	if line[0] == ">": # indicates fasta header: collect header info
 		header = line.strip()[1:].split('|')
-		genenumbers.append(header[0])
-		genenames.append(header[1])
-		flag = 1
+		gID.append(header)
+		flag = 1 # turn on data collector
 	elif flag == 1:
-		observations.append(line.strip())
-		flag = 0
+		strings.append(line.strip())
+		flag = 0 # turn off data collector
 
-# set up the measurement of jaro distance of a combination of words
+'''
+Calculate pairwise distances for all the strings collected
+'''
+# set up the measurement of levenshtein distance of a combination of strings
 def wordcomp(coord):
 	i,j = coord
-	return jeljar(observations[i],observations[j])
+	return jld(strings[i],strings[j])
 
-# make the array of coordinates for reciprocal comparisons
-ar = nti(len(observations),1)
+# make an array of coordinates for reciprocal comparisons
+ar = nti(len(strings),1)
 
 # actually run the comparisons over the entire length of the array
-matrix = naaa(wordcomp,0,ar)
+cr = naaa(wordcomp,0,ar)
 
 '''
-Calculate the clusters. Uses a cutoff value to define the number
-of clustered categories that will be made.
+Divide the strings into clusters.
 '''
-C = sch.linkage(matrix, method=clustermeth)
-L = sch.fcluster(C,cutoff,criterion='maxclust')
-sch.dendrogram(C,labels=observations)
-show()
+#Calculate the hierarchy given the pairwise distances provided.
+C = sch.linkage(cr, method=clustermeth)
 
-S = set(L) #turns the clustering into a set so as to remove duplicates
-Llist = list(L) #turns the clustering into a list, so it may be indexed
+#Define several clusters given a range of thresholds
+for t in thresholdlist:
+	L = sch.fcluster(C,t,criterion="distance")
+
+#make a matrix of the result file
+# then transpose the matrix and print to results
+# this way, any number of headers and clusterdata can be added without specifying a number. 
+
+#L = sch.fcluster(C,cutoff,criterion='maxclust')
+L8 = sch.fcluster(C,800,criterion='maxclust')
+L9 = sch.fcluster(C,300,criterion='maxclust')
+L0 = sch.fcluster(C,200,criterion='maxclust')
+L1 = sch.fcluster(C,150,criterion='maxclust')
+L2 = sch.fcluster(C,100,criterion='maxclust')
+L3 = sch.fcluster(C,50,criterion='maxclust')
+L4 = sch.fcluster(C,20,criterion='maxclust')
+
+
+S = set(L0) #turns the clustering into a set so as to remove duplicates
+#Llist = list(L) #turns the clustering into a list, so it may be indexed
+Llist8 = list(L8)
+Llist9 = list(L9)
+Llist0 = list(L0)
+Llist1 = list(L1)
+Llist2 = list(L2)
+Llist3 = list(L3)
+Llist4 = list(L4)
 
 '''
 Reporting on the results:
 '''
 print "Number of categories: ", len(S)
-print "Instances per category: ", Counter(Llist) #counts instances per category
+print "Instances per category: ", Counter(Llist0) #counts instances per category
 print "Number of genenumbers/genenames: ", len(genenumbers), len(genenames)
-print "Number of strings for clustering: ", len(observations)
-print "Number of items assigned categories: ", len(L), len(Llist)
+print "Number of strings for clustering: ", len(strings)
+print "Number of items assigned categories: ", len(L0), len(Llist0)
 
 cldict = {}
 for i in range(len(genenumbers)):
-	orderfile.write("%s,%s,%s,%s\n" %(genenumbers[i],genenames[i],observations[i],Llist[i]))
-	cldict[genenumbers[i]] = Llist[i]
+	orderfile.write("%s,%s,%s,%s,%s,%s,%s,%s,%s\n" %(genenumbers[i],genenames[i],strings[i],Llist9[i],Llist0[i],Llist1[i],Llist2[i],Llist3[i],Llist4[i]))
+	cldict[genenumbers[i]] = Llist0[i]
 orderfile.close()
+
+sch.dendrogram(C,labels=genenames)
+show()
 
 '''
 #for each category, go into GO and motif files, and save the genes seperately
