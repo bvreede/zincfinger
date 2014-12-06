@@ -23,7 +23,6 @@ suffix = "seq.fasta"
 species = ["allz"] #["dmel","tcas","dpul","isca","smar"]
 motiflist = ['2_8_3','2_8_4','2_8_5','4_8_3','4_8_4','4_8_5','2_12_3','2_12_4','2_12_5','4_12_3','4_12_4','4_12_5','2_15_3','2_15_4','2_15_5','4_15_3','4_15_4','4_15_5'] # use only numbers, indicating the distances between C-C-H-H (separated by _)
 
-### END OF CUSTOM INFO. DON'T FUCK WITH THE FOLLOWING ###
 
 '''
 Motif to cluster-able sequence: make a dictionary to translate
@@ -103,7 +102,8 @@ for sp in species:
 	outputdb.write("\n")
 	# database content follows below
 	fastadict = fastadicter(fastadb) # translate the fasta file into a dictionary
-	seqdict = {}
+	seqdict = {} # dictionary for [start position]: sequence
+	motdict = {} # dictionary for [start position]: motif type
 	for key in fastadict:
 		# get info for the first columns (ID and sequence length)
 		ids = key.split('|')
@@ -111,8 +111,9 @@ for sp in species:
 		outputdb.write("%s,%s,%s,%s," %(ids[0],ids[1],ids[2],seqlen)) #turn the header name into gene ID/name/prot ID
 
 		# screen the sequence for motifs
-		seqdict.clear() #for the fasta file: collect positions as key and the corresponding domain at that position as value
-		seqlist = [] #for the fasta file: collect all positions to put them in order later on
+		seqdict.clear() #for the fasta file: collect positions as key and the corresponding sequence at that position as value
+		motdict.clear() #as seqdict, but with the motif name instead of sequence
+		poslist = [] #for the fasta file: collect all positions to put them in order later on
 		for m in motifdict: #go through each motif and find all instances in the sequence
 			domain = motifdict[m]
 			positions = ''
@@ -120,24 +121,26 @@ for sp in species:
 				strt = i.start()
 				positions += str(strt)
 				positions += '|'
-				customseq = i.group()
-				if m == '2_8_3':
-					cntr +=1
-					customout.write(">seq%s\n%s\n\n" %(cntr,customseq))
+				mseq = i.group() # the sequence picked up by the RE
 				if strt in seqdict:
-					nm = seqdict[strt] + "/" + m
-					motiflist.append(nm)
-					seqdict[strt] = nm
+					ns = seqdict[strt] + "/" + mseq
+					nm = motdict[strt] + "/" + m
+					#motiflist.append(nm) # possibly superfluous if no longer working with double motifs for cluster
+					seqdict[strt] = ns
+					motdict[strt] = nm
 				else:
-					seqdict[strt] = m
-					seqlist.append(strt)
+					seqdict[strt] = mseq
+					motdict[strt] = m
+					poslist.append(strt)
 			outputdb.write('%s,' %(positions[:-1])) #remove final pipe from total positions
 		outputdb.write("\n")
 		outfasta.write(">%s\n" %key) #start collecting the info for the fasta file
-		seqlist.sort()
-		cl = 0
+
+		# after screen, filter the domains that are conflicting.
+		poslist.sort() #sorts all starting positions to make sure they are in order
+		cl = 0 
 		readmetxt,domaindict = makereadme(motiflist)
-		for n in seqlist:
+		for n in poslist:
 			if cl != 0 and int(n) - cl > 11:
 				outfasta.write("O")
 			if len(seqdict[n].split('/')) > 1: #if we're dealing with a double or triple motif
