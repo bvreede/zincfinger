@@ -138,9 +138,21 @@ for sp in species:
 
 		# after screen, filter the domains that are conflicting.
 		poslist.sort() #sorts all starting positions to make sure they are in order
+		st = 0 # sequence tracker: variable to keep track of where on the sequence we are
 		cl = 0 
 		readmetxt,domaindict = makereadme(motiflist)
 		for n in poslist:
+			# get all sequences at position n, and the ones that start within 11 + [max domain length] of n
+			# perhaps an idea to check the next n in poslist, and see if it starts within; if yes then take it and check the next one, if no, then stop and work with these sequences.
+			# determine here whether there is a chain or not. Perhaps have a parameter that says whether the motif is part of a chain, and if so: is it the first, one of the middle, or last? if it's the first/last: put a 'space' sign in the translation!
+
+			# for those that conflict: determine the right one or if there is a possible ambiguous zf:
+			# does it have the two hydrophobic residues in between C and H?
+			# if it is in a chain, are there 7 residues between the last H and the next C? [linker sequence]
+			# if these qualities have been met, and there is still a conflict: then label the zf with the appropriate combo term. If there is a triple or more, report it for manual curation (perhaps make a file with exceptions so that once manually curated zfs have been identified and assessed, they won't need to be done again?)
+
+
+
 			if cl != 0 and int(n) - cl > 11:
 				outfasta.write("O")
 			if len(seqdict[n].split('/')) > 1: #if we're dealing with a double or triple motif
