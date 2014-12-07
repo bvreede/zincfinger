@@ -41,11 +41,11 @@ motifdict = {}
 motiflength = {}
 for m in motiflist:
 	cc,ch,hh = m.split('_')
-	motif = '[A-Z]{2}C[A-Z]{%s}C[A-Z]{%s}H[A-Z]{%s}H' %(cc,ch,hh) # construct the regular expression
+	motif = '[A-Z]{7}C[A-Z]{%s}C[A-Z]{%s}H[A-Z]{%s}H[A-Z]{7}' %(cc,ch,hh) # construct the regular expression
 	remotif = re.compile(motif)
 	motifdict[m] = remotif
 	d = [int(x) for x in cc,ch,hh]
-	dl = sum(d)
+	dl = sum(d) + 4
 	motiflength[m] = dl
 
 '''
@@ -90,7 +90,6 @@ def makereadme(motiflist):
 Per species, read the fasta file, open an output file, and scan all sequences for the presence of
 motifs.
 '''
-cntr = 0
 for sp in species:
 	# write the header for the database
 	fastadb = open("%s/%s/%s-%s_%s" %(dbfolder,seqfolder,prefix,sp,suffix))
@@ -100,10 +99,13 @@ for sp in species:
 	for m in motifdict:
 		outputdb.write("%s," %m)
 	outputdb.write("\n")
-	# database content follows below
+
+	# read the fasta file into memory
 	fastadict = fastadicter(fastadb) # translate the fasta file into a dictionary
 	seqdict = {} # dictionary for [start position]: sequence
 	motdict = {} # dictionary for [start position]: motif type
+
+	# go through the sequences
 	for key in fastadict:
 		# get info for the first columns (ID and sequence length)
 		ids = key.split('|')
@@ -114,6 +116,8 @@ for sp in species:
 		seqdict.clear() #for the fasta file: collect positions as key and the corresponding sequence at that position as value
 		motdict.clear() #as seqdict, but with the motif name instead of sequence
 		poslist = [] #for the fasta file: collect all positions to put them in order later on
+
+		# check each motif individually
 		for m in motifdict: #go through each motif and find all instances in the sequence
 			domain = motifdict[m]
 			positions = ''
@@ -132,6 +136,7 @@ for sp in species:
 					seqdict[strt] = mseq
 					motdict[strt] = m
 					poslist.append(strt)
+			# consider moving the following 3 lines because they need to be after the motif screen
 			outputdb.write('%s,' %(positions[:-1])) #remove final pipe from total positions
 		outputdb.write("\n")
 		outfasta.write(">%s\n" %key) #start collecting the info for the fasta file
@@ -140,18 +145,53 @@ for sp in species:
 		poslist.sort() #sorts all starting positions to make sure they are in order
 		st = 0 # sequence tracker: variable to keep track of where on the sequence we are
 		cl = 0 
-		readmetxt,domaindict = makereadme(motiflist)
-		for n in poslist:
-			# get all sequences at position n, and the ones that start within 11 + [max domain length] of n
+	
+		#readmetxt,domaindict = makereadme(motiflist)
+
+		posdone = [] # to add positions that have already been assessed
+		for n in range(len(poslist)):
+			pos = poslist[n]
+			if pos in posdone:
+				continue
+
+			# get all motifs on position pos
+			mots = motdict[pos].split('/')
+			ml = []
+			for mt in mots:
+				ml.append(motiflength[mt])
+			maxdist = max(ml) + 7
+			for p in range(1,maxdist):
+				pp = p + pos
+				if pp in poslist:
+					# if the distance is less than 6: definitely check for overlap with this domain
+					# if the distance is more than 23: overlap with the next 
+					if p < 6:
+						continue
+					elif p > 23 and p<26:
+						print key, pos, pp, p
+						try:
+							print poslist[n+1]
+						except IndexError:
+							print "last one."
+						try:
+							print poslist[n+2]
+						except IndexError:
+							print "last one."
+						print seqdict[pos], motdict[pos]
+						print seqdict[pp], motdict[pp]
+						print "\n"
+			
+
+			# get all sequences at position n, and the ones that start within 7 + [max domain length] of n
 			# perhaps an idea to check the next n in poslist, and see if it starts within; if yes then take it and check the next one, if no, then stop and work with these sequences.
 			# determine here whether there is a chain or not. Perhaps have a parameter that says whether the motif is part of a chain, and if so: is it the first, one of the middle, or last? if it's the first/last: put a 'space' sign in the translation!
 
 			# for those that conflict: determine the right one or if there is a possible ambiguous zf:
+			# make a new function for this!
 			# does it have the two hydrophobic residues in between C and H?
 			# if it is in a chain, are there 7 residues between the last H and the next C? [linker sequence]
 			# if these qualities have been met, and there is still a conflict: then label the zf with the appropriate combo term. If there is a triple or more, report it for manual curation (perhaps make a file with exceptions so that once manually curated zfs have been identified and assessed, they won't need to be done again?)
-
-
+			'''
 
 			if cl != 0 and int(n) - cl > 11:
 				outfasta.write("O")
@@ -165,6 +205,7 @@ for sp in species:
 			elif cl < int(n) + motiflength[seqdict[n]]:
 				cl = int(n) + motiflength[seqdict[n]]
 			outfasta.write(domaindict[seqdict[n]])
+			'''
 		outfasta.write("\n\n")
 	#MAKE README
 	readme = open("%s/%s/motifseq_%s-README.txt" %(dbfolder,resfolder,sp), "w")
