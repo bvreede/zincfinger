@@ -20,8 +20,11 @@ seqfolder = "sequences"
 resfolder = "results"
 prefix = "140720-SM00355"
 suffix = "seq.fasta"
-species = ["allz"] #["dmel","tcas","dpul","isca","smar"]
+species = ["dmel","tcas","dpul","isca","smar"]
 motiflist = ['2_8_3','2_8_4','2_8_5','4_8_3','4_8_4','4_8_5','2_12_3','2_12_4','2_12_5','4_12_3','4_12_4','4_12_5','2_15_3','2_15_4','2_15_5','4_15_3','4_15_4','4_15_5'] # use only numbers, indicating the distances between C-C-H-H (separated by _)
+
+HFresidues = ['V','I','L','M','F','W','C','A','Y','H','T','S','P','G','R','K'] #hydrophobic residues. Not used in the script, as there does not seem to be a reliable way to check for false positives with this information. 
+
 
 
 '''
@@ -39,9 +42,11 @@ dictionary. Each domain is only represented as a forward domain.
 '''
 motifdict = {}
 motiflength = {}
+plink = 7
+alink = 7
 for m in motiflist:
 	cc,ch,hh = m.split('_')
-	motif = '[A-Z]{7}C[A-Z]{%s}C[A-Z]{%s}H[A-Z]{%s}H[A-Z]{7}' %(cc,ch,hh) # construct the regular expression
+	motif = '[A-Z]{%s}C[A-Z]{%s}C[A-Z]{%s}H[A-Z]{%s}H[A-Z]{%s}' %(plink,cc,ch,hh,alink) # construct the regular expression
 	remotif = re.compile(motif)
 	motifdict[m] = remotif
 	d = [int(x) for x in cc,ch,hh]
@@ -90,6 +95,7 @@ def makereadme(motiflist):
 Per species, read the fasta file, open an output file, and scan all sequences for the presence of
 motifs.
 '''
+longlist = []
 for sp in species:
 	# write the header for the database
 	fastadb = open("%s/%s/%s-%s_%s" %(dbfolder,seqfolder,prefix,sp,suffix))
@@ -121,11 +127,12 @@ for sp in species:
 		for m in motifdict: #go through each motif and find all instances in the sequence
 			domain = motifdict[m]
 			positions = ''
+			CC,CH,HH = m.split('_')
 			for i in domain.finditer(fastadict[key]):
+				mseq = i.group() # the sequence picked up by the RE
 				strt = i.start()
 				positions += str(strt)
 				positions += '|'
-				mseq = i.group() # the sequence picked up by the RE
 				if strt in seqdict:
 					ns = seqdict[strt] + "/" + mseq
 					nm = motdict[strt] + "/" + m
@@ -159,16 +166,20 @@ for sp in species:
 			ml = []
 			for mt in mots:
 				ml.append(motiflength[mt])
-			maxdist = max(ml) + 7
+			maxdist = max(ml) + 15
 			for p in range(1,maxdist):
 				pp = p + pos
 				if pp in poslist:
 					# if the distance is less than 6: definitely check for overlap with this domain
-					# if the distance is more than 23: overlap with the next 
-					if p < 6:
-						continue
-					elif p > 23 and p<26:
-						print key, pos, pp, p
+					# if the distance is *more* than 23: overlap with the next (there probably is such a thing)
+					# but if it's in between... what to do?
+					nka = p-max(ml)
+					longlist.append(nka)
+					#if p < 6:
+					#	continue
+					#elif p > 26 and p<36:
+					#	print key, pos, pp, p
+					'''
 						try:
 							print poslist[n+1]
 						except IndexError:
@@ -180,6 +191,7 @@ for sp in species:
 						print seqdict[pos], motdict[pos]
 						print seqdict[pp], motdict[pp]
 						print "\n"
+					'''
 			
 
 			# get all sequences at position n, and the ones that start within 7 + [max domain length] of n
@@ -208,6 +220,7 @@ for sp in species:
 			'''
 		outfasta.write("\n\n")
 	#MAKE README
+	'''
 	readme = open("%s/%s/motifseq_%s-README.txt" %(dbfolder,resfolder,sp), "w")
 	readme.write(readmetxt)
 	readme.close()
@@ -215,8 +228,12 @@ for sp in species:
 	outputdb.close()
 	outfasta.close()
 	#matrix(sp)
+	'''
 
 
+for n in range(16):
+	kk = longlist.count(n)
+	print n, kk
 
 """
 '''
