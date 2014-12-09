@@ -92,10 +92,18 @@ def makereadme(motiflist):
 	return readmetxt,domaindict
 
 '''
+translate a set of possible zf hits at a range of positions to a single
+list of positions + the correct motif at that position.
+Yeah, I know. Not possible.
+'''
+def resolve(posmatrix,seqdict,motdict):
+	return finalpos,finaldict
+
+
+'''
 Per species, read the fasta file, open an output file, and scan all sequences for the presence of
 motifs.
 '''
-longlist = []
 for sp in species:
 	# write the header for the database
 	fastadb = open("%s/%s/%s-%s_%s" %(dbfolder,seqfolder,prefix,sp,suffix))
@@ -144,54 +152,54 @@ for sp in species:
 					motdict[strt] = m
 					poslist.append(strt)
 			# consider moving the following 3 lines because they need to be after the motif screen
-			outputdb.write('%s,' %(positions[:-1])) #remove final pipe from total positions
-		outputdb.write("\n")
-		outfasta.write(">%s\n" %key) #start collecting the info for the fasta file
+			#outputdb.write('%s,' %(positions[:-1])) #remove final pipe from total positions
+		#outputdb.write("\n")
+		#outfasta.write(">%s\n" %key) #start collecting the info for the fasta file
 
 		# after screen, filter the domains that are conflicting.
+		poslist = list(set(poslist))
 		poslist.sort() #sorts all starting positions to make sure they are in order
-		st = 0 # sequence tracker: variable to keep track of where on the sequence we are
-		cl = 0 
-	
+
+		#cl = 0 
 		#readmetxt,domaindict = makereadme(motiflist)
 
 		posdone = [] # to add positions that have already been assessed
+		posmatrix = [] # to collect all sequences that should be assessed together
+		pos4matrix = [] # to collect the lines of the matrix
 		for n in range(len(poslist)):
 			pos = poslist[n]
 			if pos in posdone:
 				continue
-
+	
+			pos4matrix.append(pos)
+			for p in range(1,6):
+				pp = p + pos
+				if pp in poslist:
+					print p
+					pos4matrix.append(pp)
+					posdone.append(pp)
+			posmatrix.append(pos4matrix)
+			pos4matrix = []
+	
 			# get all motifs on position pos
 			mots = motdict[pos].split('/')
 			ml = []
 			for mt in mots:
 				ml.append(motiflength[mt])
-			maxdist = max(ml) + 15
-			for p in range(1,maxdist):
-				pp = p + pos
-				if pp in poslist:
+		# now I have a posmatrix of all positions for this gene that need to be assessed together
+		# to generate A SINGLE OUTPUT of position - key.
+		# how to fucking do this?
+		
+		finalpos,finaldict = resolve(posmatrix,seqdict,motdict)
+
+
+
+
+"""
+
 					# if the distance is less than 6: definitely check for overlap with this domain
 					# if the distance is *more* than 23: overlap with the next (there probably is such a thing)
 					# but if it's in between... what to do?
-					nka = p-max(ml)
-					longlist.append(nka)
-					#if p < 6:
-					#	continue
-					#elif p > 26 and p<36:
-					#	print key, pos, pp, p
-					'''
-						try:
-							print poslist[n+1]
-						except IndexError:
-							print "last one."
-						try:
-							print poslist[n+2]
-						except IndexError:
-							print "last one."
-						print seqdict[pos], motdict[pos]
-						print seqdict[pp], motdict[pp]
-						print "\n"
-					'''
 			
 
 			# get all sequences at position n, and the ones that start within 7 + [max domain length] of n
@@ -203,63 +211,6 @@ for sp in species:
 			# does it have the two hydrophobic residues in between C and H?
 			# if it is in a chain, are there 7 residues between the last H and the next C? [linker sequence]
 			# if these qualities have been met, and there is still a conflict: then label the zf with the appropriate combo term. If there is a triple or more, report it for manual curation (perhaps make a file with exceptions so that once manually curated zfs have been identified and assessed, they won't need to be done again?)
-			'''
-
-			if cl != 0 and int(n) - cl > 11:
-				outfasta.write("O")
-			if len(seqdict[n].split('/')) > 1: #if we're dealing with a double or triple motif
-				lmot = seqdict[n].split('/')
-				lencol = []
-				for lm in lmot:
-					lencol.append(motiflength[lm])
-				l3 = max(lencol)
-				cl = int(n) + l3
-			elif cl < int(n) + motiflength[seqdict[n]]:
-				cl = int(n) + motiflength[seqdict[n]]
-			outfasta.write(domaindict[seqdict[n]])
-			'''
-		outfasta.write("\n\n")
-	#MAKE README
-	'''
-	readme = open("%s/%s/motifseq_%s-README.txt" %(dbfolder,resfolder,sp), "w")
-	readme.write(readmetxt)
-	readme.close()
-	#END README
-	outputdb.close()
-	outfasta.close()
-	#matrix(sp)
-	'''
-
-
-for n in range(16):
-	kk = longlist.count(n)
-	print n, kk
-
 """
-'''
-Add-on made for clustering:
-Turn the csv file into a matrix with single genes in the rows, and a motif count
-in the columns. Only takes into account the first protein per gene.
-'''
-def matrix(sp):
-	prev_output = open("%s/%s/motifhits_%s.csv" %(dbfolder,resfolder,sp)) # outputfile that saves motif locations and sequence length
-	new_output = open("%s/%s/motifhits_%s-count.csv" %(dbfolder,resfolder,sp), "w") #outputfile that saves n motifs
-	testID = "Gene_stable_ID"
-	for line in prev_output:
-		l = line.strip().split(',')
-		if l[0] == testID:
-			if l[0] == "Gene_stable_ID":
-				lr = line.replace('Sequence_length,','')
-				new_output.write(lr)
-			continue
-		else:
-			new_output.write("%s,%s,%s," %(l[0],l[1],l[2]))
-			for i in range(4,len(l)-1):
-				if len(l[i]) != 0:
-					new_output.write(str(len(l[i].split('|'))))
-					new_output.write(",")
-				else:
-					new_output.write("0,")
-			new_output.write("\n")
-"""
+
 
