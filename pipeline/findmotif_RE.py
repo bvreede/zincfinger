@@ -10,6 +10,7 @@ Date: 10 October 2014
 '''
 import re
 
+doublescount = 0
 customout = open("/home/barbara/Dropbox/shared_work/zinc_finger_data/playground/2_8_3.txt", "w")
 
 ### SPECIFY INFORMATION: DATA TO USE###
@@ -33,8 +34,8 @@ the zf-domains to a single letter
 '''
 alphabet = "ABCDEFGHIJKLMNPQRSTUVWXYZ"
 domaindict = {}
-for i in range(len(motiflist)):
-		domaindict[motiflist[i]] = alphabet[i]
+for i,mot in enumerate(motiflist):
+		domaindict[mot] = alphabet[i]
 
 '''
 Define regular expressions for all zf-domains (by the C-H distances), and save in a
@@ -82,8 +83,8 @@ def makereadme(motiflist):
 	domaindict = {"space (undefined length)": 'O'}
 	domains = "ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijklmnpqrstuvwxyz"
 	motiflist = list(set(motiflist))
-	for i in range(len(motiflist)):
-		domaindict[motiflist[i]] = domains[i]
+	for i,mot in enumerate(motiflist):
+		domaindict[mot] = domains[i]
 	readmetxt = "The attached fasta file contains the sequence of different C2H2 zinc finger \
 	domains in the provided source file. They are encoded as follows:\n"
 	for k in domaindict:
@@ -96,27 +97,27 @@ translate a set of possible zf hits at a range of positions to a single
 list of positions + the correct motif at that position.
 Yeah, I know. Not possible.
 '''
-def resolvemotifs(positions,sequences,motifs):#,prevend,nextst):
+def resolvemotifs(positions,sequences,motifs,prevend,nextst):
 	#score the motifs on how good they are: L on H-2, other hydrophobic on L-5, R in final H-H loop
 	scores = []
-	for n in range(len(sequences)):
+	for n,seq in enumerate(sequences):
 		score = 0
 		CC,CH,HH = motifs[n].split('_')
 		#check the presence of hydrophobic residues in specific locations
 		Lpos = plink+int(CC)+int(CH)-1
-		if sequences[n][Lpos] == 'L':
+		if seq[Lpos] == 'L':
 			score += 2
-		elif sequences[n][Lpos] in HFresidues:
+		elif seq[Lpos] in HFresidues:
 			score += 1
 		Fpos = Lpos-6
-		if sequences[n][Fpos] == 'F':
+		if seq[Fpos] == 'F':
 			score += 2
-		elif sequences[n][Fpos] in HFresidues:
+		elif seq[Fpos] in HFresidues:
 			score += 1
 		#check the presence of an R in the H-H loop
 		Hs = plink+int(CC)+int(CH)+4
 		He = plink+int(CC)+int(CH)+int(HH)+2
-		H2H = sequences[n][Hs:He]
+		H2H = seq[Hs:He]
 		for r in H2H:
 			if r == 'R':
 				score += 1
@@ -124,26 +125,23 @@ def resolvemotifs(positions,sequences,motifs):#,prevend,nextst):
 		#check the location respective to previous and next domain
 		st_motif = int(positions[n])
 		end_motif = st_motif + int(motiflength[motifs[n]]) + 7
-		'''
-		if st_motif < prevend:
-			score -= 1
-		elif st_motif == prevend:
-			score += 2
-		if end_motif > nextst:
-			score -= 1
-		elif end_motif == nextst:
-			score += 2
-		'''
+		if st_motif < min(prevend):
+			score -= 5
+		elif st_motif in prevend:
+			score += 5
+		if end_motif > max(nextst):
+			score -= 5
+		elif end_motif in nextst:
+			score += 5
 		scores.append(score)
 	return scores
 		
 
 def resolvematrix(posmatrix,seqdict,motdict):
-	finalpos = []
-	finaldict = {}
 	prevend = [0]
-	for line in posmatrix: # lines of positions that need to be assessed together
+	for k,line in enumerate(posmatrix): # lines of positions that need to be assessed together
 		allpos,allmots,allseqs = [],[],[]
+		finalpos,finalmot,finalseq = [],[],[]
 		for item in line:
 			mots = motdict[item].split('/') # get all motifs on this position
 			seqs = seqdict[item].split('/') # get all sequences on this position
@@ -151,15 +149,20 @@ def resolvematrix(posmatrix,seqdict,motdict):
 				allpos.append(item)
 				allmots.append(mot)
 				allseqs.append(seqs[n])
-				#print "motiflength:", motiflength[mots[n]]
-				#print item
-				prevend.append(motiflength[mots[n]]+7+int(item))
-		allscores = resolvemotifs(allpos,allseqs,allmots)#,prevend,nextst)
-		for n in allscores:
-			if n == max(allscores):
-				
-		allscores.index(max(allscores))
-	return finalpos,finaldict
+		try:
+			allscores = resolvemotifs(allpos,allseqs,allmots,prevend,posmatrix[k+1])
+		except IndexError:
+			allscores = resolvemotifs(allpos,allseqs,allmots,prevend,[0])
+		# prevend: the previous end. Get the indices of the HIGHEST scoring motifs, and stuff the END SITE in a list
+		prevend = []
+		for i,score in enumerate(allscores):
+			if score == max(allscores): # this/ese is/are our top hit(s) from the current round!
+				prevend.append(allpos[i] + motiflength[allmots[i]] + 7)
+				# pick the best scoring motif
+				finalpos.append(allpos[i])
+				finalmot.append(allmots[i])
+				finalseq.append(allseqs[i])
+	return finalpos,finalmot,finalseq
 
 
 '''
@@ -183,7 +186,6 @@ for sp in species:
 
 	# go through the sequences
 	for key in fastadict:
-		print key
 		# get info for the first columns (ID and sequence length)
 		ids = key.split('|')
 		seqlen = len(fastadict[key]) #length of the sequence
@@ -250,7 +252,7 @@ for sp in species:
 	
 		finalpos,finaldict = resolvematrix(posmatrix,seqdict,motdict)
 
-
+print doublescount
 
 
 """
