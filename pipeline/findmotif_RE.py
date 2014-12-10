@@ -250,29 +250,15 @@ for sp in species:
 					posdone.append(pp)
 			posmatrix.append(pos4matrix)
 			pos4matrix = []
-		resolvematrix(posmatrix,seqdict,motdict)
-
-print domains,len(domains)
+		starts,motifs,lengths = resolvematrix(posmatrix,seqdict,motdict)
 
 '''
 Motif to cluster-able sequence: make a dictionary to translate
 the zf-domains to a single letter
 '''
-alphabet = "ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+alphabet = "ABCDEFGHIJKLMNPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz!@^&*()-=+{}:;|<>?/,."
 domaindict = {}
 for i,mot in enumerate(domains):
 		domaindict[mot] = alphabet[i]
-
-print domaindict
-
-"""
-
-			# determine here whether there is a chain or not. Perhaps have a parameter that says whether the motif is part of a chain, and if so: is it the first, one of the middle, or last? if it's the first/last: put a 'space' sign in the translation!
-
-			# for those that conflict: determine the right one or if there is a possible ambiguous zf:
-			# does it have the two hydrophobic residues in between C and H?
-			# if it is in a chain, are there 7 residues between the last H and the next C? [linker sequence]
-			# if these qualities have been met, and there is still a conflict: then label the zf with the appropriate combo term. If there is a triple or more, report it for manual curation (perhaps make a file with exceptions so that once manually curated zfs have been identified and assessed, they won't need to be done again?)
-"""
 
 
