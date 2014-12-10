@@ -96,12 +96,13 @@ translate a set of possible zf hits at a range of positions to a single
 list of positions + the correct motif at that position.
 Yeah, I know. Not possible.
 '''
-def resolvemotifs(sequences,motifs):
+def resolvemotifs(positions,sequences,motifs,prevend,nextst):
 	#score the motifs on how good they are: L on H-2, other hydrophobic on L-5, R in final H-H loop
 	scores = []
 	for n in range(len(sequences)):
 		score = 0
 		CC,CH,HH = motifs[n].split('_')
+		#check the presence of hydrophobic residues in specific locations
 		Lpos = plink+int(CC)+int(CH)-1
 		if sequences[n][Lpos] == 'L':
 			score += 2
@@ -112,12 +113,25 @@ def resolvemotifs(sequences,motifs):
 			score += 2
 		elif sequences[n][Fpos] in HFresidues:
 			score += 1
+		#check the presence of an R in the H-H loop
 		Hs = plink+int(CC)+int(CH)+4
 		He = plink+int(CC)+int(CH)+int(HH)+2
 		H2H = sequences[n][Hs:He]
 		for r in H2H:
 			if r == 'R':
 				score += 1
+				break #to prevent double scoring in event of RR
+		#check the location respective to previous and next domain
+		st_motif = int(positions[n])
+		end_motif = st_motif + int(motiflength[motifs[n]]) + 7
+		if st_motif < prevend:
+			score -= 1
+		elif st_motif == prevend:
+			score += 2
+		if end_motif > nextst:
+			score -= 1
+		elif end_motif == nextst:
+			score += 2
 		scores.append(score)
 	return scores
 		
@@ -125,8 +139,9 @@ def resolvemotifs(sequences,motifs):
 def resolvematrix(posmatrix,seqdict,motdict):
 	finalpos = []
 	finaldict = {}
+	prevend = 0
 	for line in posmatrix: # lines of positions that need to be assessed together
-		allpos,allmots,allseqs,allend = [],[],[],[]
+		allpos,allmots,allseqs = [],[],[]
 		for item in line:
 			mots = motdict[item].split('/') # get all motifs on this position
 			seqs = seqdict[item].split('/') # get all sequences on this position
@@ -134,12 +149,8 @@ def resolvematrix(posmatrix,seqdict,motdict):
 				allpos.append(item)
 				allmots.append(mots[n])
 				allseqs.append(seqs[n])
-		allscores = resolvemotifs(allseqs,allmots)
-		for n in range(len(allpos)):
-			end = int(allpos[n])+int(motiflength[allmots[n]])+7
-			allend.append(end)
-		if len(allpos) > 1:
-			print allpos,allmots,allseqs,allscores,allend
+		allscores = resolvemotifs(allpos,allseqs,allmots,prevend,nextst)
+		
 	return finalpos,finaldict
 
 
