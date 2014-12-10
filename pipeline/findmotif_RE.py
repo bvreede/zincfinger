@@ -96,7 +96,7 @@ translate a set of possible zf hits at a range of positions to a single
 list of positions + the correct motif at that position.
 Yeah, I know. Not possible.
 '''
-def resolvemotifs(positions,sequences,motifs,prevend,nextst):
+def resolvemotifs(positions,sequences,motifs):#,prevend,nextst):
 	#score the motifs on how good they are: L on H-2, other hydrophobic on L-5, R in final H-H loop
 	scores = []
 	for n in range(len(sequences)):
@@ -124,6 +124,7 @@ def resolvemotifs(positions,sequences,motifs,prevend,nextst):
 		#check the location respective to previous and next domain
 		st_motif = int(positions[n])
 		end_motif = st_motif + int(motiflength[motifs[n]]) + 7
+		'''
 		if st_motif < prevend:
 			score -= 1
 		elif st_motif == prevend:
@@ -132,6 +133,7 @@ def resolvemotifs(positions,sequences,motifs,prevend,nextst):
 			score -= 1
 		elif end_motif == nextst:
 			score += 2
+		'''
 		scores.append(score)
 	return scores
 		
@@ -139,18 +141,24 @@ def resolvemotifs(positions,sequences,motifs,prevend,nextst):
 def resolvematrix(posmatrix,seqdict,motdict):
 	finalpos = []
 	finaldict = {}
-	prevend = 0
+	prevend = [0]
 	for line in posmatrix: # lines of positions that need to be assessed together
 		allpos,allmots,allseqs = [],[],[]
 		for item in line:
 			mots = motdict[item].split('/') # get all motifs on this position
 			seqs = seqdict[item].split('/') # get all sequences on this position
-			for n in range(len(mots)):
+			for n,mot in enumerate(mots):
 				allpos.append(item)
-				allmots.append(mots[n])
+				allmots.append(mot)
 				allseqs.append(seqs[n])
-		allscores = resolvemotifs(allpos,allseqs,allmots,prevend,nextst)
-		
+				#print "motiflength:", motiflength[mots[n]]
+				#print item
+				prevend.append(motiflength[mots[n]]+7+int(item))
+		allscores = resolvemotifs(allpos,allseqs,allmots)#,prevend,nextst)
+		for n in allscores:
+			if n == max(allscores):
+				
+		allscores.index(max(allscores))
 	return finalpos,finaldict
 
 
@@ -227,8 +235,7 @@ for sp in species:
 		posdone = [] # to add positions that have already been assessed
 		posmatrix = [] # to collect all sequences that should be assessed together
 		pos4matrix = [] # to collect the lines of the matrix
-		for n in range(len(poslist)):
-			pos = poslist[n]
+		for pos in poslist:
 			if pos in posdone:
 				continue
 	
@@ -241,11 +248,6 @@ for sp in species:
 			posmatrix.append(pos4matrix)
 			pos4matrix = []
 	
-
-		# now I have a posmatrix of all positions for this gene that need to be assessed together
-		# to generate A SINGLE OUTPUT of position - key.
-		# how to fucking do this?
-		
 		finalpos,finaldict = resolvematrix(posmatrix,seqdict,motdict)
 
 
