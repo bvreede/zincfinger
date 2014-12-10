@@ -10,8 +10,6 @@ Date: 10 October 2014
 '''
 import re
 
-customout = open("/home/barbara/Dropbox/shared_work/zinc_finger_data/playground/2_8_3.txt", "w")
-
 ### SPECIFY INFORMATION: DATA TO USE###
 ### input consists of: dbfolder/seqfolder/prefix-species_suffix
 ### output consists of: dbfolder/resfolder/
@@ -159,17 +157,11 @@ def translation(starts,motifs,lengths):
 			if start - (starts[n-1] + lengths[n-1] + 7) > 0:
 				transl += '_'
 		if motifs[n] not in translationdict:
-			translationdict[motifs[n]] = alphabet[alphacount]
 			global alphacount
+			translationdict[motifs[n]] = alphabet[alphacount]
 			alphacount += 1
 		transl += translationdict[motifs[n]]
 	return transl
-
-
-'''
-write outputfiles.
-'''
-
 
 
 '''
@@ -242,20 +234,10 @@ for sp in species:
 			pos4matrix = []
 		starts,motifs,lengths = resolvematrix(posmatrix,seqdict,motdict)
 		transl = translation(starts,motifs,lengths)
-		clusterout.write(">%s\n%s\n\n" %(key,transl))
+		outfasta.write(">%s\n%s\n\n" %(key,transl))
 			#writeimage(key,starts,lengths)
-			# write cluster fasta file. Info needed:
-				# key
-				# per motif: 	- translation
-				#		- end of previous + linker
-				#		- start site
 			# write image interpretation file. Info needed:
 				# key
-				# per motif:	- start site
+				# per motif:	- start site (add plink to this!
 				#		- length
-
-		# now what to do with this info? Key + this info should be saved somewhere... or the translation made immediately. (that is of course an option, if we assign new values from the alphabet to every new domain, and use the ones already assigned if they are not new)
-
-
-
-
+	outfasta.close()
