@@ -96,7 +96,50 @@ translate a set of possible zf hits at a range of positions to a single
 list of positions + the correct motif at that position.
 Yeah, I know. Not possible.
 '''
-def resolve(posmatrix,seqdict,motdict):
+def resolvemotifs(sequences,motifs):
+	#score the motifs on how good they are: L on H-2, other hydrophobic on L-5, R in final H-H loop
+	scores = []
+	for n in range(len(sequences)):
+		score = 0
+		CC,CH,HH = motifs[n].split('_')
+		Lpos = plink+int(CC)+int(CH)-1
+		if sequences[n][Lpos] == 'L':
+			score += 2
+		elif sequences[n][Lpos] in HFresidues:
+			score += 1
+		Fpos = Lpos-6
+		if sequences[n][Fpos] == 'F':
+			score += 2
+		elif sequences[n][Fpos] in HFresidues:
+			score += 1
+		Hs = plink+int(CC)+int(CH)+4
+		He = plink+int(CC)+int(CH)+int(HH)+2
+		H2H = sequences[n][Hs:He]
+		for r in H2H:
+			if r == 'R':
+				score += 1
+		scores.append(score)
+	return scores
+		
+
+def resolvematrix(posmatrix,seqdict,motdict):
+	finalpos = []
+	finaldict = {}
+	for line in posmatrix: # lines of positions that need to be assessed together
+		allpos,allmots,allseqs,allend = [],[],[],[]
+		for item in line:
+			mots = motdict[item].split('/') # get all motifs on this position
+			seqs = seqdict[item].split('/') # get all sequences on this position
+			for n in range(len(mots)):
+				allpos.append(item)
+				allmots.append(mots[n])
+				allseqs.append(seqs[n])
+		allscores = resolvemotifs(allseqs,allmots)
+		for n in range(len(allpos)):
+			end = int(allpos[n])+int(motiflength[allmots[n]])+7
+			allend.append(end)
+		if len(allpos) > 1:
+			print allpos,allmots,allseqs,allscores,allend
 	return finalpos,finaldict
 
 
@@ -121,6 +164,7 @@ for sp in species:
 
 	# go through the sequences
 	for key in fastadict:
+		print key
 		# get info for the first columns (ID and sequence length)
 		ids = key.split('|')
 		seqlen = len(fastadict[key]) #length of the sequence
@@ -138,6 +182,12 @@ for sp in species:
 			CC,CH,HH = m.split('_')
 			for i in domain.finditer(fastadict[key]):
 				mseq = i.group() # the sequence picked up by the RE
+				
+				LL = mseq[plink+int(CC)+int(CH)-1]
+				FF = mseq[plink+int(CC)+int(CH)-1-6]
+				#if LL not in HFresidues or FF not in HFresidues:
+				#	print LL, FF
+				#print mseq[plink+int(CC)+int(CH)+2:plink+int(CC)+int(CH)+int(HH)+4]
 				strt = i.start()
 				positions += str(strt)
 				positions += '|'
@@ -175,39 +225,26 @@ for sp in species:
 			for p in range(1,6):
 				pp = p + pos
 				if pp in poslist:
-					print p
 					pos4matrix.append(pp)
 					posdone.append(pp)
 			posmatrix.append(pos4matrix)
 			pos4matrix = []
 	
-			# get all motifs on position pos
-			mots = motdict[pos].split('/')
-			ml = []
-			for mt in mots:
-				ml.append(motiflength[mt])
+
 		# now I have a posmatrix of all positions for this gene that need to be assessed together
 		# to generate A SINGLE OUTPUT of position - key.
 		# how to fucking do this?
 		
-		finalpos,finaldict = resolve(posmatrix,seqdict,motdict)
+		finalpos,finaldict = resolvematrix(posmatrix,seqdict,motdict)
 
 
 
 
 """
 
-					# if the distance is less than 6: definitely check for overlap with this domain
-					# if the distance is *more* than 23: overlap with the next (there probably is such a thing)
-					# but if it's in between... what to do?
-			
-
-			# get all sequences at position n, and the ones that start within 7 + [max domain length] of n
-			# perhaps an idea to check the next n in poslist, and see if it starts within; if yes then take it and check the next one, if no, then stop and work with these sequences.
 			# determine here whether there is a chain or not. Perhaps have a parameter that says whether the motif is part of a chain, and if so: is it the first, one of the middle, or last? if it's the first/last: put a 'space' sign in the translation!
 
 			# for those that conflict: determine the right one or if there is a possible ambiguous zf:
-			# make a new function for this!
 			# does it have the two hydrophobic residues in between C and H?
 			# if it is in a chain, are there 7 residues between the last H and the next C? [linker sequence]
 			# if these qualities have been met, and there is still a conflict: then label the zf with the appropriate combo term. If there is a triple or more, report it for manual curation (perhaps make a file with exceptions so that once manually curated zfs have been identified and assessed, they won't need to be done again?)
