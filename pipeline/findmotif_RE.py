@@ -113,37 +113,48 @@ def resolvemotifs(positions,sequences,motifs,prevend,nextst): # called PER (CONF
 	return scores
 		
 
-def resolvematrix(posmatrix,seqdict,motdict): #called PER GENE
-	allstarts,allmotifs,alllength = [],[],[]
+def resolvematrix(posmatrix,seqdict,motdict,outputdb): #called PER GENE
+
+	# a quick explanation of which-is-which in the million sets of motifs, sequences, start sites, etc in this function:
+	# pos/mot/seq1: collecting for ALL positions/motifs/sequences in a set of conflicting motifs (per gene, per conflict). List of strings/integers.
+	# pos/mot: collector for THE BEST positions/motifs of a set of conflicting motifs (per gene, per conflict). List of strings/integers.
+	# mot/seq3: collector for all motifs/sequences on a single position (per gene, per conflict, PER SITE). List of strings/integers.
+	# pos/mot/len4: collector for all start sites/motifs/(max)lengths of the gene (per gene, and only ONE per conflict). List of strings/integers AND SETS.
+	# pos/mot5: collector for all start sites/motifs of the gene, with (possibly multiple) highest scoring in a conflict. List of strings/integers.
+
+	pos4,mot4,len4,pos5,mot5 = [],[],[],[],[]
 	prevend = [0]
 	for k,line in enumerate(posmatrix): # lines of positions that need to be assessed together
-		allpos,allmots,allseqs = [],[],[]
-		finalpos,finalmot,finalseq = [],[],[]
+		pos1,mot1,seq1 = [],[],[]
+		pos2,mot2 = [],[] #the final lists with positions,motifs,sequences for this conflict
 		for item in line:
-			mots = motdict[item].split('/') # get all motifs on this position
-			seqs = seqdict[item].split('/') # get all sequences on this position
-			for n,mot in enumerate(mots):
-				allpos.append(item)
-				allmots.append(mot)
-				allseqs.append(seqs[n])
+			mot3 = motdict[item].split('/') # get all motifs on this position
+			seq3 = seqdict[item].split('/') # get all sequences on this position
+			for n,mot in enumerate(mot3):
+				pos1.append(item)
+				mot1.append(mot)
+				seq1.append(seq3[n])
 		try:
-			allscores = resolvemotifs(allpos,allseqs,allmots,prevend,posmatrix[k+1])
+			scores = resolvemotifs(pos1,seq1,mot1,prevend,posmatrix[k+1])
 		except IndexError:
-			allscores = resolvemotifs(allpos,allseqs,allmots,prevend,[0])
+			scores = resolvemotifs(pos1,seq1,mot1,prevend,[0])
 		# prevend: the previous end. Get the indices of the HIGHEST scoring motifs, and stuff the END SITE in a list
-		prevend = []
-		for i,score in enumerate(allscores):
-			if score == max(allscores): # this/ese is/are our top hit(s) from the current round!
-				prevend.append(allpos[i] + motiflength[allmots[i]] + 7)
+		prevend = [] #empty prevend so it can be re-filled
+		for i,score in enumerate(scores):
+			if score == max(scores): # this/ese is/are our top hit(s) from the current round!
+				prevend.append(pos1[i] + motiflength[mot1[i]] + 7)
 				# pick the best scoring motif
-				finalpos.append(allpos[i])
-				finalmot.append(allmots[i])
-				finalseq.append(allseqs[i])
-		allstarts.append(min(allpos))
-		alllength.append(max(allpos) + max([motiflength[i] for i in finalmot])-min(allpos)) #max length of the motif WITHOUT LINKER SEQ
-		allmotifs.append(frozenset(finalmot))
-		domains.add(frozenset(finalmot))
-	return allstarts,allmotifs,alllength
+				pos2.append(pos1[i])
+				mot2.append(mot1[i])
+		pos4.append(min(pos2))
+		len4.append(max(pos2) + max([motiflength[i] for i in mot2])-min(pos2)) #max length of the motif WITHOUT LINKER SEQ
+		mot4.append(frozenset(mot2))
+		domains.add(frozenset(mot2))
+		for n,pos in enumerate(pos2):
+			pos5.append(pos)
+			mot5.append(mot2[n])
+	#write to outputdb: per motif, end in \n
+	return pos4,mot4,len4,pos5,mot5
 
 '''
 translate a set of motifs + corresponding start sites and lengths
@@ -232,7 +243,7 @@ for sp in species:
 					posdone.append(pp)
 			posmatrix.append(pos4matrix)
 			pos4matrix = []
-		starts,motifs,lengths = resolvematrix(posmatrix,seqdict,motdict)
+		starts,motifs,lengths = resolvematrix(posmatrix,seqdict,motdict,outputdb)
 		transl = translation(starts,motifs,lengths)
 		outfasta.write(">%s\n%s\n\n" %(key,transl))
 			#writeimage(key,starts,lengths)
