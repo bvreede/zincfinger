@@ -10,7 +10,6 @@ Date: 10 October 2014
 '''
 import re
 
-doublescount = 0
 customout = open("/home/barbara/Dropbox/shared_work/zinc_finger_data/playground/2_8_3.txt", "w")
 
 ### SPECIFY INFORMATION: DATA TO USE###
@@ -24,18 +23,13 @@ suffix = "seq.fasta"
 species = ["dmel","tcas","dpul","isca","smar"]
 motiflist = ['2_8_3','2_8_4','2_8_5','4_8_3','4_8_4','4_8_5','2_12_3','2_12_4','2_12_5','4_12_3','4_12_4','4_12_5','2_15_3','2_15_4','2_15_5','4_15_3','4_15_4','4_15_5'] # use only numbers, indicating the distances between C-C-H-H (separated by _)
 
-HFresidues = ['V','I','L','M','F','W','C','A','Y','H','T','S','P','G','R','K'] #hydrophobic residues. Not used in the script, as there does not seem to be a reliable way to check for false positives with this information. 
+HFresidues = ['V','I','L','M','F','W','C','A','Y','H','T','S','P','G','R','K'] #hydrophobic residues.
 
 
 
-'''
-Motif to cluster-able sequence: make a dictionary to translate
-the zf-domains to a single letter
-'''
-alphabet = "ABCDEFGHIJKLMNPQRSTUVWXYZ"
-domaindict = {}
-for i,mot in enumerate(motiflist):
-		domaindict[mot] = alphabet[i]
+
+#double domains
+domains = set()
 
 '''
 Define regular expressions for all zf-domains (by the C-H distances), and save in a
@@ -137,7 +131,10 @@ def resolvemotifs(positions,sequences,motifs,prevend,nextst):
 	return scores
 		
 
-def resolvematrix(posmatrix,seqdict,motdict):
+def resolvematrix(posmatrix,seqdict,motdict): #called PER GENE
+	allstarts = []
+	allmotifs = []
+	alllength = []
 	prevend = [0]
 	for k,line in enumerate(posmatrix): # lines of positions that need to be assessed together
 		allpos,allmots,allseqs = [],[],[]
@@ -162,7 +159,11 @@ def resolvematrix(posmatrix,seqdict,motdict):
 				finalpos.append(allpos[i])
 				finalmot.append(allmots[i])
 				finalseq.append(allseqs[i])
-	return finalpos,finalmot,finalseq
+		allstarts.append(min(allpos))
+		alllength.append(max(allpos) + max([motiflength[i] for i in finalmot])) #max length of the motif WITHOUT LINKER SEQ
+		allmotifs.append(frozenset(finalmot))
+		domains.add(frozenset(finalmot))
+	return allstarts,allmotifs,alllength
 
 
 '''
@@ -249,11 +250,20 @@ for sp in species:
 					posdone.append(pp)
 			posmatrix.append(pos4matrix)
 			pos4matrix = []
-	
-		finalpos,finaldict = resolvematrix(posmatrix,seqdict,motdict)
+		resolvematrix(posmatrix,seqdict,motdict)
 
-print doublescount
+print domains,len(domains)
 
+'''
+Motif to cluster-able sequence: make a dictionary to translate
+the zf-domains to a single letter
+'''
+alphabet = "ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+domaindict = {}
+for i,mot in enumerate(domains):
+		domaindict[mot] = alphabet[i]
+
+print domaindict
 
 """
 
