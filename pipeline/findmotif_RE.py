@@ -25,18 +25,14 @@ motiflist = ['2_8_3','2_8_4','2_8_5','4_8_3','4_8_4','4_8_5','2_12_3','2_12_4','
 
 HFresidues = ['V','I','L','M','F','W','C','A','Y','H','T','S','P','G','R','K'] #hydrophobic residues.
 
-
-
-
-#double domains
-domains = set()
+domains = set() #collect all different domains and combinations of domains that are *actually* found & used.
 
 '''
 Define regular expressions for all zf-domains (by the C-H distances), and save in a
 dictionary. Each domain is only represented as a forward domain.
 '''
-motifdict = {}
-motiflength = {}
+motifdict = {} # dictionary of motifs and their regular expression
+motiflength = {} # dictionary of motifs and their lengths
 plink = 7
 alink = 7
 for m in motiflist:
@@ -47,6 +43,14 @@ for m in motiflist:
 	d = [int(x) for x in cc,ch,hh]
 	dl = sum(d) + 4
 	motiflength[m] = dl
+
+'''
+Motif to cluster-able sequence: make a dictionary to translate
+the zf-domains to a single letter
+'''
+alphabet = "ABCDEFGHIJKLMNPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz!@^&*()-=+{}:;|<>?/,."
+translationdict = {} # dictionary of motifs and the corresponding string element
+alphacount = 0
 
 '''
 From an open fasta file, generate a dictionary containing the header as key, and the
@@ -67,31 +71,11 @@ def fastadicter(fastadb):
 	fastadict[header] = sequence
 	return fastadict
 
-
-
-'''
-INFO FOR THE FASTA README! Collects all motifs and combinations of ~
-to give a 'legend' to the information
-'''
-def makereadme(motiflist):
-	domaindict = {"space (undefined length)": 'O'}
-	domains = "ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijklmnpqrstuvwxyz"
-	motiflist = list(set(motiflist))
-	for i,mot in enumerate(motiflist):
-		domaindict[mot] = domains[i]
-	readmetxt = "The attached fasta file contains the sequence of different C2H2 zinc finger \
-	domains in the provided source file. They are encoded as follows:\n"
-	for k in domaindict:
-		rm = "%s = %s\n" %(domaindict[k],k)
-		readmetxt += rm
-	return readmetxt,domaindict
-
 '''
 translate a set of possible zf hits at a range of positions to a single
-list of positions + the correct motif at that position.
-Yeah, I know. Not possible.
+list of positions + the correct motif at that position (or the best possible double).
 '''
-def resolvemotifs(positions,sequences,motifs,prevend,nextst):
+def resolvemotifs(positions,sequences,motifs,prevend,nextst): # called PER (CONFLICTING SET OF) MOTIFS
 	#score the motifs on how good they are: L on H-2, other hydrophobic on L-5, R in final H-H loop
 	scores = []
 	for n,seq in enumerate(sequences):
@@ -132,9 +116,7 @@ def resolvemotifs(positions,sequences,motifs,prevend,nextst):
 		
 
 def resolvematrix(posmatrix,seqdict,motdict): #called PER GENE
-	allstarts = []
-	allmotifs = []
-	alllength = []
+	allstarts,allmotifs,alllength = [],[],[]
 	prevend = [0]
 	for k,line in enumerate(posmatrix): # lines of positions that need to be assessed together
 		allpos,allmots,allseqs = [],[],[]
@@ -160,10 +142,34 @@ def resolvematrix(posmatrix,seqdict,motdict): #called PER GENE
 				finalmot.append(allmots[i])
 				finalseq.append(allseqs[i])
 		allstarts.append(min(allpos))
-		alllength.append(max(allpos) + max([motiflength[i] for i in finalmot])) #max length of the motif WITHOUT LINKER SEQ
+		alllength.append(max(allpos) + max([motiflength[i] for i in finalmot])-min(allpos)) #max length of the motif WITHOUT LINKER SEQ
 		allmotifs.append(frozenset(finalmot))
 		domains.add(frozenset(finalmot))
 	return allstarts,allmotifs,alllength
+
+'''
+translate a set of motifs + corresponding start sites and lengths
+to a single string that contains both translations for the domains
+(or domain combinations) used, and for the spaces in between.
+'''
+def translation(starts,motifs,lengths):
+	transl = ''
+	for n,start in enumerate(starts):
+		if n != 0:
+			if start - (starts[n-1] + lengths[n-1] + 7) > 0:
+				transl += '_'
+		if motifs[n] not in translationdict:
+			translationdict[motifs[n]] = alphabet[alphacount]
+			global alphacount
+			alphacount += 1
+		transl += translationdict[motifs[n]]
+	return transl
+
+
+'''
+write outputfiles.
+'''
+
 
 
 '''
@@ -204,44 +210,28 @@ for sp in species:
 			CC,CH,HH = m.split('_')
 			for i in domain.finditer(fastadict[key]):
 				mseq = i.group() # the sequence picked up by the RE
-				
-				LL = mseq[plink+int(CC)+int(CH)-1]
-				FF = mseq[plink+int(CC)+int(CH)-1-6]
-				#if LL not in HFresidues or FF not in HFresidues:
-				#	print LL, FF
-				#print mseq[plink+int(CC)+int(CH)+2:plink+int(CC)+int(CH)+int(HH)+4]
 				strt = i.start()
 				positions += str(strt)
 				positions += '|'
 				if strt in seqdict:
 					ns = seqdict[strt] + "/" + mseq
 					nm = motdict[strt] + "/" + m
-					#motiflist.append(nm) # possibly superfluous if no longer working with double motifs for cluster
 					seqdict[strt] = ns
 					motdict[strt] = nm
 				else:
 					seqdict[strt] = mseq
 					motdict[strt] = m
 					poslist.append(strt)
-			# consider moving the following 3 lines because they need to be after the motif screen
-			#outputdb.write('%s,' %(positions[:-1])) #remove final pipe from total positions
-		#outputdb.write("\n")
-		#outfasta.write(">%s\n" %key) #start collecting the info for the fasta file
 
-		# after screen, filter the domains that are conflicting.
+		# screen to filter the domains that are conflicting.
 		poslist = list(set(poslist))
 		poslist.sort() #sorts all starting positions to make sure they are in order
-
-		#cl = 0 
-		#readmetxt,domaindict = makereadme(motiflist)
-
 		posdone = [] # to add positions that have already been assessed
 		posmatrix = [] # to collect all sequences that should be assessed together
 		pos4matrix = [] # to collect the lines of the matrix
 		for pos in poslist:
 			if pos in posdone:
 				continue
-	
 			pos4matrix.append(pos)
 			for p in range(1,6):
 				pp = p + pos
@@ -251,14 +241,21 @@ for sp in species:
 			posmatrix.append(pos4matrix)
 			pos4matrix = []
 		starts,motifs,lengths = resolvematrix(posmatrix,seqdict,motdict)
+		transl = translation(starts,motifs,lengths)
+		clusterout.write(">%s\n%s\n\n" %(key,transl))
+			#writeimage(key,starts,lengths)
+			# write cluster fasta file. Info needed:
+				# key
+				# per motif: 	- translation
+				#		- end of previous + linker
+				#		- start site
+			# write image interpretation file. Info needed:
+				# key
+				# per motif:	- start site
+				#		- length
 
-'''
-Motif to cluster-able sequence: make a dictionary to translate
-the zf-domains to a single letter
-'''
-alphabet = "ABCDEFGHIJKLMNPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz!@^&*()-=+{}:;|<>?/,."
-domaindict = {}
-for i,mot in enumerate(domains):
-		domaindict[mot] = alphabet[i]
+		# now what to do with this info? Key + this info should be saved somewhere... or the translation made immediately. (that is of course an option, if we assign new values from the alphabet to every new domain, and use the ones already assigned if they are not new)
+
+
 
 
