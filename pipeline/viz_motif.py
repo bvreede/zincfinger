@@ -14,6 +14,7 @@ Contact: b.vreede@gmail.com
 Date: 11 December 2014
 '''
 
+import random,csv
 
 ### DEFINE PARAMETERS AND INPUT FILES ###
 # infile: dbfolder/nameinfile_files.csv
@@ -23,12 +24,71 @@ nameinfile = "motifhits"
 nameoutfile = "motifviz"
 files = ['dmel','tcas','smar','dpul','isca']
 
+### COLOURS AND LENGTS OF MOTIFS ###
+motlen = {}
+motclr = {}
+# define all possible colours (combinations of 'indvhex', except for greyscale)
+clralphabet = []
+indvhex = ['0','4','8','c','f']
+for p in range(len(indvhex)):
+	for q in range(len(indvhex)):
+		for r in range(len(indvhex)):
+			clr = '#' + indvhex[p] + indvhex[q] + indvhex[r]
+			if p == q == r: # we don't like no greyscale
+				continue
+			else:
+				clralphabet.append(clr)
+			
+
+'''
+determine the order at which the columns should be read. Also
+fills up information on the colour and length dictionaries.
+'''
+def order(columns):
+	length,callseq = [],[]
+	for c in columns:
+		if c not in motlen:		# first, some household stuff: this is a new motif, so assign length + colour
+			CC,CH,HH = c.split('_')
+			clen = int(CC)+int(CH)+int(HH)+4		# calculate the length for this motif
+			motlen[c] = clen				# put the length for the motif in the dictionary
+			ri = random.randint(0,len(clralphabet)-1)	# pick random colour from clralphabet
+			motclr[c] = clralphabet[ri]			# assign it to that motif in the dictionary
+			clralphabet.pop(ri)				# remove the colour from the alphabet
+		length.append(motlen[c])
+	for l in length:			# define the order in which columns need to be assessed, by long to short motifs
+		i = length.index(max(length))		# get the index of the max value in length
+		callseq.append(i)
+		length[i] = 0				# change the value in length to 0
+	return callseq
 
 for f in files:
-	print "%s/%s_%s.csv" %(dbfolder,nameinfile,f)
-	db = open("%s/%s_%s.csv" %(dbfolder,nameinfile,f))
-	db.close()
+	db = csv.reader(open("%s/%s_%s.csv" %(dbfolder,nameinfile,f)))
+	for i,line in enumerate(db):
+		if i == 0:
+			# the following is because of the possibly empty last element of header:
+			if line[-1] == '':
+				columns = line[4:-1]
+			else:
+				columns = line[4:]
+			callseq = order(columns)
 
+
+
+'''
+actheader = ['Gene_stable_ID', 'Gene_name', 'Protein_stable_ID', 'Pfam_ID', 'SMART_ID', 'GO_domain', 'GO_term_accession', 'GO_term_name']
+headseq = []
+headline = ""
+for name in actheader:
+	try:
+		i = curheader.index(name) #finds the ACTUAL header element in the CURRENT header and returns the index
+	except ValueError:
+		print "%s column not found in database. Continuing anyway..." %name
+		i = 'N'
+	headseq.append(i)
+	headline += name + ',' # write the actual header for the final database
+o.write("%s\n" %headline[:-1]) # and write it to file
+
+'''
 
 
 # determine the order in which to draw: large domains first
