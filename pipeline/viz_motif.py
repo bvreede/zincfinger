@@ -24,21 +24,54 @@ nameinfile = "motifhits"
 nameoutfile = "motifviz"
 files = ['dmel','tcas','smar','dpul','isca']
 
+image_width = 4000
+image_height = 20000
+label_align = 200 #x axis of label
+linedist = 40 #distance between different lines
+
 ### COLOURS AND LENGTS OF MOTIFS ###
 motlen = {}
 motclr = {}
+motcount = {}
 # define all possible colours (combinations of 'indvhex', except for greyscale)
 clralphabet = []
-indvhex = ['0','4','8','c','f']
+indvhex = ['0','8','f']#['0','4','8','c','f']
 for p in range(len(indvhex)):
 	for q in range(len(indvhex)):
 		for r in range(len(indvhex)):
 			clr = '#' + indvhex[p] + indvhex[q] + indvhex[r]
-			if p == q == r: # we don't like no greyscale
+			if [p,q,r].count(len(indvhex)-1) > 1: # we don't like no pastels
 				continue
 			else:
 				clralphabet.append(clr)
-			
+
+
+### DEFINE VISUALIZATION OF MOTIFS ###
+def draw_arrow(m,X,Y,out):
+	block = '<rect style="fill:%s;fill-opacity:1;stroke:none" width="%s" height="16" x="%s" y="%s" />' %(motclr[m],motlen[m],X,Y)
+	arrowhead = '7,-8 -7,-8'
+	Xa = X + motlen[m]
+	arrow = '<path style="fill:%s;fill-opacity:1;stroke:none" d="m %s,%s 0,16 %s z" />' %(motclr[m],Xa,Y,arrowhead)
+	motcount[m] += 1
+	out.write("%s\n%s\n" %(block,arrow))
+
+def draw_gene(name,seqlen,Y,out):
+	Yn = Y+14
+	Yg = Y+8
+	labelX = label_align - 10
+	label = '<text><tspan x="%s" y="%s" style="font-size:14px;fill:#000;fill-opacity:1;font-family:Helvetica;-inkscape-font-specification:Sans;text-align:end;text-anchor:end">%s</tspan></text>' %(labelX,Yn,name)
+	gene = '<path style = "fill:none;stroke:#000;stroke-width:2;stroke-linecap:butt;stroke-opacity:1" d="m %s,%s %s,0" />' %(label_align,Yg,seqlen)
+	out.write("%s\n%s\n" %(gene,label))	
+
+def draw_legend(m,i,out):
+	Y = 20
+	Ylabel = Y + 30
+	X = i*70+label_align
+	Xlabel = X - 5
+	draw_arrow(m,X,Y,out)
+	label = '<text><tspan x="%s" y="%s" style="font-size:12px;fill:#000;fill-opacity:1;font-family:Helvetica;-inkscape-font-specification:Sans">%s</tspan></text>' %(Xlabel,Ylabel,m)
+	out.write("%s\n" %(label))
+
 
 '''
 determine the order at which the columns should be read. Also
@@ -54,6 +87,7 @@ def order(columns):
 			ri = random.randint(0,len(clralphabet)-1)	# pick random colour from clralphabet
 			motclr[c] = clralphabet[ri]			# assign it to that motif in the dictionary
 			clralphabet.pop(ri)				# remove the colour from the alphabet
+			motcount[c] = -1
 		length.append(motlen[c])
 	for l in length:			# define the order in which columns need to be assessed, by long to short motifs
 		i = length.index(max(length))		# get the index of the max value in length
@@ -61,99 +95,58 @@ def order(columns):
 		length[i] = 0				# change the value in length to 0
 	return callseq
 
+
+'''
+Go through the files and make a visualization for each.
+'''
 for f in files:
 	db = csv.reader(open("%s/%s_%s.csv" %(dbfolder,nameinfile,f)))
+	out = open("%s/%s_%s.svg" %(dbfolder,nameoutfile,f), "w")
+	out.write('<svg width="%s" height="%s" id="svg2" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink">\n' %(image_width,image_height))
+	linecount = 2
+	maxlen = [] # to calculate the max width for the image
+	start = 4 # the index of the first motif info
 	for i,line in enumerate(db):
-		if i == 0:
+		if i == 0: # this is the header
 			# the following is because of the possibly empty last element of header:
 			if line[-1] == '':
-				columns = line[4:-1]
+				columns = line[start:-1]
 			else:
-				columns = line[4:]
+				columns = line[start:]
 			callseq = order(columns)
+			for p,motif in enumerate(columns):
+				draw_legend(motif,p,out)
+		else:
+			linecount+=1
+			name = line[0] + '|' + line[1] + '|' + line[2]
+			seqlen = line[3]
+			mdata = line[start:]
+			# draw the gene
+			Y = linecount * linedist
+			draw_gene(name,seqlen,Y,out)
+			# draw motifs based on the order in callseq
+			for cs in callseq:
+				motifname = columns[cs]
+				if len(mdata[cs]) == 0:
+					continue
+				hits = mdata[cs].split('|')
+				for h in hits:
+					X = int(h) + label_align # the border where gene starts
+					draw_arrow(motifname,X,Y,out)
+	out.write('</svg>')
+	out.close()
 
-
-
-'''
-actheader = ['Gene_stable_ID', 'Gene_name', 'Protein_stable_ID', 'Pfam_ID', 'SMART_ID', 'GO_domain', 'GO_term_accession', 'GO_term_name']
-headseq = []
-headline = ""
-for name in actheader:
-	try:
-		i = curheader.index(name) #finds the ACTUAL header element in the CURRENT header and returns the index
-	except ValueError:
-		print "%s column not found in database. Continuing anyway..." %name
-		i = 'N'
-	headseq.append(i)
-	headline += name + ',' # write the actual header for the final database
-o.write("%s\n" %headline[:-1]) # and write it to file
-
-'''
-
-
-# determine the order in which to draw: large domains first
-# so read first line, get indices from the largest one up to smaller ones
-
+print motcount
 
 """
 
 
-for i in range (1,38):
-	f = 'dmel-G-cluster' + str(i)
-	files.append(f)
-#files = ['dmel1','tcas','smar','dpul','isca']
-image_width = 4000
-image_height = 20000
-label_align = 200 #x axis of label
-linedist = 40 #distance between different lines
-motifs_for_legend = ['2_8_3','2_12_3','2_12_4','2_12_5','4_12_3','4_12_4','4_15_3']
-
-
-
-### DEFINE VISUALIZATION OF MOTIFS ###
-colordict = {'2_8_3': '#c55', '2_12_3': '#5c5', '2_12_4': '#55c', '2_12_5': '#cc5','4_12_3': '#c5c','4_12_4': '#5cc','4_15_3': '#a60'}
-
-def draw_arrow(motif,L,drx,X,Y):
-	block = '<rect style="fill:%s;fill-opacity:1;stroke:none" width="%s" height="16" x="%s" y="%s" />' %(colordict[motif],L,X,Y)
-	if drx == 'fwd':
-		arrowhead = '8,-8 -8,-8'
-		Xa = X+L
-	elif drx == 'rev':
-		arrowhead = '-8,-8 8,-8'
-		Xa = X
-	arrow = '<path style="fill:%s;fill-opacity:1;stroke:none" d="m %s,%s 0,16 %s z" />' %(colordict[motif],Xa,Y,arrowhead)
-	return block,arrow
-
-def draw_gene(name,seqlen,Y):
-	Yn = Y+14
-	Yg = Y+8
-	labelX = label_align - 10
-	label = '<text><tspan x="%s" y="%s" style="font-size:14px;fill:#000;fill-opacity:1;font-family:Helvetica;-inkscape-font-specification:Sans;text-align:end;text-anchor:end">%s</tspan></text>' %(labelX,Yn,name)
-	gene = '<path style = "fill:none;stroke:#000;stroke-width:2;stroke-linecap:butt;stroke-opacity:1" d="m %s,%s %s,0" />' %(label_align,Yg,seqlen)
-	return gene,label
 
 
 ### PREPARING DRAW, CALCULATE PARAMETERS. DRAW MOTIF ###
-def draw(motif,p,Y,outputimg):
-	Lm = motif.split('_')
-	L = int(Lm[0])+int(Lm[1])+int(Lm[2])+4 #size of the motif: four residues plus nucleotides between
-	X = label_align + p
-	drx = 'fwd' #default direction
-	if motif[-4:] == "_inv":
-		motif = motif[:-4]
-		drx = 'rev'
-	block,arrow = draw_arrow(motif,L,drx,X,Y)
-	outputimg.write("%s\n%s\n" %(block,arrow))
+
 
 ### MAKING THE LEGEND ###
-def draw_legend(leg_mot,i,outputimg):
-	Y = 20
-	Ylabel = Y + 30
-	X = i*70+label_align
-	Xlabel = X - 5
-	block,arrow = draw_arrow(leg_mot,20,'fwd',X,Y)
-	label = '<text><tspan x="%s" y="%s" style="font-size:12px;fill:#000;fill-opacity:1;font-family:Helvetica;-inkscape-font-specification:Sans">%s</tspan></text>' %(Xlabel,Ylabel,leg_mot)
-	outputimg.write("%s\n%s\n%s\n" %(block,arrow,label))
 
 ### GO THROUGH ALL POSSIBLE CATEGORIES (SEE LIST) ###
 for s in files:
@@ -185,7 +178,7 @@ for s in files:
 					for p in positions:
 						p = int(p)
 						draw(motiflist[k],p,Y,outputimg)
-	outputimg.write('</svg>')
+	
 	if linecount * linedist > image_height:
 		print "Your image is incomplete: sequences for " + s + " extend to height = " + str(linecount * linedist)
 	if max(maxlen) + label_align > image_width:
