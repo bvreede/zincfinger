@@ -2,8 +2,8 @@
 This script can be used to detect distinct C2H2 zinc finger motifs
 in a protein sequence.
 The output is:
-(1) a fasta file with domains in order (+ a readme);
-(2) a csv file with all info that can be used for visualization;
+(1) a fasta file with domains in order;
+(2) a csv file with all info that can be used for visualization.
 Author: Barbara Vreede
 Contact: b.vreede@gmail.com
 Date: 10 October 2014
@@ -20,10 +20,8 @@ prefix = "140720-SM00355"
 suffix = "seq.fasta"
 species = ["dmel","tcas","dpul","isca","smar"]
 motiflist = ['2_8_3','2_8_4','2_8_5','4_8_3','4_8_4','4_8_5','2_12_3','2_12_4','2_12_5','4_12_3','4_12_4','4_12_5','2_15_3','2_15_4','2_15_5','4_15_3','4_15_4','4_15_5'] # use only numbers, indicating the distances between C-C-H-H (separated by _)
-
 HFresidues = ['V','I','L','M','F','W','C','A','Y','H','T','S','P','G','R','K'] #hydrophobic residues.
 
-domains = set() #collect all different domains and combinations of domains that are *actually* found & used.
 
 '''
 Define regular expressions for all zf-domains (by the C-H distances), and save in a
@@ -49,6 +47,7 @@ the zf-domains to a single letter
 alphabet = "ABCDEFGHIJKLMNPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz!@^&*()-=+{}:;|<>?/,."
 translationdict = {} # dictionary of motifs and the corresponding string element
 alphacount = 0
+domains = set() #collect all different domains and combinations of domains that are *actually* found & used.
 
 '''
 From an open fasta file, generate a dictionary containing the header as key, and the
@@ -71,7 +70,13 @@ def fastadicter(fastadb):
 
 '''
 translate a set of possible zf hits at a range of positions to a single
-list of positions + the correct motif at that position (or the best possible double).
+list of positions + the correct motif at that position (or the best possible double/triple/quadruple).
+Two functions are defined: one (resolvematrix) looks at the whole gene and takes a list of lists, and prepares each
+line for individual analysis (each line has the positions of conflicting motifs on it). This function
+calls 'resolvemotifs', which actually takes all conflicting sequences, plus information on hits before and
+after in the gene, and scores each sequence according to properties of a zinc finger: presence of HF-residues,
+presence of R in the loop, and whether it fits in a chain. It then returns those scores, so that 'resolvematrix'
+can decide which of the sequences to take, or whether to combine them.
 '''
 def resolvemotifs(positions,sequences,motifs,prevend,nextst): # called PER (CONFLICTING SET OF) MOTIFS
 	#score the motifs on how good they are: L on H-2, other hydrophobic on L-5, R in final H-H loop
@@ -114,6 +119,7 @@ def resolvemotifs(positions,sequences,motifs,prevend,nextst): # called PER (CONF
 
 
 '''
+For explanation of this function: see the text above 'resolvemotifs'.
 a quick explanation of which-is-which in the million sets of motifs, sequences, start sites, etc in this function:
 pos/mot/seq1: collecting for ALL positions/motifs/sequences in a set of conflicting motifs (per gene, per conflict). List of strings/integers.
 pos/mot: collector for THE BEST positions/motifs of a set of conflicting motifs (per gene, per conflict). List of strings/integers.
@@ -159,6 +165,7 @@ def resolvematrix(posmatrix,seqdict,motdict): #called PER GENE
 translate a set of motifs + corresponding start sites and lengths
 to a single string that contains both translations for the domains
 (or domain combinations) used, and for the spaces in between.
+'Translation' in this case means: into the string used for clustering.
 '''
 def translation(starts,motifs,lengths):
 	transl = ''
