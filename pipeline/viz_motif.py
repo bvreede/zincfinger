@@ -73,6 +73,16 @@ def draw_legend(m,i,out):
 	label = '<text><tspan x="%s" y="%s" style="font-size:12px;fill:#000;fill-opacity:1;font-family:Helvetica;-inkscape-font-specification:Sans">%s</tspan></text>' %(Xlabel,Ylabel,m)
 	out.write("%s\n" %(label))
 
+'''
+Makes a hex colour based on the motif sequence.
+AWFUL AWFUL AWFUL SYSTEM NEEDS TO BE FIXED.
+'''
+def findcolour(CC,CH,HH):
+	CCdict = {'2':'2','4':'e'}
+	CHdict = {'8':'4','12':'a','15':'e'}
+	HHdict = {'3':'0','4':'a','5':'e'}
+	mclr = CCdict[CC] + CHdict[CH] + HHdict[HH]
+	return mclr
 
 '''
 determine the order at which the columns should be read. Also
@@ -85,9 +95,10 @@ def order(columns):
 			CC,CH,HH = c.split('_')
 			clen = int(CC)+int(CH)+int(HH)+4		# calculate the length for this motif
 			motlen[c] = clen				# put the length for the motif in the dictionary
-			ri = random.randint(0,len(clralphabet)-1)	# pick random colour from clralphabet
-			motclr[c] = clralphabet[ri]			# assign it to that motif in the dictionary
-			clralphabet.pop(ri)				# remove the colour from the alphabet
+			mclr = findcolour(CC,CH,HH)
+			#ri = random.randint(0,len(clralphabet)-1)	# pick random colour from clralphabet
+			motclr[c] = mclr# clralphabet[ri]			# assign it to that motif in the dictionary
+			#clralphabet.pop(ri)				# remove the colour from the alphabet
 			motcount[c] = -1
 		length.append(motlen[c])
 	for l in length:			# define the order in which columns need to be assessed, by long to short motifs
@@ -142,4 +153,4 @@ for f in files:
 	out.write('</svg>')
 	out.close()
 
-print motcount
+print motcount,motclr
