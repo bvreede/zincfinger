@@ -24,9 +24,9 @@ nameinfile = "motifhits"
 nameoutfile = "motifviz"
 files = ['dmel','tcas','smar','dpul','isca']
 
-image_width = 4000
-image_height = 20000
-label_align = 200 #x axis of label
+image_width = 4200
+image_height = 28000
+label_align = 400 #x axis of gene labels
 linedist = 40 #distance between different lines
 
 ### COLOURS AND LENGTS OF MOTIFS ###
@@ -40,6 +40,7 @@ for p in range(len(indvhex)):
 	for q in range(len(indvhex)):
 		for r in range(len(indvhex)):
 			clr = '#' + indvhex[p] + indvhex[q] + indvhex[r]
+			#if sum([p,q,r]) > len(indvhex)+1:
 			if [p,q,r].count(len(indvhex)-1) > 1: # we don't like no pastels
 				continue
 			else:
@@ -119,7 +120,8 @@ for f in files:
 		else:
 			linecount+=1
 			name = line[0] + '|' + line[1] + '|' + line[2]
-			seqlen = line[3]
+			seqlen = int(line[3])
+			maxlen.append(seqlen) # collecting the gene lengths to ensure they are smaller than image
 			mdata = line[start:]
 			# draw the gene
 			Y = linecount * linedist
@@ -133,54 +135,11 @@ for f in files:
 				for h in hits:
 					X = int(h) + label_align # the border where gene starts
 					draw_arrow(motifname,X,Y,out)
+	if linecount * linedist > image_height:
+		print "Your image is incomplete: sequences for " + f + " extend to height = " + str(linecount * linedist)
+	if max(maxlen) + label_align > image_width:
+		print "Your image is incomplete: sequences for " + f + " extend to width = " + str(max(maxlen) + label_align)
 	out.write('</svg>')
 	out.close()
 
 print motcount
-
-"""
-
-
-
-
-### PREPARING DRAW, CALCULATE PARAMETERS. DRAW MOTIF ###
-
-
-### MAKING THE LEGEND ###
-
-### GO THROUGH ALL POSSIBLE CATEGORIES (SEE LIST) ###
-for s in files:
-	inputdb = open("%s/results/motifhits_%s.csv" %(dbfolder,s))
-	outputimg = open("%s/results/motifimg_%s.svg" %(dbfolder,s), "w")
-	outputimg.write('<svg width="%s" height="%s" id="svg2" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink">\n' %(image_width,image_height))
-	for i in range(7): # making the legend
-		leg_mot = motifs_for_legend[i]
-		draw_legend(leg_mot,i,outputimg)
-	linecount = 0
-	maxlen = [] # to calculate the max width for the image
-	for line in inputdb:
-		linecount += 1
-		l = line.strip().split(',')[:-1] #remove last empty item (due to trailing comma in csv)
-		if l[0] == "Gene_stable_ID": #this is the header
-			motiflist = l[4:] #collects the motifs in the header line
-		else:
-			Y = linecount * linedist
-			name,seqlen = l[1],l[3]
-			if name == "":
-				name=l[0]
-			maxlen.append(int(seqlen))
-			gene,label = draw_gene(name,seqlen,Y)
-			outputimg.write("%s\n%s\n" %(gene,label))
-			motifpos = l[4:] #list of positions for a certain motif.
-			for k in range(len(motifpos)): #for each motif:
-				if len(motifpos[k]) > 0: #if the motif actually has hits in this gene
-					positions = motifpos[k].split('|')
-					for p in positions:
-						p = int(p)
-						draw(motiflist[k],p,Y,outputimg)
-	
-	if linecount * linedist > image_height:
-		print "Your image is incomplete: sequences for " + s + " extend to height = " + str(linecount * linedist)
-	if max(maxlen) + label_align > image_width:
-		print "Your image is incomplete: sequences for " + s + " extend to width = " + str(max(maxlen) + label_align)
-"""
