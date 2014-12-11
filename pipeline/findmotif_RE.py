@@ -111,17 +111,17 @@ def resolvemotifs(positions,sequences,motifs,prevend,nextst): # called PER (CONF
 			score += 5
 		scores.append(score)
 	return scores
-		
 
-def resolvematrix(posmatrix,seqdict,motdict,outputdb): #called PER GENE
 
-	# a quick explanation of which-is-which in the million sets of motifs, sequences, start sites, etc in this function:
-	# pos/mot/seq1: collecting for ALL positions/motifs/sequences in a set of conflicting motifs (per gene, per conflict). List of strings/integers.
-	# pos/mot: collector for THE BEST positions/motifs of a set of conflicting motifs (per gene, per conflict). List of strings/integers.
-	# mot/seq3: collector for all motifs/sequences on a single position (per gene, per conflict, PER SITE). List of strings/integers.
-	# pos/mot/len4: collector for all start sites/motifs/(max)lengths of the gene (per gene, and only ONE per conflict). List of strings/integers AND SETS.
-	# pos/mot5: collector for all start sites/motifs of the gene, with (possibly multiple) highest scoring in a conflict. List of strings/integers.
-
+'''
+a quick explanation of which-is-which in the million sets of motifs, sequences, start sites, etc in this function:
+pos/mot/seq1: collecting for ALL positions/motifs/sequences in a set of conflicting motifs (per gene, per conflict). List of strings/integers.
+pos/mot: collector for THE BEST positions/motifs of a set of conflicting motifs (per gene, per conflict). List of strings/integers.
+mot/seq3: collector for all motifs/sequences on a single position (per gene, per conflict, PER SITE). List of strings/integers.
+pos/mot/len4: collector for all start sites/motifs/(max)lengths of the gene (per gene, and only ONE per conflict). List of strings/integers AND SETS.
+pos/mot5: collector for all start sites/motifs of the gene, with (possibly multiple) highest scoring in a conflict. List of strings/integers.		
+'''
+def resolvematrix(posmatrix,seqdict,motdict): #called PER GENE
 	pos4,mot4,len4,pos5,mot5 = [],[],[],[],[]
 	prevend = [0]
 	for k,line in enumerate(posmatrix): # lines of positions that need to be assessed together
@@ -153,7 +153,6 @@ def resolvematrix(posmatrix,seqdict,motdict,outputdb): #called PER GENE
 		for n,pos in enumerate(pos2):
 			pos5.append(pos)
 			mot5.append(mot2[n])
-	#write to outputdb: per motif, end in \n
 	return pos4,mot4,len4,pos5,mot5
 
 '''
@@ -185,7 +184,7 @@ for sp in species:
 	outputdb = open("%s/%s/motifhits_%s.csv" %(dbfolder,resfolder,sp), "w")
 	outfasta = open("%s/%s/motifseq_%s.fasta" %(dbfolder,resfolder,sp), "w")
 	outputdb.write("Gene_stable_ID,Gene_name,Protein_stable_ID,Sequence_length,")
-	for m in motifdict:
+	for m in motiflist:
 		outputdb.write("%s," %m)
 	outputdb.write("\n")
 
@@ -243,12 +242,15 @@ for sp in species:
 					posdone.append(pp)
 			posmatrix.append(pos4matrix)
 			pos4matrix = []
-		starts,motifs,lengths = resolvematrix(posmatrix,seqdict,motdict,outputdb)
+		starts,motifs,lengths,starts_out,motifs_out = resolvematrix(posmatrix,seqdict,motdict)
 		transl = translation(starts,motifs,lengths)
 		outfasta.write(">%s\n%s\n\n" %(key,transl))
-			#writeimage(key,starts,lengths)
-			# write image interpretation file. Info needed:
-				# key
-				# per motif:	- start site (add plink to this!
-				#		- length
+		for ml in motiflist: # the list of motifs as stated above (all motifs to look for)
+			outstring = ""
+			for n,mg in enumerate(motifs_out): #the motifs scored in the gene
+				if mg == ml:
+					outstring += str(starts_out[n]+plink) + '|'
+			outputdb.write("%s," %outstring[:-1])
+		outputdb.write("\n")
 	outfasta.close()
+	outputdb.close()
