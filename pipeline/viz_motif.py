@@ -14,40 +14,60 @@ Contact: b.vreede@gmail.com
 Date: 11 December 2014
 '''
 
-import random,csv
+import random,csv,sys,os
 
-### DEFINE PARAMETERS AND INPUT FILES ###
-# infile: dbfolder/nameinfile_files.csv
-# outfile: dbfolder/nameoutfile_files.svg
+'''
+Defining input/output folders
+'''
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results"
-nameinfile = "motifhits"
-nameoutfile = "motifviz"
-files = ['dmel','tcas','smar','dpul','isca']
+infolder = "clusterdbs"
+outfolder = "clustervizu"
 
+'''
+Verifying/creating input/output files/folders
+'''
+if not os.path.exists(dbfolder):
+	sys.exit("Could not find database directory. Verify path in the code.")
+if not os.path.exists("%s/%s" %(dbfolder,infolder)):
+	sys.exit("Could not find input directory. Verify path in the code.")
+if not os.path.exists("%s/%s" %(dbfolder,outfolder)):
+	os.system("mkdir %s/%s" %(dbfolder,outfolder))
+
+files = []
+for filename in os.listdir("%s/%s" %(dbfolder,infolder)):
+	if filename[-4:] == ".csv":
+		files.append(filename)
+
+'''
+Defining image parameters
+'''
 image_width = 4200
 image_height = 28000
 label_align = 400 #x axis of gene labels
 linedist = 40 #distance between different lines
 
-### COLOURS AND LENGTS OF MOTIFS ###
-motlen = {}
-motclr = {}
-motcount = {}
-# define all possible colours (combinations of 'indvhex', except for greyscale)
-clralphabet = []
-indvhex = ['0','8','f']#['0','4','8','c','f']
-for p in range(len(indvhex)):
-	for q in range(len(indvhex)):
-		for r in range(len(indvhex)):
-			clr = '#' + indvhex[p] + indvhex[q] + indvhex[r]
-			#if sum([p,q,r]) > len(indvhex)+1:
-			if [p,q,r].count(len(indvhex)-1) > 1: # we don't like no pastels
-				continue
-			else:
-				clralphabet.append(clr)
+motlen = {} #dictionary of motif lengths
+motclr = {} #dictionary of motif colours
+motcount = {} #keeps track of how often a single motif is used
+
+'''
+Makes a hex colour based on the motif sequence.
+NOT ROBUST AGAINST OTHER COLOUR COMBINATIONS!
+'''
+def findcolour(CC,CH,HH):
+	CCdict = {'2':'2','4':'d'}
+	CHdict = {'8':'4','12':'a','15':'f'}
+	HHdict = {'3':'0','4':'a','5':'e'}
+	try:
+		mclr = CHdict[CH] + HHdict[HH] + CCdict[CC]
+	except KeyError:
+		sys.exit("Your motifs don't exist in the colour scheme of this visualization module. Add them before continuing!")
+	return mclr
 
 
-### DEFINE VISUALIZATION OF MOTIFS ###
+'''
+define visualization of motifs/genes/labels
+'''
 def draw_arrow(m,X,Y,out):
 	block = '<rect style="fill:%s;fill-opacity:1;stroke:none" width="%s" height="16" x="%s" y="%s" />' %(motclr[m],motlen[m],X,Y)
 	arrowhead = '7,-8 -7,-8'
@@ -73,16 +93,6 @@ def draw_legend(m,i,out):
 	label = '<text><tspan x="%s" y="%s" style="font-size:12px;fill:#000;fill-opacity:1;font-family:Helvetica;-inkscape-font-specification:Sans">%s</tspan></text>' %(Xlabel,Ylabel,m)
 	out.write("%s\n" %(label))
 
-'''
-Makes a hex colour based on the motif sequence.
-AWFUL AWFUL AWFUL SYSTEM NEEDS TO BE FIXED.
-'''
-def findcolour(CC,CH,HH):
-	CCdict = {'2':'2','4':'e'}
-	CHdict = {'8':'4','12':'a','15':'e'}
-	HHdict = {'3':'0','4':'a','5':'e'}
-	mclr = CCdict[CC] + CHdict[CH] + HHdict[HH]
-	return mclr
 
 '''
 determine the order at which the columns should be read. Also
@@ -96,9 +106,7 @@ def order(columns):
 			clen = int(CC)+int(CH)+int(HH)+4		# calculate the length for this motif
 			motlen[c] = clen				# put the length for the motif in the dictionary
 			mclr = findcolour(CC,CH,HH)
-			#ri = random.randint(0,len(clralphabet)-1)	# pick random colour from clralphabet
-			motclr[c] = mclr# clralphabet[ri]			# assign it to that motif in the dictionary
-			#clralphabet.pop(ri)				# remove the colour from the alphabet
+			motclr[c] = mclr
 			motcount[c] = -1
 		length.append(motlen[c])
 	for l in length:			# define the order in which columns need to be assessed, by long to short motifs
@@ -112,8 +120,8 @@ def order(columns):
 Go through the files and make a visualization for each.
 '''
 for f in files:
-	db = csv.reader(open("%s/%s_%s.csv" %(dbfolder,nameinfile,f)))
-	out = open("%s/%s_%s.svg" %(dbfolder,nameoutfile,f), "w")
+	db = csv.reader(open("%s/%s/%s" %(dbfolder,infolder,f)))
+	out = open("%s/%s/%s_viz.svg" %(dbfolder,outfolder,f[:-4]), "w")
 	out.write('<svg width="%s" height="%s" id="svg2" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink">\n' %(image_width,image_height))
 	linecount = 2
 	maxlen = [] # to calculate the max width for the image
@@ -153,4 +161,4 @@ for f in files:
 	out.write('</svg>')
 	out.close()
 
-print motcount,motclr
+#print motcount,motclr
