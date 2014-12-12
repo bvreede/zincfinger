@@ -110,17 +110,17 @@ Reporting on the results:
 '''
 print "Number of categories: ", len(S)
 print "Instances per category: ", Counter(Llist0) #counts instances per category
-print "Number of genenumbers/genenames: ", len(genenumbers), len(genenames)
+#print "Number of genenumbers/genenames: ", len(genenumbers), len(genenames)
 print "Number of strings for clustering: ", len(strings)
 print "Number of items assigned categories: ", len(L0), len(Llist0)
 
-cldict = {}
-for i in range(len(genenumbers)):
-	orderfile.write("%s,%s,%s,%s,%s,%s,%s,%s,%s\n" %(genenumbers[i],genenames[i],strings[i],Llist9[i],Llist0[i],Llist1[i],Llist2[i],Llist3[i],Llist4[i]))
-	cldict[genenumbers[i]] = Llist0[i]
+#cldict = {}
+for i,ID in enumerate(gID):
+	orderfile.write("%s,%s,%s,%s,%s,%s,%s,%s\n" %(ID,strings[i],Llist9[i],Llist0[i],Llist1[i],Llist2[i],Llist3[i],Llist4[i]))
+	#cldict[genenumbers[i]] = Llist0[i]
 orderfile.close()
 
-sch.dendrogram(C,labels=genenames)
+sch.dendrogram(C,labels=gID)
 show()
 
 '''
