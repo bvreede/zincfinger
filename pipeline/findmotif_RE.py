@@ -44,7 +44,7 @@ for m in motiflist:
 Motif to cluster-able sequence: make a dictionary to translate
 the zf-domains to a single letter
 '''
-alphabet = "ABCDEFGHIJKLMNPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz!@^&*()-=+{}:;|<>?/,."
+alphabet = "ABCDEFGHIJKLMNPQRSTUVWXYZ"
 translationdict = {} # dictionary of motifs and the corresponding string element
 alphacount = 0
 domains = set() #collect all different domains and combinations of domains that are *actually* found & used.
