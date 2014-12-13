@@ -12,6 +12,8 @@ The script requires the following python modules:
 - jellyfish
 - numpy
 - matplotlib
+- itertools
+- re
 Author: Barbara Vreede
 Contact: b.vreede@gmail.com
 Date: 15 October 2014
@@ -27,33 +29,22 @@ from matplotlib.pyplot import show
 
 ##### INPUT SPECIFICATIONS: CUSTOMIZE HERE! #####
 
-species = "test"
+#options for clustering:
+clustermeth = "weighted"
+threshold = 50
+clustercrit = "maxclust"
+
+#input/output files and folders:
+species = "dmel"
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
 motiffile = "%s/results/motifseq_%s.fasta" %(dbfolder,species) #the file used for the clustering
 infile = "%s/results/motifhits_%s.csv" %(dbfolder,species) #the file to apply the clustering to, and split into new files
-inputfile = open(motiffile)
-clustermeth = "weighted"
-clusterorder = "%s/results/clustering-string_%s-%s.csv" %(dbfolder,species,clustermeth)
-thresholdlist = [1,2,4,6,10]
-orderfile = open(clusterorder, "w")
+clusterorder = "%s/results/clustering-string_%s-%s.csv" %(dbfolder,species,clustermeth) #this file will be made: contains group data
+
+
+
 
 #### END OF CUSTOMIZATION! PLEASE DON'T EDIT BELOW #####
-
-'''
-Read the input fasta file; extract:
-- string [with motif data]
-- ID labels [customized to separate on | character]
-'''
-strings = [] #will collect the clusterable data
-gID = [] #will collect header information
-for line in inputfile:
-	if line[0] == ">": # indicates fasta header: collect header info
-		header = line.strip()[1:].split('|')
-		gID.append(header)
-		flag = 1 # turn on data collector
-	elif flag == 1:
-		strings.append(line.strip())
-		flag = 0 # turn off data collector
 
 
 '''
@@ -80,24 +71,54 @@ def wordcomp(coord):
 	# return the minimum distance
 	return min(distance)
 
+'''
+Read the input fasta file; extract:
+- string [with motif data]
+- ID labels [customized to separate on | character] + genenames and protein numbers separately
+'''
+inputfile = open(motiffile)
+strings,gID,genenames,protnumbers = [],[],[],[] #will collect the clusterable data (1) + header information (2-4)
+for line in inputfile:
+	if line[0] == ">": # indicates fasta header: collect header info
+		header = line.strip()[1:].split('|')
+		genenames.append(header[1])
+		protnumbers.append(header[2])
+		gID.append(header)
+		flag = 1 # turn on data collector
+	elif flag == 1:
+		strings.append(line.strip())
+		flag = 0 # turn off data collector
+
 # make an array of coordinates for reciprocal comparisons
 ar = nti(len(strings),1)
-
 # actually run the comparisons over the entire length of the array
 cr = naaa(wordcomp,0,ar)
-
-
-'''
-Divide the strings into clusters.
-'''
-#Calculate the hierarchy given the pairwise distances provided.
+# calculate the hierarchy given the pairwise distances provided.
 C = sch.linkage(cr, method=clustermeth)
+# define clusters given the threshold
+L = sch.fcluster(C,threshold,criterion=clustercrit)
 
-#Define several clusters given a range of thresholds
-for t in thresholdlist:
-	L = sch.fcluster(C,t,criterion="distance")
+# translate the cluster into a dictionary
+cID = list(L)
+cldict = {}
+for n,cluster in enumerate(cID):
+	cldict[protnumbers[n]] = cluster
 
-#make a matrix of the result file
+'''
+Applying the clusters to data: open file that needs to be ordered according to the
+clusters, and split it into however many clusters exist.
+'''
+orderfile = open(clusterorder, "w")
+
+for n in range(1,max(cID)+1):
+	for p,gene in enumerate(gID):
+		if cldict[gene[2]] == n:
+			print n, gene[1], strings[p]
+
+#print cldict
+
+'''
+# make a matrix of the result file
 # then transpose the matrix and print to results
 # this way, any number of headers and clusterdata can be added without specifying a number.
 
@@ -119,11 +140,11 @@ Llist1 = list(L1)
 Llist2 = list(L2)
 Llist3 = list(L3)
 Llist4 = list(L4)
-
+'''
 
 '''
 Reporting on the results:
-'''
+
 print "Number of categories: ", len(S)
 print "Instances per category: ", Counter(Llist0) #counts instances per category
 #print "Number of genenumbers/genenames: ", len(genenumbers), len(genenames)
@@ -136,9 +157,9 @@ for i,ID in enumerate(gID):
 	#cldict[genenumbers[i]] = Llist0[i]
 orderfile.close()
 
-sch.dendrogram(C,labels=gID)
+sch.dendrogram(C,labels=genenames)
 show()
-
+'''
 '''
 #for each category, go into GO and motif files, and save the genes seperately
 for c in range(1,cutoff+1):
