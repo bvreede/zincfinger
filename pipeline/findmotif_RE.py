@@ -44,10 +44,10 @@ for m in motiflist:
 Motif to cluster-able sequence: make a dictionary to translate
 the zf-domains to a single letter
 '''
-alphabet = "ABCDEFGHIJKLMNPQRSTUVWXYZ"
+alphabet = "ABCDEFGHIJKLMNPQRSTUVWXY"
 translationdict = {} # dictionary of motifs and the corresponding string element
-alphacount = 0
-domains = set() #collect all different domains and combinations of domains that are *actually* found & used.
+for a,motif in enumerate(motiflist):
+	translationdict[motif] = alphabet[a]
 
 '''
 From an open fasta file, generate a dictionary containing the header as key, and the
@@ -154,8 +154,7 @@ def resolvematrix(posmatrix,seqdict,motdict): #called PER GENE
 				mot2.append(mot1[i])
 		pos4.append(min(pos2))
 		len4.append(max(pos2) + max([motiflength[i] for i in mot2])-min(pos2)) #max length of the motif WITHOUT LINKER SEQ
-		mot4.append(frozenset(mot2))
-		domains.add(frozenset(mot2))
+		mot4.append(mot2)
 		for n,pos in enumerate(pos2):
 			pos5.append(pos)
 			mot5.append(mot2[n])
@@ -170,14 +169,18 @@ to a single string that contains both translations for the domains
 def translation(starts,motifs,lengths):
 	transl = ''
 	for n,start in enumerate(starts):
+		#add a spacer if the motifs are not connected
 		if n != 0:
-			if start - (starts[n-1] + lengths[n-1] + 7) > 0:
-				transl += '_'
-		if motifs[n] not in translationdict:
-			global alphacount
-			translationdict[motifs[n]] = alphabet[alphacount]
-			alphacount += 1
-		transl += translationdict[motifs[n]]
+			if start - (starts[n-1] + lengths[n-1] + 9) > 0: #extra space given for connected domains
+				transl += 'Z'
+		#translate the domains to either a single letter or a regex if there are more
+		if len(motifs[n]) > 1:
+			regex = ''
+			for m in motifs[n]:
+				regex += translationdict[m] + '|'
+			transl += '{' + regex[:-1] + '}'
+		else:
+			transl += translationdict[motifs[n][0]]
 	return transl
 
 
