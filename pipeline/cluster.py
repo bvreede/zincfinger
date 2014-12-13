@@ -17,7 +17,7 @@ Contact: b.vreede@gmail.com
 Date: 15 October 2014
 '''
 
-import scipy, pylab
+import scipy, pylab, re, itertools
 import scipy.cluster.hierarchy as sch
 from collections import Counter
 from jellyfish import levenshtein_distance as jld
@@ -27,7 +27,7 @@ from matplotlib.pyplot import show
 
 ##### INPUT SPECIFICATIONS: CUSTOMIZE HERE! #####
 
-species = "dmel"
+species = "test"
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
 motiffile = "%s/results/motifseq_%s.fasta" %(dbfolder,species) #the file used for the clustering
 infile = "%s/results/motifhits_%s.csv" %(dbfolder,species) #the file to apply the clustering to, and split into new files
@@ -57,12 +57,28 @@ for line in inputfile:
 
 
 '''
-Calculate pairwise distances for all the strings collected
+Calculate pairwise distances for all the strings collected. As strings
+are regular expressions, first expand the re. and then calculate all distances
+pairwise. Return the minimal distance.
 '''
 # set up the measurement of levenshtein distance of a combination of strings
 def wordcomp(coord):
 	i,j = coord
-	return jld(strings[i],strings[j])
+	# translate strings[i] and strings[j] to all possible expressions
+	sisplit = [part.split('|') for part in re.split(r'\{(.*?)\}',strings[i])]
+	sjsplit = [part.split('|') for part in re.split(r'\{(.*?)\}',strings[j])]
+	si,sj = [],[]
+	for x in itertools.product(*sisplit):
+		si.append(''.join(x))
+	for x in itertools.product(*sjsplit):
+		sj.append(''.join(x))
+	# check jld of all strings[i] options against all strings[j] options
+	distance = []
+	for sin in si:
+		for sjn in sj:
+			distance.append(jld(sin,sjn))
+	# return the minimum distance
+	return min(distance)
 
 # make an array of coordinates for reciprocal comparisons
 ar = nti(len(strings),1)
