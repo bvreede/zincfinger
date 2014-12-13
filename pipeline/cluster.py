@@ -104,11 +104,18 @@ cldict = {}
 for n,cluster in enumerate(cID):
 	cldict[protnumbers[n]] = cluster
 
+# save clusterdata separately
+orderfile = open(clusterorder, "w")
+orderfile.write("Gene_stable_ID,Gene_name,Protein_stable_ID,Cluster\n")
+for n,gene in enumerate(gID):
+	orderfile.write("%s,%s,%s,%s\n" %(gID[0],gID[1],gID[2],cID[n]))
+orderfile.close()
+
 '''
 Applying the clusters to data: open file that needs to be ordered according to the
 clusters, and split it into however many clusters exist.
 '''
-orderfile = open(clusterorder, "w")
+
 
 for n in range(1,max(cID)+1):
 	for p,gene in enumerate(gID):
