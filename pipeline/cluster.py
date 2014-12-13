@@ -14,12 +14,13 @@ The script requires the following python modules:
 - matplotlib
 - itertools
 - re
+- csv
 Author: Barbara Vreede
 Contact: b.vreede@gmail.com
 Date: 15 October 2014
 '''
 
-import scipy, pylab, re, itertools
+import scipy, pylab, re, itertools, csv, os
 import scipy.cluster.hierarchy as sch
 from collections import Counter
 from jellyfish import levenshtein_distance as jld
@@ -31,18 +32,15 @@ from matplotlib.pyplot import show
 
 #options for clustering:
 clustermeth = "weighted"
-threshold = 50
+threshold = [5,10,20,50,100,200,500]
 clustercrit = "maxclust"
 
 #input/output files and folders:
 species = "dmel"
-dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
-motiffile = "%s/results/motifseq_%s.fasta" %(dbfolder,species) #the file used for the clustering
-infile = "%s/results/motifhits_%s.csv" %(dbfolder,species) #the file to apply the clustering to, and split into new files
-clusterorder = "%s/results/clustering-string_%s-%s.csv" %(dbfolder,species,clustermeth) #this file will be made: contains group data
-
-
-
+dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results"
+motiffile = "%s/motifseq_%s.fasta" %(dbfolder,species) #the file used for the clustering
+infile = "%s/motifhits_%s.csv" %(dbfolder,species) #the file to apply the clustering to, and split into new files
+clusterorder = "%s/clustering-string_%s-%s.csv" %(dbfolder,species,clustermeth) #this file will be made: contains group data
 
 #### END OF CUSTOMIZATION! PLEASE DON'T EDIT BELOW #####
 
@@ -95,78 +93,81 @@ ar = nti(len(strings),1)
 cr = naaa(wordcomp,0,ar)
 # calculate the hierarchy given the pairwise distances provided.
 C = sch.linkage(cr, method=clustermeth)
-# define clusters given the threshold
-L = sch.fcluster(C,threshold,criterion=clustercrit)
+sch.dendrogram(C,labels=genenames)
+#show()
 
-# translate the cluster into a dictionary
-cID = list(L)
-cldict = {}
-for n,cluster in enumerate(cID):
-	cldict[protnumbers[n]] = cluster
+'''
+Collect data from the file that needs to be sorted into clusters.
+'''
+# collect infile to memory
+infileread = csv.reader(open(infile))
+ftc = []
+for n,line in enumerate(infileread):
+	if n == 0:
+		ftchead = line
+	else:
+		ftc.append(line)
+# find the column with protein ID (= unique identifying information)
+pID = ftchead.index("Protein_stable_ID")
+
+
+'''
+interpret the clustering and apply it to a file with data (e.g. visualization,
+GO terms, etc), so that these are clustered similarly.
+Turned into a function so it can be repeated with different thresholds.
+'''
+
+def sortdata(thresh,nclust,cldict,outfolder):
+	global pID,infile,ftchead
+	for n in range(1,nclust+1):
+		clusterfile = open("%s/%s_cluster%s.csv" %(outfolder,infile.split('/')[-1][:-4],n), "w")
+		#write header
+		lcollect = ""
+		for item in ftchead:
+			lcollect += item + ','
+		clusterfile.write("%s\n" %lcollect[:-1])
+		# write content
+		for line in ftc:
+			if cldict[line[pID]] == n:
+				lcollect = ""
+				for item in line:
+					lcollect += item + ','
+				clusterfile.write("%s\n" %lcollect[:-1])
+		clusterfile.close()
+
+clustcoll = []
+for t in threshold:
+	# define clusters given the threshold
+	L = sch.fcluster(C,t,criterion=clustercrit)
+	# translate the cluster into a dictionary
+	cID = list(L)
+	clustcoll.append(cID)
+	cldict = {}
+	for n,cluster in enumerate(cID):
+		cldict[protnumbers[n]] = cluster
+	# make a folder for these clusters
+	outfolder = "%s/%s-clusters" %(dbfolder,t)
+	if not os.path.exists(outfolder):
+		os.system("mkdir %s" %(outfolder))
+	sortdata(t,max(cID),cldict,outfolder)
 
 # save clusterdata separately
 orderfile = open(clusterorder, "w")
-orderfile.write("Gene_stable_ID,Gene_name,Protein_stable_ID,Cluster\n")
+orderfile.write("Gene_stable_ID,Gene_name,Protein_stable_ID,")
+tline = ""
+for t in threshold:
+	tline += str(t) + '_clusters,'
+orderfile.write("%s\n" %tline[:-1])
+
 for n,gene in enumerate(gID):
-	orderfile.write("%s,%s,%s,%s\n" %(gID[0],gID[1],gID[2],cID[n]))
+	orderfile.write("%s,%s,%s," %(gene[0],gene[1],gene[2]))
+	ccline = ""
+	for t,thresh in enumerate(threshold):
+		ccline += str(clustcoll[t][n]) + ','
+	orderfile.write("%s\n" %ccline[:-1])
 orderfile.close()
 
-'''
-Applying the clusters to data: open file that needs to be ordered according to the
-clusters, and split it into however many clusters exist.
-'''
 
-
-for n in range(1,max(cID)+1):
-	for p,gene in enumerate(gID):
-		if cldict[gene[2]] == n:
-			print n, gene[1], strings[p]
-
-#print cldict
-
-'''
-# make a matrix of the result file
-# then transpose the matrix and print to results
-# this way, any number of headers and clusterdata can be added without specifying a number.
-
-#L = sch.fcluster(C,cutoff,criterion='maxclust')
-L8 = sch.fcluster(C,800,criterion='maxclust')
-L9 = sch.fcluster(C,300,criterion='maxclust')
-L0 = sch.fcluster(C,200,criterion='maxclust')
-L1 = sch.fcluster(C,150,criterion='maxclust')
-L2 = sch.fcluster(C,100,criterion='maxclust')
-L3 = sch.fcluster(C,50,criterion='maxclust')
-L4 = sch.fcluster(C,20,criterion='maxclust')
-S = set(L0) #turns the clustering into a set so as to remove duplicates
-
-#Llist = list(L) #turns the clustering into a list, so it may be indexed
-Llist8 = list(L8)
-Llist9 = list(L9)
-Llist0 = list(L0)
-Llist1 = list(L1)
-Llist2 = list(L2)
-Llist3 = list(L3)
-Llist4 = list(L4)
-'''
-
-'''
-Reporting on the results:
-
-print "Number of categories: ", len(S)
-print "Instances per category: ", Counter(Llist0) #counts instances per category
-#print "Number of genenumbers/genenames: ", len(genenumbers), len(genenames)
-print "Number of strings for clustering: ", len(strings)
-print "Number of items assigned categories: ", len(L0), len(Llist0)
-
-#cldict = {}
-for i,ID in enumerate(gID):
-	orderfile.write("%s,%s,%s,%s,%s,%s,%s,%s\n" %(ID,strings[i],Llist9[i],Llist0[i],Llist1[i],Llist2[i],Llist3[i],Llist4[i]))
-	#cldict[genenumbers[i]] = Llist0[i]
-orderfile.close()
-
-sch.dendrogram(C,labels=genenames)
-show()
-'''
 '''
 #for each category, go into GO and motif files, and save the genes seperately
 for c in range(1,cutoff+1):
@@ -182,4 +183,23 @@ if cldict[l[0]] == c:
 selection.write(line)
 selection.close()
 to_select.close()
+
+
+
+# go through range of clusters and save a file for each
+for n in range(1,max(cID)+1):
+	clusterfile = open("%s/clusterdbs/%s_cluster%s.csv" %(dbfolder,infile.split('/')[-1][:-4],n), "w")
+	#write header
+	lcollect = ""
+	for item in ftchead:
+		lcollect += item + ','
+	clusterfile.write("%s\n" %lcollect[:-1])
+	# write content
+	for line in ftc:
+		if cldict[line[pID]] == n:
+			lcollect = ""
+			for item in line:
+				lcollect += item + ','
+			clusterfile.write("%s\n" %lcollect[:-1])
+	clusterfile.close()
 '''
