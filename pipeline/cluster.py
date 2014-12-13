@@ -8,7 +8,6 @@ threshold.
 The script requires the following python modules:
 - scipy
 - pylab
-- collections
 - jellyfish
 - numpy
 - matplotlib
@@ -22,11 +21,11 @@ Date: 15 October 2014
 
 import scipy, pylab, re, itertools, csv, os
 import scipy.cluster.hierarchy as sch
-from collections import Counter
+import matplotlib.pyplot as plt
 from jellyfish import levenshtein_distance as jld
 from numpy import triu_indices as nti
 from numpy import apply_along_axis as naaa
-from matplotlib.pyplot import show
+
 
 ##### INPUT SPECIFICATIONS: CUSTOMIZE HERE! #####
 
@@ -94,7 +93,7 @@ cr = naaa(wordcomp,0,ar)
 # calculate the hierarchy given the pairwise distances provided.
 C = sch.linkage(cr, method=clustermeth)
 sch.dendrogram(C,labels=genenames)
-#show()
+plt.savefig("%s/dendrogram.png" %dbfolder)
 
 '''
 Collect data from the file that needs to be sorted into clusters.
@@ -166,40 +165,3 @@ for n,gene in enumerate(gID):
 		ccline += str(clustcoll[t][n]) + ','
 	orderfile.write("%s\n" %ccline[:-1])
 orderfile.close()
-
-
-'''
-#for each category, go into GO and motif files, and save the genes seperately
-for c in range(1,cutoff+1):
-outfile = infile[:-4] + "-cluster" + str(c) + '.csv'
-selection = open(outfile, "w") #resultsfile (file that is cluster-specific)
-to_select = open(infile) #file to read
-for line in to_select:
-l = line.strip().split(',')
-if l[0] == "Gene_stable_ID":
-selection.write(line)
-elif l[0] in cldict:
-if cldict[l[0]] == c:
-selection.write(line)
-selection.close()
-to_select.close()
-
-
-
-# go through range of clusters and save a file for each
-for n in range(1,max(cID)+1):
-	clusterfile = open("%s/clusterdbs/%s_cluster%s.csv" %(dbfolder,infile.split('/')[-1][:-4],n), "w")
-	#write header
-	lcollect = ""
-	for item in ftchead:
-		lcollect += item + ','
-	clusterfile.write("%s\n" %lcollect[:-1])
-	# write content
-	for line in ftc:
-		if cldict[line[pID]] == n:
-			lcollect = ""
-			for item in line:
-				lcollect += item + ','
-			clusterfile.write("%s\n" %lcollect[:-1])
-	clusterfile.close()
-'''
