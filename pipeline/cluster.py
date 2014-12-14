@@ -93,7 +93,7 @@ cr = naaa(wordcomp,0,ar)
 # calculate the hierarchy given the pairwise distances provided.
 C = sch.linkage(cr, method=clustermeth)
 sch.dendrogram(C,labels=genenames)
-plt.savefig("%s/dendrogram.png" %dbfolder)
+plt.savefig("%s/dendrogram.svg" %dbfolder)
 
 '''
 Collect data from the file that needs to be sorted into clusters.
