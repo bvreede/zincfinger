@@ -31,7 +31,7 @@ from numpy import apply_along_axis as naaa
 
 #options for clustering:
 clustermeth = "weighted"
-threshold = [5,10,20,50,100,200,500]
+threshold = [2,5,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,220,250,280,300,350,400,450,500]
 clustercrit = "maxclust"
 
 #input/output files and folders:
@@ -156,12 +156,12 @@ orderfile.write("Gene_stable_ID,Gene_name,Protein_stable_ID,")
 tline = ""
 for t in threshold:
 	tline += str(t) + '_clusters,'
-orderfile.write("%s\n" %tline[:-1])
+orderfile.write("%s,sequence\n" %tline[:-1])
 
 for n,gene in enumerate(gID):
 	orderfile.write("%s,%s,%s," %(gene[0],gene[1],gene[2]))
 	ccline = ""
 	for t,thresh in enumerate(threshold):
 		ccline += str(clustcoll[t][n]) + ','
-	orderfile.write("%s\n" %ccline[:-1])
+	orderfile.write("%s,%s\n" %(ccline[:-1],strings[n]))
 orderfile.close()
