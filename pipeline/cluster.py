@@ -25,13 +25,14 @@ import matplotlib.pyplot as plt
 from jellyfish import levenshtein_distance as jld
 from numpy import triu_indices as nti
 from numpy import apply_along_axis as naaa
-
+from ete2 import Tree
+from Bio import Phylo
 
 ##### INPUT SPECIFICATIONS: CUSTOMIZE HERE! #####
 
 #options for clustering:
 clustermeth = "weighted"
-threshold = [2,5,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,220,250,280,300,350,400,450,500]
+threshold = [6]# [2,5,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,220,250,280,300,350,400,450,500]
 clustercrit = "maxclust"
 
 #input/output files and folders:
@@ -69,6 +70,35 @@ def wordcomp(coord):
 	return min(distance)
 
 '''
+Solution taken directly from stackoverflow: http://stackoverflow.com/questions/9364609/converting-ndarray-generated-by-hcluster-into-a-newick-string-for-use-with-ete2
+
+Takes a tree object and returns the tree in newick format.
+Requires ete2.
+'''
+def sof_tree2newick(T):
+	#ete2 section
+	root = Tree()
+	root.dist = 0
+	root.name = "root"
+	item2node = {T: root}
+	
+	to_visit = [T]
+	while to_visit:
+	    	node = to_visit.pop()
+		cl_dist = node.dist /2.0
+		for ch_node in [node.left, node.right]:
+			if ch_node:
+				ch = Tree()
+				ch.dist = cl_dist
+				ch.name = str(ch_node.id)
+				item2node[node].add_child(ch)
+				item2node[ch_node] = ch
+				to_visit.append(ch_node)
+	# This is your ETE tree structure
+	return root.write()
+
+
+'''
 Read the input fasta file; extract:
 - string [with motif data]
 - ID labels [customized to separate on | character] + genenames and protein numbers separately
@@ -91,9 +121,27 @@ ar = nti(len(strings),1)
 # actually run the comparisons over the entire length of the array
 cr = naaa(wordcomp,0,ar)
 # calculate the hierarchy given the pairwise distances provided.
-C = sch.linkage(cr, method=clustermeth)
-sch.dendrogram(C,labels=genenames)
-plt.savefig("%s/dendrogram.svg" %dbfolder)
+C = sch.complete(cr) #, method=clustermeth)
+# turn the hierarchy into a tree object
+T = sch.to_tree(C)
+# translate the tree object to newick format
+tree = sof_tree2newick(T)
+# apply the labels
+for n,s in enumerate(strings): #use any desired label here.
+	nwstr1 = '(' + str(n) + ':'
+	nwstr2 = ',' + str(n) + ':'
+	str1 = '(' + s + ':'
+	str2 = ',' + s + ':'
+	tree = tree.replace(nwstr1,str1)
+	tree = tree.replace(nwstr2,str2)
+# save the newick text to a file
+newick = open("%s/clusternewick.txt" %dbfolder, "w")
+newick.write(tree)
+newick.close()
+
+#save the dendrogram
+sch.dendrogram(C,labels=strings,color_threshold=8,leaf_font_size=1)
+plt.savefig("%s/dendrogram.png" %dbfolder, dpi=1800)
 
 '''
 Collect data from the file that needs to be sorted into clusters.
