@@ -26,7 +26,6 @@ from jellyfish import levenshtein_distance as jld
 from numpy import triu_indices as nti
 from numpy import apply_along_axis as naaa
 from ete2 import Tree
-from Bio import Phylo
 
 ##### INPUT SPECIFICATIONS: CUSTOMIZE HERE! #####
 
@@ -95,7 +94,7 @@ def sof_tree2newick(T):
 				item2node[ch_node] = ch
 				to_visit.append(ch_node)
 	# This is your ETE tree structure
-	return root.write()
+	return root.write() #translate the tree to a newick string
 
 
 '''
@@ -127,11 +126,11 @@ T = sch.to_tree(C)
 # translate the tree object to newick format
 tree = sof_tree2newick(T)
 # apply the labels
-for n,s in enumerate(strings): #use any desired label here.
+for n,s in enumerate(protnumbers): #use any desired label here.
 	nwstr1 = '(' + str(n) + ':'
 	nwstr2 = ',' + str(n) + ':'
-	str1 = '(' + s + ':'
-	str2 = ',' + s + ':'
+	str1 = '(' + genenames[n] + '|' + s + ':'
+	str2 = ',' + genenames[n] + '|' + s + ':'
 	tree = tree.replace(nwstr1,str1)
 	tree = tree.replace(nwstr2,str2)
 # save the newick text to a file
