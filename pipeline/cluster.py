@@ -120,7 +120,7 @@ ar = nti(len(strings),1)
 # actually run the comparisons over the entire length of the array
 cr = naaa(wordcomp,0,ar)
 # calculate the hierarchy given the pairwise distances provided.
-C = sch.complete(cr) #, method=clustermeth)
+C = sch.linkage(cr, method=clustermeth)
 # turn the hierarchy into a tree object
 T = sch.to_tree(C)
 # translate the tree object to newick format
