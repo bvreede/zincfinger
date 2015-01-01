@@ -14,12 +14,13 @@ The script requires the following python modules:
 - itertools
 - re
 - csv
+- math
 Author: Barbara Vreede
 Contact: b.vreede@gmail.com
 Date: 15 October 2014
 '''
 
-import scipy, pylab, re, itertools, csv, os
+import scipy, pylab, re, itertools, csv, os, math
 import scipy.cluster.hierarchy as sch
 import matplotlib.pyplot as plt
 from jellyfish import levenshtein_distance as jld
@@ -31,8 +32,8 @@ from ete2 import Tree
 
 #options for clustering:
 clustermeth = "weighted"
-threshold = [6]# [2,5,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,220,250,280,300,350,400,450,500]
-clustercrit = "maxclust"
+threshold = [1]# [2,5,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,220,250,280,300,350,400,450,500]
+clustercrit = "distance"
 
 #input/output files and folders:
 species = "dmel"
@@ -98,6 +99,38 @@ def sof_tree2newick(T):
 
 
 '''
+'''
+def getColour(maxcol,col):
+	a = 1/3.
+	n = int(math.pow(maxcol,a)) # the number of elements there have to be from 00-FF (minus one, because int is rounded down)
+	k = 255/n # the space in integers from 0-255 between each element
+	CC,CR,CG,CB,colours = [],[],[],[],[]
+	# construct the list of elements from 00-FF
+	for i in range(n+1):
+		hn = hex(i*k)[2:]
+		if len(hn) < 2:
+			hn = hn+hn
+		CC.append(hn)
+	#red: pick each element (n+1)^2 times before moving on to the next
+	for c in CC:
+		for r in range(pow((n+1),2)):
+			CR.append(c)
+	#green: pick each element (n+1) times before moving on to the next; repeat (n+1) times
+	for g in range(n+1):
+		for c in CC:
+			for h in range(n+1):
+				CG.append(c)
+	#blue, pick each element once before moving on to the next, repeat (n+1)^2 times
+	for b in range(pow((n+1),2)):
+		for c in CC:
+			CB.append(c)
+	for X,red in enumerate(CR):
+		colour = '#' + red + CG[X] + CB[X]
+		colours.append(colour)
+	return colours[col-1]
+
+
+'''
 Read the input fasta file; extract:
 - string [with motif data]
 - ID labels [customized to separate on | character] + genenames and protein numbers separately
@@ -139,8 +172,8 @@ newick.write(tree)
 newick.close()
 
 #save the dendrogram
-sch.dendrogram(C,labels=strings,color_threshold=8,leaf_font_size=1)
-plt.savefig("%s/dendrogram.png" %dbfolder, dpi=1800)
+sch.dendrogram(C,labels=strings,color_threshold=2,leaf_font_size=1)
+plt.savefig("%s/dendrogram_single_2.png" %dbfolder, dpi=1800)
 
 '''
 Collect data from the file that needs to be sorted into clusters.
@@ -212,3 +245,13 @@ for n,gene in enumerate(gID):
 		ccline += str(clustcoll[t][n]) + ','
 	orderfile.write("%s,%s\n" %(ccline[:-1],strings[n]))
 orderfile.close()
+
+# save clusterdata as EvolView-readable data
+for t,thresh in enumerate(threshold):
+	evolview = open("%s/evolview_clusters-%s.txt" %(dbfolder,t),"w")
+	# for each gene
+	# get the cluster and the assigned colour
+	# get the gene name
+	# write to file
+	evolview.close()
+
