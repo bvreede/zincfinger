@@ -99,6 +99,11 @@ def sof_tree2newick(T):
 
 
 '''
+Function to translate a number into a hex colour.
+Input required: the total number of colours needed, and the number
+of the colour that needs returning.
+So, say there are 150 categories, and you want the colour for the 25th
+category, you would call it as getcolour(150,25).
 '''
 def getColour(maxcol,col):
 	a = 1/3.
