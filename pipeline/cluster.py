@@ -254,9 +254,16 @@ orderfile.close()
 # save clusterdata as EvolView-readable data
 for t,thresh in enumerate(threshold):
 	evolview = open("%s/evolview_clusters-%s.txt" %(dbfolder,t),"w")
+	evolview.write(" ## leaf background color\n\n")
 	# for each gene
-	# get the cluster and the assigned colour
-	# get the gene name
-	# write to file
+	for n,gene in enumerate(gID):
+		# get the cluster and the assigned colour
+		mc = max(clustcoll[t])
+		cluster = clustcoll[t][n]
+		clr = getColour(mc,cluster)
+		# get the gene name
+		gn = genenames[n] + '|' + protnumbers[n]
+		# write to file
+		evolview.write("%s\t%s\tprefix\n" %(gn,clr))
 	evolview.close()
 
