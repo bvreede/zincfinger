@@ -32,8 +32,11 @@ from ete2 import Tree
 
 #options for clustering:
 clustermeth = "weighted"
-threshold = [1]# [2,5,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,220,250,280,300,350,400,450,500]
-clustercrit = "distance"
+threshold = [0.5,0.75,1]# [2,5,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,220,250,280,300,350,400,450,500]
+clustercrit = "inconsistent"
+#clustercrit = "maxclust" # corresponding threshold is max nr of clusters
+#clustercrit = "distance" # corresponding threshold is max length of branches
+
 
 #input/output files and folders:
 species = "dmel"
@@ -253,10 +256,12 @@ orderfile.close()
 
 # save clusterdata as EvolView-readable data
 for t,thresh in enumerate(threshold):
-	evolview = open("%s/evolview_clusters-%s.txt" %(dbfolder,t),"w")
+	evolview = open("%s/evolview_clusters-%s.txt" %(dbfolder,thresh),"w")
 	evolview.write(" ## leaf background color\n\n")
 	# for each gene
 	for n,gene in enumerate(gID):
+		if clustcoll[t].count(clustcoll[t][n]) < 2:
+			continue
 		# get the cluster and the assigned colour
 		mc = max(clustcoll[t])
 		cluster = clustcoll[t][n]
