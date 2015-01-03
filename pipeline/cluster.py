@@ -27,12 +27,13 @@ from jellyfish import levenshtein_distance as jld
 from numpy import triu_indices as nti
 from numpy import apply_along_axis as naaa
 from ete2 import Tree
+from random import shuffle
 
 ##### INPUT SPECIFICATIONS: CUSTOMIZE HERE! #####
 
 #options for clustering:
-clustermeth = "weighted"
-threshold = [0.5,0.75,1]# [2,5,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,220,250,280,300,350,400,450,500]
+clustermeth = "average"
+threshold = [0.75,1,1.05,1.1,1.15,1.153,1.1547]
 clustercrit = "inconsistent"
 #clustercrit = "maxclust" # corresponding threshold is max nr of clusters
 #clustercrit = "distance" # corresponding threshold is max length of branches
@@ -108,7 +109,7 @@ of the colour that needs returning.
 So, say there are 150 categories, and you want the colour for the 25th
 category, you would call it as getcolour(150,25).
 '''
-def getColour(maxcol,col):
+def getColour(maxcol):
 	a = 1/3.
 	n = int(math.pow(maxcol,a)) # the number of elements there have to be from 00-FF (minus one, because int is rounded down)
 	k = 255/n # the space in integers from 0-255 between each element
@@ -135,7 +136,8 @@ def getColour(maxcol,col):
 	for X,red in enumerate(CR):
 		colour = '#' + red + CG[X] + CB[X]
 		colours.append(colour)
-	return colours[col-1]
+	shuffle(colours)
+	return colours
 
 
 '''
@@ -175,13 +177,13 @@ for n,s in enumerate(protnumbers): #use any desired label here.
 	tree = tree.replace(nwstr1,str1)
 	tree = tree.replace(nwstr2,str2)
 # save the newick text to a file
-newick = open("%s/clusternewick.txt" %dbfolder, "w")
+newick = open("%s/clusternewick_%s.txt" %(dbfolder,clustermeth), "w")
 newick.write(tree)
 newick.close()
 
 #save the dendrogram
 sch.dendrogram(C,labels=strings,color_threshold=2,leaf_font_size=1)
-plt.savefig("%s/dendrogram_single_2.png" %dbfolder, dpi=1800)
+plt.savefig("%s/dendrogram_%s.png" %(dbfolder,clustermeth), dpi=1800)
 
 '''
 Collect data from the file that needs to be sorted into clusters.
@@ -255,20 +257,27 @@ for n,gene in enumerate(gID):
 orderfile.close()
 
 # save clusterdata as EvolView-readable data
+print "Method: " + clustermeth
 for t,thresh in enumerate(threshold):
-	evolview = open("%s/evolview_clusters-%s.txt" %(dbfolder,thresh),"w")
+	evolview = open("%s/evolview_clusters-%s-%s.txt" %(dbfolder,clustermeth,thresh),"w")
 	evolview.write(" ## leaf background color\n\n")
+	colours = getColour(max(clustcoll[t]))
+	countclust = 0
+	whichclust = []
 	# for each gene
 	for n,gene in enumerate(gID):
-		if clustcoll[t].count(clustcoll[t][n]) < 2:
-			continue
+		#if clustcoll[t].count(clustcoll[t][n]) < 2:
+		#	continue
 		# get the cluster and the assigned colour
-		mc = max(clustcoll[t])
 		cluster = clustcoll[t][n]
-		clr = getColour(mc,cluster)
+		clr = colours[cluster-1]
 		# get the gene name
 		gn = genenames[n] + '|' + protnumbers[n]
 		# write to file
 		evolview.write("%s\t%s\tprefix\n" %(gn,clr))
+		if cluster not in whichclust:
+			whichclust.append(cluster)
+			countclust += 1
 	evolview.close()
+	print "Threshold: %s, Clusters: %s (%s)" %(thresh,max(clustcoll[t]),countclust)
 
