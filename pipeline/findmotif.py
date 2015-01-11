@@ -20,9 +20,9 @@ import numpy as np
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
 seqfolder = "sequences"
 resfolder = "results"
-prefix = "140720-SM00355"
+prefix = "150111-SM00355"
 suffix = "seq.fasta"
-species = ["dmel","tcas","dpul","isca","smar"]
+species = ["dmel","tcas","dpul","isca","smar","turt"]
 motiflist = ['2_8_3','2_8_4','2_8_5','2_8_6','4_8_3','4_8_4','4_8_5','4_8_6','2_12_3','2_12_4','2_12_5','2_12_6','4_12_3','4_12_4','4_12_5','4_12_6','2_15_3','2_15_4','2_15_5','2_15_6','4_15_3','4_15_4','4_15_5','4_15_6'] # use only numbers, indicating the distances between C-C-H-H (separated by _)
 #HFresidues = ['V','I','L','M','F','W','C','A','Y','H','T','S','P','G','R','K'] #hydrophobic residues.
 
@@ -268,11 +268,9 @@ pl.axis('tight') #remove the white bar
 ax.invert_yaxis() #make sure it starts counting from the top
 
 #make the labels
-#column_labels = motiflist
-#row_labels = motiflist
 ax.set_xticklabels(motiflist, minor=False, rotation=90)
 ax.set_yticklabels(motiflist, minor=False)
 
-pl.show()
-#pl.savefig("%s/%s/heatmap_%s.svg" %(dbfolder,resfolder,colourformap), dpi = 300)
+#pl.show()
+pl.savefig("%s/%s/heatmap_%s.svg" %(dbfolder,resfolder,colourformap), dpi = 300)
 
