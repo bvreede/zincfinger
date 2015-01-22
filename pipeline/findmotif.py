@@ -1,10 +1,10 @@
 '''
 This script can be used to detect distinct C2H2 zinc finger motifs
-in a protein sequence.
+in files with protein sequences.
 The output is:
 (1) a fasta file with domains in order;
 (2) a csv file with all info that can be used for visualization.
-(3) a stats file with numbers of motifs and the amount of double motifs, and a heatmap
+(3) a stats file with numbers of motifs and the amount of double motifs, and a heatmap of these stats
 (4) fasta files for all motifs with sequences that were found
 Author: Barbara Vreede
 Contact: b.vreede@gmail.com
@@ -16,7 +16,7 @@ import numpy as np
 
 ### SPECIFY INFORMATION: DATA TO USE###
 ### input consists of: dbfolder/seqfolder/prefix-species_suffix
-### output consists of: dbfolder/resfolder/ except for sequences that go into seqfolder
+### output consists of: dbfolder/resfolder/ or dbfolder/imgfolder or dbfolder/seqfolder, depending on output type
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
 seqfolder = "sequences"
 resfolder = "results"
@@ -24,14 +24,18 @@ imgfolder = "images"
 prefix = "150111-SM00355"
 suffix = "seq.fasta"
 species = ["dmel","tcas","dpul","isca","smar","turt"]
+
 #define motifs: first a complete dataset
 moCC = [2,3,4] #distances between CC
 moCH = [7,8,9,10,11,12,13,14,15] #distances between CH
 moHH = [2,3,4,5,6] #distances between HH
-motiflist = ['%s_%s_%s' %(m,n,o) for m in moCC for n in moCH for o in moHH] # turn this on if you want to search for all possible combinations of the above.
+# turn this on if you want to search for all possible combinations of the above: (and don't forget to turn the custom list off!)
+#motiflist = ['%s_%s_%s' %(m,n,o) for m in moCC for n in moCH for o in moHH] 
+
+# turn this on for custom motif list
 motiflist = ['2_7_4','2_8_3','2_9_3','2_10_5','2_11_3','2_11_4','2_12_2','2_12_3','2_12_4','2_12_5','2_12_6','2_13_3',
 '2_13_4','2_14_3','2_14_4','2_15_4','3_8_3','4_12_3','4_12_4','4_15_3']
-#HFresidues = ['V','I','L','M','F','W','C','A','Y','H','T','S','P','G','R','K'] #hydrophobic residues.
+
 
 '''
 Define regular expressions for all zf-domains (by the C-H distances), and save in a
@@ -264,6 +268,7 @@ fig,ax = pl.subplots()
 heatmap = pl.pcolor(data, cmap=colourformap)
 cbar = pl.colorbar(heatmap)
 
+# following commented code from stackoverflow; probably not necessary, but leaving it just in case
 #cbar.ax.set_yticklabels(['0','1','2','>3'])
 #cbar.set_label('#double motifs / total motifs', rotation=270)
 
@@ -277,6 +282,6 @@ ax.invert_yaxis() #make sure it starts counting from the top
 ax.set_xticklabels(motiflist, minor=False, rotation=90)
 ax.set_yticklabels(motiflist, minor=False)
 
-#pl.show()
+# save the figure
 pl.savefig("%s/%s/heatmap_%s.svg" %(dbfolder,imgfolder,colourformap), dpi = 300)
 
