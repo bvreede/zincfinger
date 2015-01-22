@@ -3,7 +3,7 @@ zincfinger
 
 *1. Find C2H2 motifs in fasta files*
 
-Use the script 'findmotif.py'. Customize the code to find the source files in your system. This script will function on a (series of) fasta file(s) with protein sequences, where the headers consist of '[geneID]|[genename]|[proteinID]'.
+Use the script 'findmotif.py'. Customize the code to find the source files in your system. This script will function on a (series of) fasta file(s) with protein sequences, where the headers consist of 'geneID|genename|proteinID'.
 
 It needs three subfolders in the main folder: 
 
