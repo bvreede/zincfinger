@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 '''
 This script can be used to detect distinct C2H2 zinc finger motifs
 in files with protein sequences.

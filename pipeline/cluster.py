@@ -5,16 +5,8 @@ It works through calculating Levenshtein distances, and therefore
 clusters longer strings more efficiently.
 It returns a csv file with several cluster options based on the cluster
 threshold.
-The script requires the following python modules:
-- scipy
-- pylab
-- jellyfish
-- numpy
-- matplotlib
-- itertools
-- re
-- csv
-- math
+The script requires several additional modules (e.g. numpy, scipy, ete2) that need
+to be installed.
 Author: Barbara Vreede
 Contact: b.vreede@gmail.com
 Date: 15 October 2014
@@ -33,11 +25,8 @@ from random import shuffle
 
 #options for clustering:
 clustermeth = "average"
-threshold = [0.75,1,1.05,1.1,1.15,1.153,1.1547]
+threshold = [1.1547]
 clustercrit = "inconsistent"
-#clustercrit = "maxclust" # corresponding threshold is max nr of clusters
-#clustercrit = "distance" # corresponding threshold is max length of branches
-
 
 #input/output files and folders:
 species = "dmel"
@@ -240,7 +229,7 @@ for t in threshold:
 		os.system("mkdir %s" %(outfolder))
 	sortdata(t,max(cID),cldict,outfolder)
 
-# save clusterdata separately
+# save clusterdata as a database
 orderfile = open(clusterorder, "w")
 orderfile.write("Gene_stable_ID,Gene_name,Protein_stable_ID,")
 tline = ""
