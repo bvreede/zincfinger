@@ -1,3 +1,18 @@
+'''
+This script extracts from clustered/grouped genes a list of IDs
+that can be used as input for the GOrilla tool. In addition to
+the clusters, it also needs a 'translation' database ('IDlibrary') in .csv
+which contains alternative IDs for the proteins so it can be interpreted
+by GOrilla.
+This translation database should consist of the following columns (in order):
+ENSEMBL Gene ID; Associated Gene Name; ENSEMBL Protein ID; RefSeq Protein ID; RefSeq mRNA; UniProt/SwissProt ID.
+The database can easily be constructed using Ensembl BioMart.
+Author: Barbara Vreede
+Contact: b.vreede@gmail.com
+Date: 25 January 2015
+'''
+
+
 import os,csv
 
 infolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results/1.1547-clusters"
