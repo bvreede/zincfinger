@@ -1,3 +1,4 @@
+#!/usr/bin/python
 '''
 This script extracts from clustered/grouped genes a list of IDs
 that can be used as input for the GOrilla tool. In addition to
