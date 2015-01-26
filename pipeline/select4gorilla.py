@@ -37,7 +37,7 @@ and print the outputfiles for this column.
 def readdb(n,outi,oute):
 	for line in db:
 		pline = ','.join(line) #the line as it will be on a csv resultsfile
-		if line[n] == '': #there is a hit on this protein for the motif
+		if line[n] != '': #there is a hit on this protein for the motif
 			# (1) motif inclusive:
 			# put those lines in the database that have hits on this motif.
 			outi.write("%s\n" %pline)
