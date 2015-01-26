@@ -14,14 +14,14 @@ Contact: b.vreede@gmail.com
 Date: 11 December 2014
 '''
 
-import random,csv,sys,os
+import random,csv,sys,os,math
 
 '''
 Defining input/output folders
 '''
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results"
-infolder = "clusterdbs"
-outfolder = "clustervizu"
+infolder = "singlemotif"
+outfolder = "viz_singlemotif"
 
 '''
 Verifying/creating input/output files/folders
@@ -50,19 +50,41 @@ motlen = {} #dictionary of motif lengths
 motclr = {} #dictionary of motif colours
 motcount = {} #keeps track of how often a single motif is used
 
+
 '''
-Makes a hex colour based on the motif sequence.
-NOT ROBUST AGAINST OTHER COLOUR COMBINATIONS!
+Function to translate a number into a hex colour.
+Input required: the total number of colours needed.
 '''
-def findcolour(CC,CH,HH):
-	CCdict = {'2':'2','4':'d'}
-	CHdict = {'8':'4','12':'a','15':'f'}
-	HHdict = {'3':'0','4':'a','5':'e'}
-	try:
-		mclr = CHdict[CH] + HHdict[HH] + CCdict[CC]
-	except KeyError:
-		sys.exit("Your motifs don't exist in the colour scheme of this visualization module. Add them before continuing!")
-	return mclr
+def getColour(maxcol):
+	a = 1/3.
+	n = int(math.pow(maxcol,a)) # the number of elements there have to be from 00-FF (minus one, because int is rounded down)
+	k = 255/n # the space in integers from 0-255 between each element
+	CC,CR,CG,CB,colours = [],[],[],[],[]
+	# construct the list of elements from 00-FF
+	for i in range(n+1):
+		hn = hex(i*k)[2:]
+		if len(hn) < 2:
+			hn = hn+hn
+		CC.append(hn)
+	#red: pick each element (n+1)^2 times before moving on to the next
+	for c in CC:
+		for r in range(pow((n+1),2)):
+			CR.append(c)
+	#green: pick each element (n+1) times before moving on to the next; repeat (n+1) times
+	for g in range(n+1):
+		for c in CC:
+			for h in range(n+1):
+				CG.append(c)
+	#blue, pick each element once before moving on to the next, repeat (n+1)^2 times
+	for b in range(pow((n+1),2)):
+		for c in CC:
+			CB.append(c)
+	for X,red in enumerate(CR):
+		colour = '#' + red + CG[X] + CB[X]
+		colours.append(colour)
+	random.shuffle(colours)
+	return colours
+
 
 
 '''
@@ -100,12 +122,15 @@ fills up information on the colour and length dictionaries.
 '''
 def order(columns):
 	length,callseq = [],[]
-	for c in columns:
+	colours = getColour(len(columns))
+	for k,c in enumerate(columns):
 		if c not in motlen:		# first, some household stuff: this is a new motif, so assign length + colour
+			if len(c) == 0:
+				continue
 			CC,CH,HH = c.split('_')
 			clen = int(CC)+int(CH)+int(HH)+4		# calculate the length for this motif
 			motlen[c] = clen				# put the length for the motif in the dictionary
-			mclr = findcolour(CC,CH,HH)
+			mclr = colours[k]
 			motclr[c] = mclr
 			motcount[c] = -1
 		length.append(motlen[c])
@@ -154,11 +179,10 @@ for f in files:
 				for h in hits:
 					X = int(h) + label_align # the border where gene starts
 					draw_arrow(motifname,X,Y,out)
-	if linecount * linedist > image_height:
-		print "Your image is incomplete: sequences for " + f + " extend to height = " + str(linecount * linedist)
-	if max(maxlen) + label_align > image_width:
-		print "Your image is incomplete: sequences for " + f + " extend to width = " + str(max(maxlen) + label_align)
+	if linecount > 2:
+		if linecount * linedist > image_height:
+			print "Your image is incomplete: sequences for " + f + " extend to height = " + str(linecount * linedist)
+		if max(maxlen) + label_align > image_width:
+			print "Your image is incomplete: sequences for " + f + " extend to width = " + str(max(maxlen) + label_align)
 	out.write('</svg>')
 	out.close()
-
-#print motcount,motclr
