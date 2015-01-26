@@ -1,0 +1,63 @@
+#!/usr/bin/python
+'''
+This script can be used to find and group all genes with either
+(1) domain X exclusively; or
+(2) containing domain X, irrespective of others.
+The input required for this script is the output database of findmotif.py,
+consisting of three header columns (gene ID, gene name, protein ID), a column
+for sequence lengths, and per motif the locations of hits (each motif in a separate
+column).
+
+Author: Barbara Vreede
+Contact: b.vreede@gmail.com
+Date: 25 January 2015
+'''
+import csv,sys
+
+if len(sys.argv) <= 1:
+	sys.exit("USAGE: select4gorilla.py path/to/inputfile \n(inputfile is database of motifhits -- output of findmotif.py -- in csv)")
+inputdb = csv.reader(open(sys.argv[1])) # input file
+outlist = sys.argv[1].split('/')[:-1]
+outfolder = '/'.join(outlist) # all folders from input path minus the file; used as folder for any output
+
+#read input and put in memory
+db = []
+for k,line in enumerate(inputdb):
+	if k == 0:
+		header = line
+	else:
+		db.append(line)
+
+'''
+'''
+def readdb(n,outi,oute):
+	for line in db:
+		pline = ','.join(line)
+		if line[n] == '': #there is a hit on this protein for the motif
+			outi.write("%s\n" %pline)
+			#check if there are other motif hits in this protein
+			e = 0
+			for k in range(4,len(line)):
+				if line[k] != '':
+					if k == n:
+						continue
+					else:
+						e = 1
+						break
+			if e == 0:
+				oute.write("%s\n" %pline)
+
+#per motif (use enumerate):
+for n,m in enumerate(header):
+	if n > 3 and len(m) > 0: #these are the motifs
+		outi = open("%s/%s_incl.csv" %(outfolder,m), 'w')
+		oute = open("%s/%s_excl.csv" %(outfolder,m), 'w')
+		readdb(n,outi,oute)
+		outi.close()
+		oute.close()
+
+# (1) motif exclusive:
+# put those lines in the database that have hits on this motif, and nothing in others
+
+# (2) motif inclusive:
+# put those lines in the database that have hits on this motif.
