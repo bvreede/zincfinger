@@ -35,12 +35,15 @@ Go through database with a given column in mind
 and print the outputfiles for this column.
 '''
 def readdb(n,outi,oute):
+	gis,pis,ges,pes = [],[],[],[]
 	for line in db:
 		pline = ','.join(line) #the line as it will be on a csv resultsfile
 		if line[n] != '': #there is a hit on this protein for the motif
 			# (1) motif inclusive:
 			# put those lines in the database that have hits on this motif.
 			outi.write("%s\n" %pline)
+			gis.append(line[0])
+			pis.append(line[2])
 			#check if there are other motif hits in this protein
 			e = 0
 			for k in range(4,len(line)):
@@ -53,14 +56,33 @@ def readdb(n,outi,oute):
 			# (2) motif exclusive:
 			# put those lines in the database that have hits on this motif, and nothing in others
 			if e == 0:
+				ges.append(line[0])
+				pes.append(line[2])
 				oute.write("%s\n" %pline)
+	ges = list(set(ges))
+	gis = list(set(gis))
+	gi = len(gis)
+	ge = len(ges)
+	pi = len(pis)
+	pe = len(pes)
+	return gi,ge,pi,pe
 
 #per motif: open outputfile, search through the database
+outdb = open("%s/singlemotif_hits.csv" %outfolder, "w")
+outdb.write("motif,genes (incl),proteins (incl),genes (excl),proteins (excl)\n")
 for n,m in enumerate(header):
+	head = ','.join(header)
 	if n > 3 and len(m) > 0: #these are the motifs
 		outi = open("%s/%s_incl.csv" %(outfolder,m), 'w')
 		oute = open("%s/%s_excl.csv" %(outfolder,m), 'w')
-		readdb(n,outi,oute)
+		outi.write('%s\n' %head)
+		oute.write('%s\n' %head)
+		gi,ge,pi,pe = readdb(n,outi,oute)
+		outdb.write("%s,%s,%s,%s,%s\n" %(m,gi,pi,ge,pe))
 		outi.close()
 		oute.close()
+outdb.close()
+
+
+# collect numbers of proteins and genes per category.
 
