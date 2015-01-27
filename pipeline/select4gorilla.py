@@ -19,6 +19,7 @@ if len(sys.argv) <= 1:
 inputdb = csv.reader(open(sys.argv[1])) # input file
 outlist = sys.argv[1].split('/')[:-1]
 outfolder = '/'.join(outlist) + '/singlemotif' # all folders from input path minus the file; used as folder for any output
+outfolder2 = '/'.join(outlist)
 
 #read input and put in memory
 db = []
@@ -28,6 +29,13 @@ for k,line in enumerate(inputdb):
 	else:
 		db.append(line)
 
+
+'''
+Compare two collections of hits (target set and possible overlap), and checks if the
+possible overlap indeed overlaps; if this is the case, there is no conflict and 
+the function returns 0. If there is no overlap in even a single case, the function
+will return 1, and the hit should not be count for the 'exclusive' category.
+'''
 def compare(test,hits):
 	T = test.split('|')
 	H = hits.split('|')
@@ -90,7 +98,7 @@ def readdb(n,outi,oute):
 	return gi,ge,pi,pe
 
 #per motif: open outputfile, search through the database
-outdb = open("%s/singlemotif_hits.csv" %outfolder, "w")
+outdb = open("%s/singlemotif_hits.csv" %outfolder2, "w")
 outdb.write("motif,genes (incl),proteins (incl),genes (excl),proteins (excl)\n")
 for n,m in enumerate(header):
 	head = ','.join(header)
@@ -104,7 +112,3 @@ for n,m in enumerate(header):
 		outi.close()
 		oute.close()
 outdb.close()
-
-
-# collect numbers of proteins and genes per category.
-
