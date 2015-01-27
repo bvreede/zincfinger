@@ -30,6 +30,25 @@ for k,line in enumerate(inputdb):
 	else:
 		db.append(line)
 
+def compare(test,hits):
+	T = test.split('|')
+	H = hits.split('|')
+	s = 0
+	# test each item in T for overlap with H
+	for t in T:
+		t = int(t)
+		for k in range(1,6):
+			if str(t - k) in H:
+				s += 1
+				break
+			elif str(t + k) in H:
+				s += 1
+				break
+	if s/len(T) == 1:
+		return 0
+	else:
+		return 1
+
 '''
 Go through database with a given column in mind
 and print the outputfiles for this column.
@@ -51,6 +70,11 @@ def readdb(n,outi,oute):
 					if k == n:
 						continue
 					else:
+						# IF YOU DON'T WANT TO ALLOW OVERLAP TO COUNT FOR EXCLUSIVE LIST:
+						# COMMENT OUT THE FOLLOWING THREE LINES (s= ... continue)
+						s = compare(line[k],line[n]) # other hits found; check if they overlap
+						if s == 0:
+							continue
 						e = 1 #other hits found; no longer interested in this motif
 						break
 			# (2) motif exclusive:
