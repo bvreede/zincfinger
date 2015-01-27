@@ -14,9 +14,11 @@ Date: 25 January 2015
 '''
 
 
-import os,csv
+import os,csv,sys
 
-infolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results/1.1547-clusters"
+if len(sys.argv) <= 1:
+	sys.exit("USAGE: translate4gorilla.py path/to/inputfolder \n(inputfolder contains csv files that need to be translated)")
+infolder = (sys.argv[1]) 
 
 # prep library
 IDlibrary = csv.reader(open("/home/barbara/Dropbox/shared_work/zinc_finger_data/data/databases/150105-SM00355-dmel_IDs.csv"))
@@ -25,6 +27,9 @@ for l in IDlibrary:
 	IDlist.append(l)
 
 for filename in os.listdir(infolder):
+	#check if file is a .csv file
+	if filename[-4:] != ".csv":
+		continue
 	# open file
 	f = csv.reader(open("%s/%s" %(infolder,filename)))
 	# get column 3 translated into list
