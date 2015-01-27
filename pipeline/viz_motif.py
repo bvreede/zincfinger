@@ -79,6 +79,7 @@ def getColour(maxcol):
 	for b in range(pow((n+1),2)):
 		for c in CC:
 			CB.append(c)
+	#combine the r, g, b lists to generate hex colours
 	for X,red in enumerate(CR):
 		colour = '#' + red + CG[X] + CB[X]
 		colours.append(colour)
