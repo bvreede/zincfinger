@@ -7,8 +7,6 @@ The input required for this script is the output database of findmotif.py,
 consisting of three header columns (gene ID, gene name, protein ID), a column
 for sequence lengths, and per motif the locations of hits (each motif in a separate
 column).
-Possible option for improvement: add an escape to the 'exclusive' hit finder that
-allows the existence of other motifs so long as they overlap.
 
 Author: Barbara Vreede
 Contact: b.vreede@gmail.com
