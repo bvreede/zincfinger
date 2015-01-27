@@ -15,8 +15,12 @@ It needs three subfolders in the main folder:
 
 !NB: only works for species that have proper GO annotation, and that can be checked with GOrilla (http://cbl-gorilla.cs.technion.ac.il/).
 
-Use two scripts in succession: 'select4gorilla.py' and 'translate4gorilla.py'. The former selects for each motif those genes/proteins that have either 1. ONLY hits for this motif ('exclusive'), or 2. hits for this motif, irrespective of any other motifs in the same protein ('inclusive'). The script currently allows overlap (i.e. if motif A and motif B are both present in the same location, then the protein can still count as an exclusive for both motif A and B), but this can be removed in the script (indicated in the comments).
+Use two scripts in succession: 'select4gorilla.py' and 'translate4gorilla.py' (don't forget to customize paths). The former selects for each motif those genes/proteins that have either 1. ONLY hits for this motif ('exclusive'), or 2. hits for this motif, irrespective of any other motifs in the same protein ('inclusive'). The script currently allows overlap (i.e. if motif A and motif B are both present in the same location, then the protein can still count as an exclusive for both motif A and B), but this can be removed in the script (indicated in the comments).
 
 translate4gorilla.py is necessary as GOrilla does not accept all forms of gene/protein ID. This script requires a 'translation database', which contains the following columns:
+ENSEMBL Gene ID; Associated Gene Name; ENSEMBL Protein ID; RefSeq Protein ID; RefSeq mRNA; UniProt/SwissProt ID.
+The database can easily be constructed using Ensembl BioMart.
 
-Furthermore, translate4gorilla.py creates a text document, which can be used immediately as input for GOrilla.
+Finally, translate4gorilla.py creates a text document, which can be used immediately as input for GOrilla.
+
+In case all putative translations for the protein are empty, the gene symbol will be noted instead. However, all symbols will be noted only at the end of the document, so that they can be potentially left out of a GOrilla analysis. Symbols appear under the header 'SYMBOLS:' in the text document.
