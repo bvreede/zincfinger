@@ -1,7 +1,8 @@
-import csv,sys
+import csv,sys,math
+from random import shuffle
 
 if len(sys.argv) <= 1:
-	sys.exit("USAGE: python evolview_protannot.py path/to/inputfile")
+	sys.exit("USAGE: python evolview_protannot.py path/to/inputfile\n(inputfile is csv file with motifhits per protein)")
 
 infile = sys.argv[1]
 #resfolder = ('/').join(infile.split('/')[:-1])
@@ -15,19 +16,39 @@ result = open(outname, "w")
 
 # define colours of motifs
 '''
-Makes a hex colour based on the motif sequence.
-NOT ROBUST AGAINST OTHER COLOUR COMBINATIONS!
+Function to translate numbers into a hex colour.
+Input required: the total number of colours needed. Returns
+a list of colours as long as (or longer) than the number.
 '''
-def findcolour(CC,CH,HH):
-	CCdict = {'2':'20','4':'D0'}
-	CHdict = {'8':'40','12':'A0','15':'F0'}
-	HHdict = {'3':'00','4':'A0','5':'E0'}
-	try:
-		mclr = '#' + CHdict[CH] + HHdict[HH] + CCdict[CC]
-	except KeyError:
-		sys.exit("I question your motifs: they don't exist in the colour scheme of this visualization module.")
-	return mclr
-
+def getColour(maxcol):
+	a = 1/3.
+	n = int(math.pow(maxcol,a)) # the number of elements there have to be from 00-FF (minus one, because int is rounded down)
+	k = 255/n # the space in integers from 0-255 between each element
+	CC,CR,CG,CB,colours = [],[],[],[],[]
+	# construct the list of elements from 00-FF
+	for i in range(n+1):
+		hn = hex(i*k)[2:]
+		if len(hn) < 2:
+			hn = hn+hn
+		CC.append(hn)
+	#red: pick each element (n+1)^2 times before moving on to the next
+	for c in CC:
+		for r in range(pow((n+1),2)):
+			CR.append(c)
+	#green: pick each element (n+1) times before moving on to the next; repeat (n+1) times
+	for g in range(n+1):
+		for c in CC:
+			for h in range(n+1):
+				CG.append(c)
+	#blue, pick each element once before moving on to the next, repeat (n+1)^2 times
+	for b in range(pow((n+1),2)):
+		for c in CC:
+			CB.append(c)
+	for X,red in enumerate(CR):
+		colour = '#' + red + CG[X] + CB[X]
+		colours.append(colour)
+	shuffle(colours)
+	return colours
 
 '''
 writes the first lines of the results file
@@ -43,10 +64,11 @@ def headerprint(colourdict):
 colourdict,msequence,mlen = {},{},{}
 for i,line in enumerate(source):
 	if i == 0: #only on the first (header) line
+		colours = getColour(len(line)-4)
 		for n,m in enumerate(line[4:]):
 			if len(m) > 0:
 				CC,CH,HH = m.split('_')
-				mcolour = findcolour(CC,CH,HH)
+				mcolour = colours[n] #findcolour(CC,CH,HH)
 				# add colour, sequence, motif length to dictionaries
 				colourdict[m] = mcolour
 				msequence[m] = n + 4
