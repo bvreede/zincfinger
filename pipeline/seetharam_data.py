@@ -62,19 +62,28 @@ for n,cl in enumerate(classes):
 #prot to evolview name
 fasta = open(dmelfasta)
 namedict = {}
+genenames = []
 for line in fasta:
 	if line[0] == '>':
 		line = line.strip()
 		a,b = line.split('|')[1:]
 		name = a + '|' + b
 		namedict[b] = name
+		genenames.append(a)
 
 
 # generate the evolview-readable doc
 evolview = open("/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results/seetharam_evolview_labels.txt", "w")
 evolview.write(" ## leaf background color\n\n")
+gene2col = {}
 for key in prot2class:
+	gene = namedict[key].split('|')[0]
+	gene2col[gene] = ccdict[prot2class[key]]
+
+
 	evolview.write("%s\t%s\tprefix\n" %(namedict[key],ccdict[prot2class[key]]))
+
+
 evolview.close()
 
 
