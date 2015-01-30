@@ -4,16 +4,6 @@ from random import shuffle
 indb = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/data_from_seetharam/fasta_files_seetharam"
 dmelfasta = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/sequences/150111-SM00355-dmel_seq.fasta"
 
-prot2class = {}
-classes = []
-for filename in os.listdir(indb):
-	if filename[0:23] == "Drosophila_melanogaster":
-		nameli = filename.split('-')
-		prot = nameli[2].split('.')[0]
-		prot2class[prot] = nameli[1]
-		classes.append(nameli[1])
-
-
 
 '''
 Function to translate numbers into a hex colour.
@@ -51,39 +41,48 @@ def getColour(maxcol):
 	return colours
 
 
+#proteins to class
+prot2class = {}
+classes = []
+for filename in os.listdir(indb):
+	if filename[0:23] == "Drosophila_melanogaster":
+		nameli = filename.split('-')
+		prot = nameli[2].split('.')[0]
+		prot2class[prot] = nameli[1]
+		classes.append(nameli[1])
 
-#give classes a colour
+#genes to class
+fasta = open(dmelfasta)
+gene2class = {}
+genenames = []
+for line in fasta:
+	if line[0] == '>':
+		line = line.strip()
+		a,b = line.split('|')[1:] #gene name in a; prot name in b
+		#if prot name in prot2class, save gene name with same class
+		if b in prot2class:
+			gene2class[a] = prot2class[b]
+		#also, save all names in a list, as they will appear in the evolview visualization
+		name = a + '|' + b
+		genenames.append(name)
+
+#class to color
 classes = list(set(classes))
 colours  = getColour(len(classes))
 ccdict = {}
 for n,cl in enumerate(classes):
 	ccdict[cl] = colours[n]
 
-#prot to evolview name
-fasta = open(dmelfasta)
-namedict = {}
-genenames = []
-for line in fasta:
-	if line[0] == '>':
-		line = line.strip()
-		a,b = line.split('|')[1:]
-		name = a + '|' + b
-		namedict[b] = name
-		genenames.append(a)
-
 
 # generate the evolview-readable doc
 evolview = open("/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results/seetharam_evolview_labels.txt", "w")
 evolview.write(" ## leaf background color\n\n")
 gene2col = {}
-for key in prot2class:
-	gene = namedict[key].split('|')[0]
-	gene2col[gene] = ccdict[prot2class[key]]
-
-
-	evolview.write("%s\t%s\tprefix\n" %(namedict[key],ccdict[prot2class[key]]))
-
-
+for gene in genenames:
+	gn = gene.split('|')[0]
+	if gn in gene2class:
+		evolview.write("%s\t%s\tprefix\n" %(gene,ccdict[gene2class[gn]]))
 evolview.close()
 
+print len(classes)
 
