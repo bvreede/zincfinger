@@ -48,7 +48,7 @@ def getColour(maxcol):
 Function to blast the protein to a database and return the first hit.
 '''
 def blast(filename,spp):
-	blastdb = "/home/barbara/data/zincfingers/%szfs.fa" %spp
+	blastdb = "/home/barbara/data/zincfingers/%szfsTRANS.fa" %spp
 	query = "%s/%s" %(indb,filename)
 	out = "%s/tempout.txt" %(indb)
 	blast = "blastp -query %s -db %s -out %s" %(query,blastdb,out)
@@ -87,7 +87,6 @@ for filename in os.listdir(indb):
 		prot = nameli[2].split('.')[0]
 		ISprot2class[prot] = nameli[1]
 		countis +=1
-	"""
 	elif filename[0:4] == "Trib":
 		prot = blast(filename,'tcas')
 		TCprot2class[prot] = nameli[1]
@@ -96,7 +95,6 @@ for filename in os.listdir(indb):
 		prot = blast(filename,'dpul')
 		DPprot2class[prot] = nameli[1]
 		countdp +=1
-	"""
 
 
 #class to color
@@ -162,7 +160,7 @@ for line in dpfasta:
 		genenames.append(name)
 
 
-print countdm,countis,counttc,countdp
+print countis,counttc,countdp
 
 # generate the evolview-readable doc
 evolview = open("/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results/seetharam_evolview_labels.txt", "w")
@@ -181,6 +179,14 @@ for gene in genenames:
 		evolview.write("%s\t%s\tprefix\n" %(gene,ccdict[DPprot2class[gene]]))
 		countdp -= 1
 evolview.close()
+
+for key in DPprot2class:
+	if key not in genenames:
+		print key, DPprot2class[key]
+	
+for key in TCprot2class:
+	if key not in genenames:
+		print key, TCprot2class[key]
 
 print countis,counttc,countdp
 
