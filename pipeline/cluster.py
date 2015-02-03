@@ -29,7 +29,7 @@ threshold = [1.1547]
 clustercrit = "inconsistent"
 
 #input/output files and folders:
-species = "dmel"
+species = "allz"
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results"
 motiffile = "%s/motifseq_%s.fasta" %(dbfolder,species) #the file used for the clustering
 infile = "%s/motifhits_%s.csv" %(dbfolder,species) #the file to apply the clustering to, and split into new files
@@ -253,7 +253,7 @@ for t,thresh in enumerate(threshold):
 	whichclust = []
 	# for each gene
 	for n,gene in enumerate(gID):
-		#if clustcoll[t].count(clustcoll[t][n]) < 2:
+		#if clustcoll[t].count(clustcoll[t][n]) < 2: #to remove clusters that are too short
 		#	continue
 		# get the cluster and the assigned colour
 		cluster = clustcoll[t][n]
