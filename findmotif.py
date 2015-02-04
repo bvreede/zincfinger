@@ -24,8 +24,11 @@ seqfolder = "sequences"
 resfolder = "results"
 imgfolder = "images"
 prefix = "150111-SM00355"
+#suffix = "seq-trans.fasta"
 suffix = "seq.fasta"
-species = ["dmel","tcas","dpul","isca","smar","turt"]
+#species = ["tcas","dpul","isca","smar","turt"]
+#species = ["dmel","tcas","dpul","isca","smar","turt"]
+species = ["allz"]
 
 #define motifs: first a complete dataset
 moCC = [2,3,4] #distances between CC
