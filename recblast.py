@@ -18,7 +18,7 @@ Contact: b.vreede@gmail.com
 import os,csv,sys
 
 #CUSTOMIZE: zffolder is for the databases and individual query files; seqfolder is for the original fasta files
-zffolder = "/home/barbara/data/zincfingers/trans" #"/home/barbara/data/zincfingers"
+zffolder = "/home/barbara/data/test2"
 seqfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/sequences"
 
 #CUSTOMIZE: the names given to databases, and the names the fasta files currently have. This requires
@@ -30,8 +30,12 @@ dbcursuffix = "_seq.fasta" #the current fasta file name (suffix)
 
 #CUSTOMIZE: the individual species specifiers for each fasta file ('ilistA') and the comparative species ('ilistB').
 ilistA = ['isca','smar','turt','tcas','dpul']
-comp = 'dmel'
-ilistC = ilistA.append(comp)
+comp = ['dmel']
+
+#END CUSTOMIZATION.
+ilistC = ilistA + comp
+comp = comp[0] #comp should be a string, but was briefly a list for concatenation
+
 
 '''
 PART 0:
@@ -107,12 +111,14 @@ for spp in ilistC:
 	prepdb(spp)
 	prepblastdb(spp)
 
-
-
+'''
+PART 2:
+PERFORM BLASTS FROM ALL SPECIES IN 'ILISTA' TO THE SPECIES IN 'COMP' AND BACK
+'''
 # blast each file of dmel against the five other species, and save the name of its top hit
 # output: csv file with dmel (or other comparison) in column 1, spp in column 2; named: dmel-spp
 for spp in ilistA:
-	outdb = open("%s/comp-%s.csv" %(zffolder,comp,spp), "w")
+	outdb = open("%s/%s-%s.csv" %(zffolder,comp,spp), "w")
 	for f in os.listdir("%s/%s" %(zffolder,comp)):
 		if f[0] == '.':
 			print "skipping hidden file ", f
@@ -149,7 +155,10 @@ for spp in ilistA:
 	os.remove("%s/tempout.txt" %zffolder)
 	outdb.close()
 
-
+'''
+PART 3:
+CHECK WHICH RECIPROCAL HITS EXIST AND REWRITE THE FASTA FILES
+'''
 # make a reciprocal check of each pair of csv files
 gndict = open("%s/genenamedict.csv" %(seqfolder), "w")
 for spp in ilistA:
