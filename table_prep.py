@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 '''
 The purpose of this script is to change the names of
 table headers so that spaces are removed and replaced by
