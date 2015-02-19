@@ -62,6 +62,7 @@ for n,line in enumerate(goterms):
 #from the GO-file: get data on which genes are associated with which GO terms
 #make a table (gene x GO)
 gohitdb = []
+gohitdb2 = []
 for n,line in enumerate(godb):
 	#if n == 0:
 	#	continue
@@ -70,9 +71,29 @@ for n,line in enumerate(godb):
 	#print line
 	if line[2] in pidli and line[6] in goli:
 		gohit = frozenset([line[1],line[6]])
+		gohit2 = [line[1],line[6]]
 		gohitdb.append(gohit)
+		gohitdb2.append(gohit2)
 gohitdb = set(gohitdb)
 
+
+for hit in gohitdb:
+	print hit
+
+print gohitdb2
+
+data = []
+for gene in gnli:
+	row = []
+	for go in goli:
+		check = [gene,go]
+		if check in gohitdb2:
+			row.append(1)
+		else:
+			row.append(0)
+	data.append(row)
+
+data = np.array(data)
 
 
 #cluster genes by similarity? and GO terms too?
@@ -81,13 +102,13 @@ gohitdb = set(gohitdb)
 #data = np.random.rand(10,4)
 #print data
 
-data = np.array([[3,4],[5,1],[9,0]])
+#data = np.array([[3,4],[5,1],[9,0]])
 print data
 
 
 #specify plot
 fig, ax = plt.subplots()
-heatmap = ax.pcolor(data, cmap=plt.cm.Blues)
+heatmap = ax.pcolor(data, cmap=plt.cm.YlOrBr)
 ax.set_xticks(np.arange(data.shape[1])+0.5,minor=False)
 ax.set_yticks(np.arange(data.shape[0])+0.5,minor=False)
 ax.invert_yaxis()
