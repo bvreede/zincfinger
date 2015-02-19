@@ -11,36 +11,67 @@ Date: 18 February 2015
 import csv, sys
 from os import path
 
-datafolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results/singlemotif/"
+#specify folder for inputfiles, and an errormessage given on every usage abort to the user
+dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/"
+datafolder = "%sresults/singlemotif/" %dbfolder
+gosource = "%sdatabases/140720-SM00355-dmel2.csv" %dbfolder
 errormess = "USAGE: goheat.py motif_incl/excl (e.g.: goheat.py 2_12_4_excl)\nThe program will automatically find the correct input files in %s" %datafolder
+
 
 if len(sys.argv) <= 1:
 	sys.exit(errormess)
 
+#generate names of input files: the user only indicates the prefix
 genefile = datafolder + sys.argv[1] + ".csv"
 gofile = datafolder + sys.argv[1] + "_results.csv"
 
+#check if all input files are correct (if they don't exist: abort)
 if not path.exists(genefile):
-	sys.exit("ABORT: one of the input files was not found.\n%s" %errormess)
+	sys.exit("ABORT: at least one of the input files was not found.\n%s" %errormess)
 if not path.exists(gofile):
-	sys.exit("ABORT: one of the input files was not found.\n%s" %errormess)
+	sys.exit("ABORT: at least one of the input files was not found.\n%s" %errormess)
+if not path.exists(gosource):
+	sys.exit("ABORT: could not locate the GO database. Correct the path in the script.")
 
+#open the files
 genes = csv.reader(open(genefile))
 goterms = csv.reader(open(gofile))
+godb = csv.reader(open(gosource))
 
 #collect genes and GO terms
-geneli, goli = [],[]
-for line in genes:
-	geneli.append(line[0:3])
+goli, gnli, pidli = [],[],[] #lists of (unique) go IDs, gene names, protein IDs
+godict,genedict = {},{} #translation dictionaries to find gene names with protein IDs, and go description with go ID
+for n,line in enumerate(genes):
+	if n == 0:
+		continue
+	genedict[line[2]] = line[1]
+	gnli.append(line[1])
+	pidli.append(line[2])
+gnli = list(set(gnli))
+pidli = list(set(pidli))
 
-for line in goterms:
-	goli.append(line[0:2])
-
-print geneli,goli
+for n,line in enumerate(goterms):
+	if n == 0:
+		continue
+	goli.append(line[0])
+	godict[line[0]] = line[1]
 
 
 #from the GO-file: get data on which genes are associated with which GO terms
 #make a table (gene x GO)
+gohitdb = []
+for n,line in enumerate(godb):
+	#if n == 0:
+	#	continue
+	#if n == 10:
+	#	break
+	#print line
+	if line[2] in pidli and line[6] in goli:
+		gohit = frozenset([line[1],line[6]])
+		gohitdb.append(gohit)
+gohitdb = set(gohitdb)
+
+
 
 #cluster genes by similarity? and GO terms too?
 
