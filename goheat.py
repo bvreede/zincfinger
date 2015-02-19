@@ -10,6 +10,8 @@ Date: 18 February 2015
 '''
 import csv, sys
 from os import path
+import matplotlib.pyplot as plt
+import numpy as np
 
 #specify folder for inputfiles, and an errormessage given on every usage abort to the user
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/"
@@ -76,3 +78,23 @@ gohitdb = set(gohitdb)
 #cluster genes by similarity? and GO terms too?
 
 #make heatmap
+#data = np.random.rand(10,4)
+#print data
+
+data = np.array([[3,4],[5,1],[9,0]])
+print data
+
+
+#specify plot
+fig, ax = plt.subplots()
+heatmap = ax.pcolor(data, cmap=plt.cm.Blues)
+ax.set_xticks(np.arange(data.shape[1])+0.5,minor=False)
+ax.set_yticks(np.arange(data.shape[0])+0.5,minor=False)
+ax.invert_yaxis()
+ax.xaxis.tick_top()
+
+ax.set_xticklabels(goli, minor=False, rotation='vertical')
+ax.set_yticklabels(gnli, minor=False)
+
+plt.show()
+
