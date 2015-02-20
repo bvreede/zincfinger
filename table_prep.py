@@ -12,14 +12,14 @@ Contact: b.vreede@gmail.com
 Date: 2 December 2014
 '''
 
-import sys, csv
+import sys, csv,os
 
 '''
 INPUT PARAMETERS
 taken from the command line and subsequently modified
 '''
 if len(sys.argv) <= 1:
-	sys.exit("USAGE: python table_prep.py path/to/inputfolder")
+	sys.exit("USAGE: table_prep.py path/to/inputfile")
 db = sys.argv[1]
 
 
