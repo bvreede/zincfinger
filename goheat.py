@@ -8,7 +8,7 @@ Author: Barbara Vreede
 Contact: b.vreede@gmail.com
 Date: 18 February 2015
 '''
-import csv, sys
+import csv, sys, urllib2
 from os import path
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,8 +16,18 @@ import numpy as np
 #specify folder for inputfiles, and an errormessage given on every usage abort to the user
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/"
 datafolder = "%sresults/singlemotif/" %dbfolder
-gosource = "%sdatabases/140720-SM00355-dmel2.csv" %dbfolder
+#gosource = "%sdatabases/140720-SM00355-dmel2.csv" %dbfolder
+gosource = "%sdatabases/150219-SM00355-dmel_corr.csv" %dbfolder
 errormess = "USAGE: goheat.py motif_incl/excl (e.g.: goheat.py 2_12_4_excl)\nThe program will automatically find the correct input files in %s" %datafolder
+
+#two parts of the AMIGO link, they are separated by the GO term.
+golink1 = "http://golr.geneontology.org/solr/select?defType=edismax&qt=standard&indent=on&wt=csv&rows=10000&start=0&fl=bioentity&facet=true&facet.mincount=1&facet.sort=count&json.nl=arrarr&facet.limit=25&hl=true&hl.simple.pre=%3Cem%20class=%22hilite%22%3E&csv.encapsulator=&csv.separator=%09&csv.header=false&csv.mv.separator=|&fq=document_category:%22bioentity%22&fq=taxon_closure_label:%22Drosophila%20%3Cfruit%20fly,%20genus%3E%22&facet.field=source&facet.field=type&facet.field=panther_family_label&facet.field=taxon_closure_label&facet.field=annotation_class_list_label&facet.field=regulates_closure_label&q="
+golink2 = "&qf=bioentity^2&qf=bioentity_label_searchable^2&qf=bioentity_name_searchable^1&qf=bioentity_internal_id^1&qf=synonym^1&qf=isa_partof_closure_label_searchable^1&qf=regulates_closure^1&qf=regulates_closure_label_searchable^1&qf=panther_family_searchable^1&qf=panther_family_label_searchable^1&qf=taxon_closure_label_searchable^1"
+
+
+#use AMIGO or BioMart inputfile: a for AMIGO, b for BioMart
+#source = 'a'
+source = 'b'
 
 
 if len(sys.argv) <= 1:
@@ -60,62 +70,49 @@ for n,line in enumerate(goterms):
 
 
 #from the GO-file: get data on which genes are associated with which GO terms
-#make a table (gene x GO)
 gohitdb = []
-gohitdb2 = []
 for n,line in enumerate(godb):
-	#if n == 0:
-	#	continue
-	#if n == 10:
-	#	break
-	#print line
+	if line[5] == 'biological_process' and line[6] in goli:
+		print line
 	if line[2] in pidli and line[6] in goli:
-		gohit = frozenset([line[1],line[6]])
-		gohit2 = [line[1],line[6]]
+		gohit = [line[1],line[6]]
+		#print line
 		gohitdb.append(gohit)
-		gohitdb2.append(gohit2)
-gohitdb = set(gohitdb)
 
-
-for hit in gohitdb:
-	print hit
-
-print gohitdb2
-
+#make an array for all genes and GO terms: 0 if they don't associate; 1 if they do
 data = []
 for gene in gnli:
 	row = []
 	for go in goli:
 		check = [gene,go]
-		if check in gohitdb2:
+		if check in gohitdb:
 			row.append(1)
 		else:
 			row.append(0)
 	data.append(row)
-
 data = np.array(data)
 
 
 #cluster genes by similarity? and GO terms too?
 
-#make heatmap
-#data = np.random.rand(10,4)
-#print data
-
-#data = np.array([[3,4],[5,1],[9,0]])
-print data
-
-
+#make a heatmap:
 #specify plot
 fig, ax = plt.subplots()
 heatmap = ax.pcolor(data, cmap=plt.cm.YlOrBr)
+#put labels halfway each column/row
 ax.set_xticks(np.arange(data.shape[1])+0.5,minor=False)
 ax.set_yticks(np.arange(data.shape[0])+0.5,minor=False)
-ax.invert_yaxis()
-ax.xaxis.tick_top()
+plt.axis('tight') #remove the white bar
+ax.invert_yaxis() #start from the top
+ax.xaxis.tick_top() #labels on top
 
+#set the labels
 ax.set_xticklabels(goli, minor=False, rotation='vertical')
 ax.set_yticklabels(gnli, minor=False)
 
+plt.tight_layout()#prevents axis labels from being cut off
+
+#show or save
 plt.show()
+# plt.savefig("%s%s_heatmap.png" %(datafolder,sys.argv[1]), dpi=300)
 
