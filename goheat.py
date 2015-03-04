@@ -113,69 +113,32 @@ for gene in gnli:
 	data.append(row)
 data = np.array(data)
 
+#cluster the goterms and genes by similarity
 clustermeth = 'average'
 
 Y = sch.linkage(data, method=clustermeth)
 Z1 = sch.dendrogram(Y)
-Y = sch.linkage(data.T, method=clustermeth) #.T is to transpose the array: clustering needs to happen on the other axis
-Z2 = sch.dendrogram(Y)
+U = sch.linkage(data.T, method=clustermeth) #.T is to transpose the array: clustering needs to happen on the other axis
+Z2 = sch.dendrogram(U)
 
 idx1 = Z1['leaves']
 idx2 = Z2['leaves']
 data = data[idx1,:]
 data = data[:,idx2]
 
+#make sure the labels are equally clustered
 goli2 = []
 for i in idx2:
+	#goli2.append(godict[goli[i]])
 	goli2.append(goli[i])
-
 gnli2 = []
 for i in idx1:
 	gnli2.append(gnli[i])
 
-
-"""
-#cluster genes and GOterms by similarity
-clustermeth = 'average'
-
-# Compute and plot first dendrogram.
-fig = pylab.figure(figsize=(8,8))
-#ax1 = fig.add_axes([0.09,0.1,0.2,0.6])
-Y = sch.linkage(D, method=clustermeth)
-Z1 = sch.dendrogram(Y)#, orientation='right')
-#ax1.set_xticks([])
-#ax1.set_yticks([])
-
-# Compute and plot second dendrogram.
-#ax2 = fig.add_axes([0.3,0.71,0.6,0.2])
-Y = sch.linkage(D.T, method=clustermeth) #.T is to transpose the array: clustering needs to happen on the other axis
-Z2 = sch.dendrogram(Y)
-#ax2.set_xticks([])
-#ax2.set_yticks([])
-
-# Plot distance matrix.
-axmatrix = fig.add_axes([0.3,0.1,0.6,0.6])
-idx1 = Z1['leaves']
-idx2 = Z2['leaves']
-D = D[idx1,:]
-D = D[:,idx2]
-im = axmatrix.matshow(D, aspect='auto', origin='lower', cmap=pylab.cm.YlGnBu)
-#axmatrix.set_xticks([])
-#axmatrix.set_yticks([])
-
-# Plot colorbar.
-#axcolor = fig.add_axes([0.91,0.1,0.02,0.6])
-#pylab.colorbar(im, cax=axcolor)
-fig.show()
-fig.savefig("%stest%s.png" %(datafolder,clustermeth), dpi=300)
-
-
-
-"""
 #make a heatmap:
 #specify plot
 fig, ax = plt.subplots()
-ax.pcolor(data, cmap=plt.cm.YlOrBr)
+ax.pcolor(data, cmap=plt.cm.YlGnBu)
 #put labels halfway each column/row
 ax.set_xticks(np.arange(data.shape[1])+0.5,minor=False)
 ax.set_yticks(np.arange(data.shape[0])+0.5,minor=False)
@@ -184,7 +147,7 @@ ax.invert_yaxis() #start from the top
 ax.xaxis.tick_top() #labels on top
 
 #set the labels
-ax.set_xticklabels(goli2, minor=False, rotation='vertical')
+ax.set_xticklabels(goli2, minor=False, rotation=45)
 ax.set_yticklabels(gnli2, minor=False)
 
 plt.tight_layout()#prevents axis labels from being cut off
