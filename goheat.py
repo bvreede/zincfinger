@@ -23,22 +23,18 @@ dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/"
 datafolder = "%sresults/singlemotif/" %dbfolder
 gosource = "%sdatabases/140720-SM00355-dmel2.csv" %dbfolder
 #gosource = "%sdatabases/150219-SM00355-dmel_corr.csv" %dbfolder
-errormess = "USAGE: goheat.py motif_incl/excl (e.g.: goheat.py 2_12_4_excl)\nThe program will automatically find the correct input files in %s" %datafolder
+errormess = "USAGE: goheat.py motif_incl/excl source GOname/term (e.g.: goheat.py 2_12_4_excl a n)\nThe program will automatically find the correct input files in %s\nThe source needs to be either a (for AMIGO) or b (for BioMart). BioMart requires a downloaded database, that may be incomplete. AMIGO takes longer to load (and requires an internet connection.\nGOname/term (n or t, respectively) indicates whether to use the NAME of GO terms or their code in the final heatmap." %datafolder
 
 #two parts of the AMIGO link, they are separated by the GO term.
 golink1 = "http://golr.geneontology.org/solr/select?defType=edismax&qt=standard&indent=on&wt=csv&rows=10000&start=0&fl=bioentity&facet=true&facet.mincount=1&facet.sort=count&json.nl=arrarr&facet.limit=25&hl=true&hl.simple.pre=%3Cem%20class=%22hilite%22%3E&csv.encapsulator=&csv.separator=%09&csv.header=false&csv.mv.separator=|&fq=document_category:%22bioentity%22&fq=taxon_closure_label:%22Drosophila%20%3Cfruit%20fly,%20genus%3E%22&facet.field=source&facet.field=type&facet.field=panther_family_label&facet.field=taxon_closure_label&facet.field=annotation_class_list_label&facet.field=regulates_closure_label&q="
 golink2 = "&qf=bioentity^2&qf=bioentity_label_searchable^2&qf=bioentity_name_searchable^1&qf=bioentity_internal_id^1&qf=synonym^1&qf=isa_partof_closure_label_searchable^1&qf=regulates_closure^1&qf=regulates_closure_label_searchable^1&qf=panther_family_searchable^1&qf=panther_family_label_searchable^1&qf=taxon_closure_label_searchable^1"
 
 
-#use AMIGO or BioMart inputfile: a for AMIGO, b for BioMart.
-#AMIGO requires internet connection and can slow down the script immensely. However, BioMart downloaded databases
-#can be incomplete, so may yield problems in the results.
-source = 'a'
-#source = 'b'
-
-
-if len(sys.argv) <= 1:
+if len(sys.argv) <= 3:
 	sys.exit(errormess)
+
+source = sys.argv[2]
+name_term = sys.argv[3]
 
 #generate names of input files: the user only indicates the prefix
 genefile = datafolder + sys.argv[1] + ".csv"
@@ -129,8 +125,10 @@ data = data[:,idx2]
 #make sure the labels are equally clustered
 goli2 = []
 for i in idx2:
-	#goli2.append(godict[goli[i]])
-	goli2.append(goli[i])
+	if name_term == 'n':
+		goli2.append(godict[goli[i]])
+	else:
+		goli2.append(goli[i])
 gnli2 = []
 for i in idx1:
 	gnli2.append(gnli[i])
@@ -140,18 +138,24 @@ for i in idx1:
 fig, ax = plt.subplots()
 ax.pcolor(data, cmap=plt.cm.YlGnBu)
 #put labels halfway each column/row
-ax.set_xticks(np.arange(data.shape[1])+0.5,minor=False)
+if name_term == 'n':
+	ax.set_xticks(np.arange(data.shape[1])+0.5,minor=False)
+else:
+	ax.set_xticks(np.arange(data.shape[1])+1.0,minor=False)
 ax.set_yticks(np.arange(data.shape[0])+0.5,minor=False)
 plt.axis('tight') #remove the white bar
 ax.invert_yaxis() #start from the top
 ax.xaxis.tick_top() #labels on top
 
 #set the labels
-ax.set_xticklabels(goli2, minor=False, rotation=45)
+if name_term == 'n':
+	ax.set_xticklabels(goli2, minor=False, rotation=90)
+else:
+	ax.set_xticklabels(goli2, minor=False, rotation=45)
 ax.set_yticklabels(gnli2, minor=False)
 
 plt.tight_layout()#prevents axis labels from being cut off
 
 #show or save
 #plt.show()
-fig.savefig("%s%s_heatmap.png" %(datafolder,sys.argv[1]), dpi=300)
+fig.savefig("%s%s_heatmap_%s.png" %(datafolder,sys.argv[1],name_term), dpi=300)
