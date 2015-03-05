@@ -21,7 +21,7 @@ import scipy.cluster.hierarchy as sch
 #specify folder for inputfiles, and an errormessage given on every usage abort to the user
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/"
 datafolder = "%sresults/singlemotif/" %dbfolder
-imagefolder = "%simages" %dbfolder
+imagefolder = "%simages/" %dbfolder
 gosource = "%sdatabases/140720-SM00355-dmel2.csv" %dbfolder
 #gosource = "%sdatabases/150219-SM00355-dmel_corr.csv" %dbfolder
 errormess = "USAGE: goheat.py motif_incl/excl source GOname/term (e.g.: goheat.py 2_12_4_excl a n)\nThe program will automatically find the correct input files in %s\nThe source needs to be either a (for AMIGO) or b (for BioMart). BioMart requires a downloaded database, that may be incomplete. AMIGO takes longer to load (and requires an internet connection.\nGOname/term (n or t, respectively) indicates whether to use the NAME of GO terms or their code in the final heatmap." %datafolder
@@ -111,28 +111,39 @@ for gene in gnli:
 data = np.array(data)
 
 #cluster the goterms and genes by similarity
+#but only if there are two or more observations!
+
 clustermeth = 'average'
 
-Y = sch.linkage(data, method=clustermeth)
-Z1 = sch.dendrogram(Y)
-U = sch.linkage(data.T, method=clustermeth) #.T is to transpose the array: clustering needs to happen on the other axis
-Z2 = sch.dendrogram(U)
+if len(gnli) > 1:
+	Y = sch.linkage(data, method=clustermeth)
+	Z1 = sch.dendrogram(Y)
+	idx1 = Z1['leaves']
+	data = data[idx1,:]
 
-idx1 = Z1['leaves']
-idx2 = Z2['leaves']
-data = data[idx1,:]
-data = data[:,idx2]
+if len(goli) > 1:
+	U = sch.linkage(data.T, method=clustermeth) #.T is to transpose the array: clustering needs to happen on the other axis
+	Z2 = sch.dendrogram(U)
+	idx2 = Z2['leaves']
+	data = data[:,idx2]
 
-#make sure the labels are equally clustered
+#make sure the labels are equally clustered (again, only if the observations are two or more)
 goli2 = []
-for i in idx2:
-	if name_term == 'n':
-		goli2.append(godict[goli[i]])
-	else:
-		goli2.append(goli[i])
+if len(goli) > 1:
+	for i in idx2:
+		if name_term == 'n':
+			goli2.append(godict[goli[i]])
+		else:
+			goli2.append(goli[i])
+else:
+	goli2 = goli
+
 gnli2 = []
-for i in idx1:
-	gnli2.append(gnli[i])
+if len(gnli) > 1:
+	for i in idx1:
+		gnli2.append(gnli[i])
+else:
+	gnli2 = gnli
 
 #make a heatmap:
 #specify plot
@@ -160,3 +171,4 @@ plt.tight_layout()#prevents axis labels from being cut off
 #show or save
 #plt.show()
 fig.savefig("%s%s_heatmap_%s.png" %(imagefolder,sys.argv[1],name_term), dpi=300)
+
