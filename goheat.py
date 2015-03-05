@@ -37,6 +37,9 @@ if len(sys.argv) <= 3:
 source = sys.argv[2]
 name_term = sys.argv[3]
 
+if source != ('a' or 'b'):
+	sys.exit("ABORT: indicate 'a' for AMIGO or 'b' for BioMart as the GO source.\n%s" %errormess)
+
 #generate names of input files: the user only indicates the prefix
 genefile = datafolder + sys.argv[1] + ".csv"
 gofile = datafolder + sys.argv[1] + "_results.csv"
@@ -128,6 +131,7 @@ if len(goli) > 1:
 	data = data[:,idx2]
 
 #make sure the labels are equally clustered (again, only if the observations are two or more)
+#also includes options to change the goli2 to names instead of terms
 goli2 = []
 if len(goli) > 1:
 	for i in idx2:
