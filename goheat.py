@@ -21,6 +21,7 @@ import scipy.cluster.hierarchy as sch
 #specify folder for inputfiles, and an errormessage given on every usage abort to the user
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/"
 datafolder = "%sresults/singlemotif/" %dbfolder
+imagefolder = "%simages" %dbfolder
 gosource = "%sdatabases/140720-SM00355-dmel2.csv" %dbfolder
 #gosource = "%sdatabases/150219-SM00355-dmel_corr.csv" %dbfolder
 errormess = "USAGE: goheat.py motif_incl/excl source GOname/term (e.g.: goheat.py 2_12_4_excl a n)\nThe program will automatically find the correct input files in %s\nThe source needs to be either a (for AMIGO) or b (for BioMart). BioMart requires a downloaded database, that may be incomplete. AMIGO takes longer to load (and requires an internet connection.\nGOname/term (n or t, respectively) indicates whether to use the NAME of GO terms or their code in the final heatmap." %datafolder
@@ -158,4 +159,4 @@ plt.tight_layout()#prevents axis labels from being cut off
 
 #show or save
 #plt.show()
-fig.savefig("%s%s_heatmap_%s.png" %(datafolder,sys.argv[1],name_term), dpi=300)
+fig.savefig("%s%s_heatmap_%s.png" %(imagefolder,sys.argv[1],name_term), dpi=300)
