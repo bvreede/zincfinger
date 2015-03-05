@@ -24,7 +24,7 @@ datafolder = "%sresults/singlemotif/" %dbfolder
 imagefolder = "%simages/" %dbfolder
 gosource = "%sdatabases/140720-SM00355-dmel2.csv" %dbfolder
 #gosource = "%sdatabases/150219-SM00355-dmel_corr.csv" %dbfolder
-errormess = "USAGE: goheat.py motif_incl/excl source GOname/term (e.g.: goheat.py 2_12_4_excl a n)\nThe program will automatically find the correct input files in %s\nThe source needs to be either a (for AMIGO) or b (for BioMart). BioMart requires a downloaded database, that may be incomplete. AMIGO takes longer to load (and requires an internet connection.\nGOname/term (n or t, respectively) indicates whether to use the NAME of GO terms or their code in the final heatmap." %datafolder
+errormess = "USAGE: goheat.py motif_incl/excl source GOname/term (e.g.: goheat.py 2_12_4_excl a n)\nThe program will automatically find the correct input files in %s\nThe source needs to be either a (for AMIGO) or b (for BioMart). BioMart requires a downloaded database, which may be incomplete. AMIGO takes longer to load (and requires an internet connection.\nGOname/term (n or t, respectively) indicates whether to use the NAME of GO terms or their code in the final heatmap." %datafolder
 
 #two parts of the AMIGO link, they are separated by the GO term.
 golink1 = "http://golr.geneontology.org/solr/select?defType=edismax&qt=standard&indent=on&wt=csv&rows=10000&start=0&fl=bioentity&facet=true&facet.mincount=1&facet.sort=count&json.nl=arrarr&facet.limit=25&hl=true&hl.simple.pre=%3Cem%20class=%22hilite%22%3E&csv.encapsulator=&csv.separator=%09&csv.header=false&csv.mv.separator=|&fq=document_category:%22bioentity%22&fq=taxon_closure_label:%22Drosophila%20%3Cfruit%20fly,%20genus%3E%22&facet.field=source&facet.field=type&facet.field=panther_family_label&facet.field=taxon_closure_label&facet.field=annotation_class_list_label&facet.field=regulates_closure_label&q="
@@ -136,7 +136,11 @@ if len(goli) > 1:
 		else:
 			goli2.append(goli[i])
 else:
-	goli2 = goli
+	if name_term == 'n':
+		for i in goli:
+			goli2.append(godict[i])
+	else:
+		goli2 = goli
 
 gnli2 = []
 if len(gnli) > 1:
@@ -147,23 +151,25 @@ else:
 
 #make a heatmap:
 #specify plot
+#x axis: goterms
+xax = 3 + len(goli)/2.
+#y axis: genes
+yax = 3 + len(gnli)/4.
+if name_term == 'n':
+	yax += 3
+
 fig, ax = plt.subplots()
+fig.set_size_inches(xax,yax)
 ax.pcolor(data, cmap=plt.cm.YlGnBu)
 #put labels halfway each column/row
-if name_term == 'n':
-	ax.set_xticks(np.arange(data.shape[1])+0.5,minor=False)
-else:
-	ax.set_xticks(np.arange(data.shape[1])+1.0,minor=False)
+ax.set_xticks(np.arange(data.shape[1])+0.5,minor=False)
 ax.set_yticks(np.arange(data.shape[0])+0.5,minor=False)
 plt.axis('tight') #remove the white bar
 ax.invert_yaxis() #start from the top
 ax.xaxis.tick_top() #labels on top
 
 #set the labels
-if name_term == 'n':
-	ax.set_xticklabels(goli2, minor=False, rotation=90)
-else:
-	ax.set_xticklabels(goli2, minor=False, rotation=45)
+ax.set_xticklabels(goli2, minor=False, rotation=90)
 ax.set_yticklabels(gnli2, minor=False)
 
 plt.tight_layout()#prevents axis labels from being cut off
