@@ -1,3 +1,4 @@
+#!/usr/bin/python
 '''
 This script can be used to create clusters of a fasta file with
 strings (without regard for the exact meaning of the individual elements!).
