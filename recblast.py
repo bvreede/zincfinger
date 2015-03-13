@@ -10,6 +10,8 @@ labeling needs to have gene names specified in all genes.
 (3) look at the resulting blast hits, extract the reciprocal best
 blast hits, and rewrite the initial fasta inputfile to include the
 ortholog.
+(4) write a csv file which has, per Drosophila (or other source species)
+gene, the orthologs of other species in columns.
 Author: Barbara Vreede
 Date: 4 February 2015
 Contact: b.vreede@gmail.com
@@ -18,19 +20,26 @@ Contact: b.vreede@gmail.com
 import os,csv,sys
 
 #CUSTOMIZE: zffolder is for the databases and individual query files; seqfolder is for the original fasta files
-zffolder = "/home/barbara/data/test2"
+zffolder = "/home/barbara/data/zincfingers"
 seqfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/sequences"
 
 #CUSTOMIZE: the names given to databases, and the names the fasta files currently have. This requires
 #all fasta files used for the reciprocal blast to have the same name structure (+ individualized specifier);
 #eg: 150111_dmel.fasta, 150111_tcas.fasta, 150111_isca.fasta would have '150111_' as prefix and '.fasta' as suffix.
-dbsuffix = "zfs.fa" #the name that will be given to databases AFTER individual specifiers
+dbsuffix = "zfs.fa" #the name that will be given to databases as they are indexed for blast
 dbcurprefix = "150111-SM00355-" #the current fasta file name (prefix)
 dbcursuffix = "_seq.fasta" #the current fasta file name (suffix)
+dbnewsuffix = "_seqRW.fasta" #the rewritten fasta file name (suffix)
 
 #CUSTOMIZE: the individual species specifiers for each fasta file ('ilistA') and the comparative species ('ilistB').
 ilistA = ['isca','smar','turt','tcas','dpul']
 comp = ['dmel']
+
+#CUSTOMIZE: what do you want to do?
+newdbs = 0 #set to 1 if you want to make new databases for blasting; else set to 0
+redoblast = 0 #set to 1 if you want to re-do the blasting; set to 0 if you want to use existing result files
+rewritefa = 0 #set to 1 if you want to rewrite your original fasta files to include the dmel/comp ortholog name; else set to 0
+tableout = 0 #set to 1 if you want a csv file with orthologs; else set to 0
 
 #END CUSTOMIZATION.
 ilistC = ilistA + comp
@@ -44,15 +53,18 @@ VERIFY EXISTENCE OF OUTPUTFOLDER AND COPY FILES THERE.
 if not os.path.exists(zffolder):
 	os.system("mkdir %s" %zffolder)
 else:
-	answer = raw_input("The folder %s already exists. Do you want to continue? (y/n)" %zffolder)
+	answer = raw_input("The folder %s already exists. Continuing may overwrite existing files. Do you want to continue? (y/n)" %zffolder)
 	if answer == 'n':
 		sys.exit("Quitting...")
 	elif answer != 'y':
 		sys.exit("Answer invalid. Quitting anyway.")
 
 for filename in os.listdir(seqfolder):
+	if newdbs == 0:
+		break
 	k = len(dbcurprefix)
 	if filename[:k] == dbcurprefix:
+		# make sure only to take those files from the database folder that follow the name pattern indicated in customization
 		if dbcursuffix not in filename:
 			continue
 		spp = filename.replace(dbcursuffix,'')[k:]
@@ -66,7 +78,10 @@ PART 1:
 PREPARE DATABASES AND QUERY FILES FROM FASTA FILES DOWNLOADED FROM BIOMART
 '''
 # replace pipes and other characters in the fasta files (do this before making dbs and sequences!)
-for fasta in os.listdir(zffolder):	
+for fasta in os.listdir(zffolder):
+	# escape if you don't want to do this
+	if newdbs == 0:
+		break
 	# check if the fasta file is one of the original transfers
 	spp = fasta.replace(dbsuffix,'')
 	if spp not in ilistC:
@@ -108,6 +123,8 @@ def prepblastdb(spp):
 
 # only necessary to do this once per species
 for spp in ilistC:
+	if newdbs == 0: #escape if you don't want to make a new db
+		break
 	prepdb(spp)
 	prepblastdb(spp)
 
@@ -118,6 +135,8 @@ PERFORM BLASTS FROM ALL SPECIES IN 'ILISTA' TO THE SPECIES IN 'COMP' AND BACK
 # blast each file of dmel against the five other species, and save the name of its top hit
 # output: csv file with dmel (or other comparison) in column 1, spp in column 2; named: dmel-spp
 for spp in ilistA:
+	if redoblast == 0:
+		break
 	outdb = open("%s/%s-%s.csv" %(zffolder,comp,spp), "w")
 	for f in os.listdir("%s/%s" %(zffolder,comp)):
 		if f[0] == '.':
@@ -138,6 +157,8 @@ for spp in ilistA:
 # blast each file from the five species against dmel and save the name of its top hit
 # output: csv file with dmel in column 1, spp in column 2; named: spp-dmel
 for spp in ilistA:
+	if redoblast == 0:
+		break
 	outdb = open("%s/%s-%s.csv" %(zffolder,spp,comp), "w")
 	for f in os.listdir("%s/%s" %(zffolder,spp)):
 		if f[0] == '.':
@@ -194,9 +215,10 @@ for line in gtrans:
 	gtransdx[line[0]] = line[1]
  
 for spp in ilistA:
+	if rewritefa == 0:
+		break
 	fasta = open('%s/%s%s%s' %(seqfolder,dbcurprefix,spp,dbcursuffix))
-	newsuffix = dbcursuffix.split('.')[0] + '-trans.' + dbcursuffix.split('.')[1]
-	fasta2 = open('%s/%s%s%s' %(seqfolder,dbcurprefix,spp,newsuffix), "w")
+	fasta2 = open('%s/%s%s%s' %(seqfolder,dbcurprefix,spp,dbnewsuffix), "w")
 	for line in fasta:
 		if line[0] == '>':
 			totalID = line.strip()
