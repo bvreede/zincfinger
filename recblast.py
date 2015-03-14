@@ -36,7 +36,7 @@ ilistA = ['isca','smar','turt','tcas','dpul']
 comp = ['dmel']
 
 #CUSTOMIZE: what do you want to do?
-newdbs = 0 #set to 1 if you want to make new databases for blasting; else set to 0
+newdbs = 0 #set to 1 if you want to make new databases for blasting and searching; else set to 0
 redoblast = 0 #set to 1 if you want to re-do the blasting; set to 0 if you want to use existing result files
 rewritefa = 0 #set to 1 if you want to rewrite your original fasta files to include the dmel/comp ortholog name; else set to 0
 tableout = 0 #set to 1 if you want a csv file with orthologs; else set to 0
@@ -135,14 +135,17 @@ PERFORM BLASTS FROM ALL SPECIES IN 'ILISTA' TO THE SPECIES IN 'COMP' AND BACK
 # blast each file of dmel against the five other species, and save the name of its top hit
 # output: csv file with dmel (or other comparison) in column 1, spp in column 2; named: dmel-spp
 for spp in ilistA:
+	blastdb =  "%s/%s%s" %(zffolder,spp,dbsuffix)
 	if redoblast == 0:
 		break
+	if not os.path.exists(blastdb):
+		sys.exit("No blast db found. Create the databases, then run the script again.")
 	outdb = open("%s/%s-%s.csv" %(zffolder,comp,spp), "w")
 	for f in os.listdir("%s/%s" %(zffolder,comp)):
 		if f[0] == '.':
 			print "skipping hidden file ", f
 			continue
-		blastcommand = "blastp -query %s/%s/%s -db %s/%s%s -out %s/tempout.txt" %(zffolder,comp,f,zffolder,spp,dbsuffix,zffolder)
+		blastcommand = "blastp -query %s/%s/%s -db %s -out %s/tempout.txt" %(zffolder,comp,f,blastdb,zffolder)
 		os.system(blastcommand)
 		blastres = open("%s/tempout.txt" %zffolder)
 		for line in blastres:
@@ -181,8 +184,13 @@ PART 3:
 CHECK WHICH RECIPROCAL HITS EXIST AND REWRITE THE FASTA FILES
 '''
 # make a reciprocal check of each pair of csv files
-gndict = open("%s/genenamedict.csv" %(seqfolder), "w")
+if redoblast == 1:
+	gndict = open("%s/genenamedict.csv" %(seqfolder), "w")
+	hitcollect = [] #list of lists containing hits to dmel genes per species
 for spp in ilistA:
+	if redoblast == 0:
+		break
+	hcspp = [spp] #the list containing all dmel hits for this species (and a header with the species name)
 	todmel = csv.reader(open("%s/%s-%s.csv" %(zffolder,spp,comp)))
 	todmeldx = {}
 	for g in todmel:
@@ -205,12 +213,20 @@ for spp in ilistA:
 		dmg = dmg.replace('-222-',')')
 		if todmeldx[spg] == dmg:
 			gndict.write('%s,%s\n' %(spg,dmg))
+			hcspp.append(spg)
+		else:
+			hcspp.append("")
+	hitcollect.append(hcspp)
 	print "Made dictionary for %s." %spp
-gndict.close()
+if redoblast == 1:
+	gndict.close()
 
 # read the gene translation dictionary and rewrite the species fasta files
 gtransdx = {}
-gtrans = csv.reader(open("%s/genenamedict.csv" %(seqfolder)))
+gndictcsv = "%s/genenamedict.csv" %(seqfolder)
+if not os.path.exists(gndictcsv):
+	sys.exit("No reciprocal best blast hit dictionary was found. Run the script again, and include the blast step.")
+gtrans = csv.reader(open(gndictcsv))
 for line in gtrans:
 	gtransdx[line[0]] = line[1]
  
