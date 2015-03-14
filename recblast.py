@@ -31,9 +31,9 @@ dbcurprefix = "150111-SM00355-" #the current fasta file name (prefix)
 dbcursuffix = "_seq.fasta" #the current fasta file name (suffix)
 dbnewsuffix = "_seqRW.fasta" #the rewritten fasta file name (suffix)
 
-#CUSTOMIZE: the individual species specifiers for each fasta file ('ilistA') and the comparative species ('ilistB').
+#CUSTOMIZE: the individual species specifiers for each fasta file ('ilistA') and the comparative species (comp).
 ilistA = ['isca','smar','turt','tcas','dpul']
-comp = ['dmel']
+comp = 'dmel'
 
 #CUSTOMIZE: what do you want to do?
 newdbs = 0 #set to 1 if you want to make new databases for blasting and searching; else set to 0
@@ -42,9 +42,7 @@ rewritefa = 0 #set to 1 if you want to rewrite your original fasta files to incl
 tableout = 1 #set to 1 if you want a csv file with orthologs; else set to 0
 
 #END CUSTOMIZATION.
-ilistC = ilistA + comp
-comp = comp[0] #comp should be a string, but was briefly a list for concatenation
-
+ilistC = ilistA + [comp]
 
 '''
 PART 0:
@@ -228,7 +226,6 @@ for spp in ilistA:
 	compgenes.append("XXX")
 	print "Made dictionary for %s." %spp
 gndict.close()
-print len(hitcollect), len(hitcollect[0])
 
 # read the gene translation dictionary and rewrite the species fasta files
 gtransdx = {}
@@ -270,4 +267,16 @@ for gene in compgenes:
 		break
 	compgenes2.append(gene)
 
-print len(compgenes2)
+collectdb = [compgenes2] + hitcollect
+
+collectcsv = open("%s/%s-orthologs.csv" %(seqfolder,comp), "w")
+
+for k in range(len(collectdb[0])): #k is the row number
+	orthos = ''
+	for n in range(len(collectdb)): #n is the column number
+		orthos += collectdb[n][k]
+		orthos += ','
+	collectcsv.write(orthos[:-1]) #removes the final comma
+	collectcsv.write("\n")
+
+collectcsv.close()
