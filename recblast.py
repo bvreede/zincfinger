@@ -39,7 +39,7 @@ comp = ['dmel']
 newdbs = 0 #set to 1 if you want to make new databases for blasting and searching; else set to 0
 redoblast = 0 #set to 1 if you want to re-do the blasting; set to 0 if you want to use existing result files
 rewritefa = 0 #set to 1 if you want to rewrite your original fasta files to include the dmel/comp ortholog name; else set to 0
-tableout = 0 #set to 1 if you want a csv file with orthologs; else set to 0
+tableout = 1 #set to 1 if you want a csv file with orthologs; else set to 0
 
 #END CUSTOMIZATION.
 ilistC = ilistA + comp
@@ -53,7 +53,7 @@ VERIFY EXISTENCE OF OUTPUTFOLDER AND COPY FILES THERE.
 if not os.path.exists(zffolder):
 	os.system("mkdir %s" %zffolder)
 else:
-	answer = raw_input("The folder %s already exists. Continuing may overwrite existing files. Do you want to continue? (y/n)" %zffolder)
+	answer = raw_input("The folder %s already exists. Continuing may overwrite existing files. Do you want to continue? (y/n)\n" %zffolder)
 	if answer == 'n':
 		sys.exit("Quitting...")
 	elif answer != 'y':
@@ -184,12 +184,11 @@ PART 3:
 CHECK WHICH RECIPROCAL HITS EXIST AND REWRITE THE FASTA FILES
 '''
 # make a reciprocal check of each pair of csv files
-if redoblast == 1:
-	gndict = open("%s/genenamedict.csv" %(seqfolder), "w")
-	hitcollect = [] #list of lists containing hits to dmel genes per species
+gndict = open("%s/genenamedict.csv" %(seqfolder), "w")
+hitcollect = [] #list of lists containing hits to dmel genes per species
+compgenes = []
 for spp in ilistA:
-	if redoblast == 0:
-		break
+	print "Making dictionary from %s to %s..." %(comp,spp)
 	hcspp = [spp] #the list containing all dmel hits for this species (and a header with the species name)
 	todmel = csv.reader(open("%s/%s-%s.csv" %(zffolder,spp,comp)))
 	todmeldx = {}
@@ -204,6 +203,15 @@ for spp in ilistA:
 		todmeldx[spg] = dmg
 	fromdmel = csv.reader(open("%s/%s-%s.csv" %(zffolder,comp,spp)))
 	for g in fromdmel:
+		if len(g) < 2:
+			print g
+		# make a list of all dmel/comp genes (entire name, including isoforms)
+		cgene = g[0]
+		cgene = cgene.replace('-333-','|')
+		cgene = cgene.replace('-111-','(')
+		cgene = cgene.replace('-222-',')')
+		compgenes.append(cgene)
+		# distill the species-hit and the dmel/comp gene
 		spg = g[1].strip()
 		dmg = g[0].split('-333-')[1] #the middle argument is the gene name
 		spg = spg.replace('-333-','|')
@@ -217,9 +225,10 @@ for spp in ilistA:
 		else:
 			hcspp.append("")
 	hitcollect.append(hcspp)
+	compgenes.append("XXX")
 	print "Made dictionary for %s." %spp
-if redoblast == 1:
-	gndict.close()
+gndict.close()
+print len(hitcollect), len(hitcollect[0])
 
 # read the gene translation dictionary and rewrite the species fasta files
 gtransdx = {}
@@ -245,3 +254,20 @@ for spp in ilistA:
 		fasta2.write(line)
 	print "Rewrote fasta for %s." %spp
 	fasta2.close()
+
+'''
+PART 4:
+WRITE A CSV FILE WITH ALL HITS ACCUMULATED
+'''
+#if you don't want to make the output table, you can exit now
+if tableout == 0:
+	sys.exit()
+
+# first, rewrite the dmel/comp gene list and add it to the hitcollect
+compgenes2 = [comp] #the original compgenes has the dmel list for every species. Needs to be rewritten
+for gene in compgenes:
+	if gene == "XXX":
+		break
+	compgenes2.append(gene)
+
+print len(compgenes2)
