@@ -1,15 +1,21 @@
-'''
-the point of this is to calculate: of each known ortholog (per spp), how great are the odds that they are in the same cluster as the Dmel?
-'''
+#!/usr/bin/python
 
+'''
+This script can be used to calculate how many identified Dmel
+orthologs in other genomes are clustered in the same group 
+as their Dmel ortholog?
+Author: Barbara Vreede
+Contact: b.vreede@gmail.com
+Date: 17 March 2015
+'''
 
 import csv
 
-
+#CUSTOMIZE INPUT FILES
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
 clusterfile = "results/clustering-string_allz-average.csv"
 orthologs = "sequences/dmel-orthologs.csv"
-
+#END CUSTOMIZATION
 
 def orthos(gene,k,ol):
 	'''
@@ -18,14 +24,12 @@ def orthos(gene,k,ol):
 	isoforms = [ol[0][i] for i,j in enumerate(ol[k]) if j == gene]
 	return isoforms #list of all isoforms
  
-
 def clusters(genes,cdict): #genes is a list
 	'''
 	Look up the cluster they are assigned (both the Dmel and the Spp gene)
 	'''
 	clusters = [cdict[g.split('|')[2]] for g in genes]
 	return clusters #list of clusters, same order as genes
-
 
 #Read ortholog file
 of = csv.reader(open("%s/%s" %(dbfolder,orthologs)))
@@ -48,15 +52,10 @@ for k in range(1,len(ol2)):
 	clcount = 0
 	for gene in allorth:
 		dmorths = orthos(gene,k,ol2)
-		gene = [gene]
+		gene = [gene] #the clusters function requires a list input
 		cl_gene = clusters(gene,cdict)
 		cl_orth = clusters(dmorths,cdict)
-		if cl_gene[0] in cl_orth: #If one of the isoforms has the same cluster hit as the Spp ortholog, score as 1
+		if cl_gene[0] in cl_orth: #If one of the isoforms has the same cluster hit as the spp ortholog, score as 1
 			clcount += 1
 	print 'total no. orthologs in same cluster:', clcount
-
-
-
-
-
-
+	print 'percentage: ', clcount/float(len(allorth)) * 100
