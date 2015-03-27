@@ -3,7 +3,9 @@
 '''
 This script can be used to calculate how many identified Dmel
 orthologs in other genomes are clustered in the same group 
-as their Dmel ortholog?
+as their Dmel ortholog, and how their motif compositions differ.
+It requires clustering results from cluster.py and the orthologs csv
+file resulting from recblast.py.
 Author: Barbara Vreede
 Contact: b.vreede@gmail.com
 Date: 17 March 2015
