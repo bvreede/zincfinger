@@ -12,23 +12,22 @@ Author: Barbara Vreede
 Contact: b.vreede@gmail.com
 Date: 10 October 2014
 '''
-import re
+import re, sys
 import pylab as pl
 import numpy as np
 
+if len(sys.argv) <= 1:
+	sys.exit("USAGE: findmotif.py path/to/inputfile (input needs to be a protein fasta file).\nOutputfolders are indicated in the script; edit the script if you want to alter them.")
+
+infile = sys.argv[1]
+
+
 ### SPECIFY INFORMATION: DATA TO USE###
-### input consists of: dbfolder/seqfolder/prefix-species_suffix
 ### output consists of: dbfolder/resfolder/ or dbfolder/imgfolder or dbfolder/seqfolder, depending on output type
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
 seqfolder = "sequences"
 resfolder = "results"
 imgfolder = "images"
-prefix = "150111-SM00355"
-#suffix = "seq-trans.fasta"
-suffix = "seq.fasta"
-#species = ["tcas","dpul","isca","smar","turt"]
-#species = ["dmel","tcas","dpul","isca","smar","turt"]
-species = ["allz"]
 
 #define motifs: first a complete dataset
 moCC = [2,3,4] #distances between CC
@@ -40,6 +39,11 @@ moHH = [2,3,4,5,6] #distances between HH
 # turn this on for custom motif list
 motiflist = ['2_7_4','2_8_3','2_9_3','2_10_5','2_11_3','2_11_4','2_12_2','2_12_3','2_12_4','2_12_5','2_12_6','2_13_3',
 '2_13_4','2_14_3','2_14_4','2_15_4','3_8_3','4_12_3','4_12_4','4_15_3']
+
+# options: what do you want the script to do?
+stats = 0 # set to 1 if you want to make stats (how many motifs were found; how many duplicates; etc) and images (heatmap)
+saveseq = 0 # set to 1 if you want to make fasta files of all motifs that were found
+translate_hits = 0 #set to 1 if you want to generate an output fasta file with the translated motifhits
 
 
 '''
@@ -76,9 +80,10 @@ combodict = {a: 0 for a in set([frozenset([m,n]) for m in motiflist for n in mot
 '''
 Open files to save the sequences of all hits per motif
 '''
-for m in motiflist:
-	mfile = open("%s/%s/%s.txt" %(dbfolder,seqfolder,m), "w")
-	mfile.close()
+if saveseq == 1:
+	for m in motiflist:
+		mfile = open("%s/%s/%s.txt" %(dbfolder,seqfolder,m), "w")
+		mfile.close()
 
 '''
 From an open fasta file, generate a dictionary containing the header as key, and the
@@ -146,147 +151,148 @@ def translation(posmatrix,motdict,seqdict):
 	return transl
 	
 '''
-Per species, read the fasta file, open an output file, and scan all sequences for the presence of
+Read the fasta file, open an output file, and scan all sequences for the presence of
 motifs.
 '''
-for sp in species:
-	# write the header for the database
-	fastadb = open("%s/%s/%s-%s_%s" %(dbfolder,seqfolder,prefix,sp,suffix))
-	outputdb = open("%s/%s/motifhits_%s.csv" %(dbfolder,resfolder,sp), "w")
-	outfasta = open("%s/%s/motifseq_%s.fasta" %(dbfolder,resfolder,sp), "w")
-	outputdb.write("Gene_stable_ID,Gene_name,Protein_stable_ID,Sequence_length,")
-	for m in motiflist:
-		outputdb.write("%s," %m)
-	outputdb.write("\n")
-
+# write the header for the database
+sp = infile.split('/')[-1].split('.')[0]
+fastadb = open("%s" %(infile))
+outputdb = open("%s/%s/%s_motifhits.csv" %(dbfolder,resfolder,sp), "w")
+if translate_hits == 1:
+	outfasta = open("%s/%s/%s_motifseq.fasta" %(dbfolder,resfolder,sp), "w")
+outputdb.write("Gene_stable_ID,Gene_name,Protein_stable_ID,Sequence_length,")
+for m in motiflist:
+	outputdb.write("%s," %m)
+outputdb.write("\n")
 	# read the fasta file into memory
-	fastadict = fastadicter(fastadb) # translate the fasta file into a dictionary
-	seqdict = {} # dictionary for [start position]: sequence
-	motdict = {} # dictionary for [start position]: motif type
-
+fastadict = fastadicter(fastadb) # translate the fasta file into a dictionary
+seqdict = {} # dictionary for [start position]: sequence
+motdict = {} # dictionary for [start position]: motif type
 	# go through the sequences
-	for key in fastadict:
-		# get info for the first columns (ID and sequence length)
-		ids = key.split('|')
-		seqlen = len(fastadict[key]) #length of the sequence
-		outputdb.write("%s,%s,%s,%s," %(ids[0],ids[1],ids[2],seqlen)) #turn the header name into gene ID/name/prot ID
-
+for key in fastadict:
+	# get info for the first columns (ID and sequence length)
+	ids = key.split('|')
+	seqlen = len(fastadict[key]) #length of the sequence
+	outputdb.write("%s,%s,%s,%s," %(ids[0],ids[1],ids[2],seqlen)) #turn the header name into gene ID/name/prot ID
 		# screen the sequence for motifs
-		seqdict.clear() #for the fasta file: collect positions as key and the corresponding sequence at that position as value
-		motdict.clear() #as seqdict, but with the motif name instead of sequence
-		poslist = [] #for the fasta file: collect all positions to put them in order later on
-
+	seqdict.clear() #for the fasta file: collect positions as key and the corresponding sequence at that position as value
+	motdict.clear() #as seqdict, but with the motif name instead of sequence
+	poslist = [] #for the fasta file: collect all positions to put them in order later on
 		# check each motif individually
-		for m in motifdict: #go through each motif and find all instances in the sequence
+	for m in motifdict: #go through each motif and find all instances in the sequence
+		if saveseq == 1:
 			mfile = open("%s/%s/%s.txt" %(dbfolder,seqfolder,m), "a")
-			domain = motifdict[m]
-			CC,CH,HH = m.split('_')
-			for i in domain.finditer(fastadict[key]):
-				motifcount[m] += 1 # count the found motif
-				mseq = i.group() # the sequence picked up by the RE
+		domain = motifdict[m]
+		CC,CH,HH = m.split('_')
+		for i in domain.finditer(fastadict[key]):
+			motifcount[m] += 1 # count the found motif
+			mseq = i.group() # the sequence picked up by the RE
+			if saveseq == 1:
 				mfile.write(">%s\n%s\n\n" %(key,mseq))
-				strt = i.start() + plink
-				if strt in seqdict:
-					ns = seqdict[strt] + "/" + mseq
-					nm = motdict[strt] + "/" + m
-					seqdict[strt] = ns
-					motdict[strt] = nm
-				else:
-					seqdict[strt] = mseq
-					motdict[strt] = m
-					poslist.append(strt)
+			strt = i.start() + plink
+			if strt in seqdict:
+				ns = seqdict[strt] + "/" + mseq
+				nm = motdict[strt] + "/" + m
+				seqdict[strt] = ns
+				motdict[strt] = nm
+			else:
+				seqdict[strt] = mseq
+				motdict[strt] = m
+				poslist.append(strt)
+		if saveseq == 1:
 			mfile.close()
 
-		# screen to filter the domains that are conflicting.
-		poslist = list(set(poslist))
-		poslist.sort() # sorts all starting positions to make sure they are in order
-		posdone = [] # to add positions that have already been assessed
-		posmatrix = [] # to collect all sequences that should be assessed together
-		pos4matrix = [] # to collect the lines of the matrix
-		for pos in poslist:
-			if pos in posdone:
-				continue
-			pos4matrix.append(pos)
-			for p in range(1,6):
-				pp = pos + p
-				if pp in poslist:
-					pos4matrix.append(pp)
-					posdone.append(pp)
-			posmatrix.append(pos4matrix)
-			pos4matrix = []
+	# screen to filter the domains that are conflicting.
+	poslist = list(set(poslist))
+	poslist.sort() # sorts all starting positions to make sure they are in order
+	posdone = [] # to add positions that have already been assessed
+	posmatrix = [] # to collect all sequences that should be assessed together
+	pos4matrix = [] # to collect the lines of the matrix
+	for pos in poslist:
+		if pos in posdone:
+			continue
+		pos4matrix.append(pos)
+		for p in range(1,6):
+			pp = pos + p
+			if pp in poslist:
+				pos4matrix.append(pp)
+				posdone.append(pp)
+		posmatrix.append(pos4matrix)
+		pos4matrix = []
 
-		# two different lists: one accurate, for visualization
-		for ml in motiflist: # the list of motifs as stated above (all motifs to look for)
-			outstring = ""
-			for pos in motdict:
-				posmots = motdict[pos].split('/')
-				if len(posmots) > 1:
-					for pm in posmots:
-						if pm == ml:
-							outstring += str(pos) + '|'
-				else:
-					if motdict[pos] == ml:
+	# two different lists: one accurate, for visualization
+	for ml in motiflist: # the list of motifs as stated above (all motifs to look for)
+		outstring = ""
+		for pos in motdict:
+			posmots = motdict[pos].split('/')
+			if len(posmots) > 1:
+				for pm in posmots:
+					if pm == ml:
 						outstring += str(pos) + '|'
-			outputdb.write("%s," %outstring[:-1])			
-		outputdb.write("\n")
-	
-		# another for clustering: space or no space
+			else:
+				if motdict[pos] == ml:
+					outstring += str(pos) + '|'
+		outputdb.write("%s," %outstring[:-1])			
+	outputdb.write("\n")
+
+	# another for clustering: space or no space
+	if translate_hits == 1:
 		transl = translation(posmatrix,motdict,seqdict)
 		outfasta.write(">%s\n%s\n\n" %(key,transl))
+if translate_hits == 1:
 	outfasta.close()
-	outputdb.close()
+outputdb.close()
 
 '''
 make the stats!
 in rows: for each motif, count the times it coincides with another motif, and divide this by the total of hits
 for that motif.
+Make a heatmap with the stats.
 '''
-#open file and array
-stats = open("%s/%s/motifstats_total.csv" %(dbfolder,resfolder), "w")
-doublematrix = []
-#print headers
-stats.write(",")
-for m in motiflist:
-	stats.write("%s," %m)
-stats.write("total_combo,total\n")
-#per motif count combinations
-for m in motiflist:
-	stats.write("%s," %m)
-	doublelist = []
-	for n in motiflist:
-		if motifcount[m] == 0:
-			norm_combo = 0
-		else:
-			norm_combo = combodict[frozenset([m,n])]/float(motifcount[m])
-		stats.write("%s," %norm_combo)
-		doublelist.append(norm_combo)
-	doublematrix.append(doublelist)
-	stats.write("%s,%s\n" %(motifdoublecount[m],motifcount[m]))
-stats.close()
-
-'''
-Make a heatmap with the above stats.
-'''
-data = pl.array(doublematrix)
-colourformap = "YlOrBr"
-fig,ax = pl.subplots()
-heatmap = pl.pcolor(data, cmap=colourformap)
-cbar = pl.colorbar(heatmap)
-
-# following commented code from stackoverflow; probably not necessary, but leaving it just in case
-#cbar.ax.set_yticklabels(['0','1','2','>3'])
-#cbar.set_label('#double motifs / total motifs', rotation=270)
-
-# put the major ticks at the middle of each cell
-ax.set_xticks(np.arange(data.shape[1]) + 0.5, minor=False)
-ax.set_yticks(np.arange(data.shape[0]) + 0.5, minor=False)
-pl.axis('tight') #remove the white bar
-ax.invert_yaxis() #make sure it starts counting from the top
-
-#make the labels
-ax.set_xticklabels(motiflist, minor=False, rotation=90)
-ax.set_yticklabels(motiflist, minor=False)
-
-# save the figure
-pl.savefig("%s/%s/heatmap_%s.svg" %(dbfolder,imgfolder,colourformap), dpi = 300)
-
+if stats == 1:
+	#open file and array
+	stats = open("%s/%s/motifstats_total.csv" %(dbfolder,resfolder), "w")
+	doublematrix = []
+	#print headers
+	stats.write(",")
+	for m in motiflist:
+		stats.write("%s," %m)
+	stats.write("total_combo,total\n")
+	#per motif count combinations
+	for m in motiflist:
+		stats.write("%s," %m)
+		doublelist = []
+		for n in motiflist:
+			if motifcount[m] == 0:
+				norm_combo = 0
+			else:
+				norm_combo = combodict[frozenset([m,n])]/float(motifcount[m])
+			stats.write("%s," %norm_combo)
+			doublelist.append(norm_combo)
+		doublematrix.append(doublelist)
+		stats.write("%s,%s\n" %(motifdoublecount[m],motifcount[m]))
+	stats.close()
+	
+	###HEATMAP###
+	data = pl.array(doublematrix)
+	colourformap = "YlOrBr"
+	fig,ax = pl.subplots()
+	heatmap = pl.pcolor(data, cmap=colourformap)
+	cbar = pl.colorbar(heatmap)
+	
+	# following commented code from stackoverflow; probably not necessary, but leaving it just in case
+	#cbar.ax.set_yticklabels(['0','1','2','>3'])
+	#cbar.set_label('#double motifs / total motifs', rotation=270)
+	
+	# put the major ticks at the middle of each cell
+	ax.set_xticks(np.arange(data.shape[1]) + 0.5, minor=False)
+	ax.set_yticks(np.arange(data.shape[0]) + 0.5, minor=False)
+	pl.axis('tight') #remove the white bar
+	ax.invert_yaxis() #make sure it starts counting from the top
+	
+	#make the labels
+	ax.set_xticklabels(motiflist, minor=False, rotation=90)
+	ax.set_yticklabels(motiflist, minor=False)
+	
+	# save the figure
+	pl.savefig("%s/%s/heatmap_%s.svg" %(dbfolder,imgfolder,colourformap), dpi = 300)
