@@ -1,6 +1,6 @@
 '''
 This script can be used to visualize the motif hits in the resulting database
-from a motif search performed by 'findmotif_RE.py', or similar looking databases.
+from a motif search performed by 'findmotif.py', or similar looking databases.
 The database has the following columns:
 Gene_stable_ID, Gene_name, Protein_stable_ID, Sequence_length,domain1,domain2,...,domainn,
 	(where domain1 etc. are motif names according to the format P_Q_R, where P, Q, R, are
@@ -16,12 +16,25 @@ Date: 11 December 2014
 
 import random,csv,sys,os,math
 
+##OPTION: CUSTOM COLOURS OR AUTOMATIC?###
+if len(sys.argv) <= 1:
+	sys.exit("USAGE: viz_motif.py [C] (C is not necessary, but if if is indicated the script will use a customized colour palette for the individual motifs. Make sure it is encoded properly in the script!)")
+
+if sys.argv[1] == 'C':
+	custom = 1
+else:
+	custom = 0
+
+custompalet = ['#ff4e50','#fc913a','#f9d62e','#4d7f17','#8ae429','#2e4045','#83adb5','#5e3c58','#bfb5b2','#c6c386','#5b391e','#66bbae',
+'#292929','#4a6084','#eae374','#372e29','#ff99cc','#ff5588','#ccec75','#204c39']
+
+
 '''
 Defining input/output folders
 '''
-dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results"
-infolder = "singlemotif"
-outfolder = "viz_singlemotif"
+dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/images"
+infolder = "tovisualize"
+outfolder = "visualized"
 
 '''
 Verifying/creating input/output files/folders
@@ -123,7 +136,10 @@ fills up information on the colour and length dictionaries.
 '''
 def order(columns):
 	length,callseq = [],[]
-	colours = getColour(len(columns))
+	if custom == 0:
+		colours = getColour(len(columns))
+	else:
+		colours = custompalet
 	for k,c in enumerate(columns):
 		if c not in motlen:		# first, some household stuff: this is a new motif, so assign length + colour
 			if len(c) == 0:
