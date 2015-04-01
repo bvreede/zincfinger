@@ -16,7 +16,6 @@ Date: 11 December 2014
 
 import random,csv,sys,os,math
 
-##OPTION: CUSTOM COLOURS OR AUTOMATIC?###
 if len(sys.argv) <= 1:
 	sys.exit("USAGE: viz_motif.py [C] (C is not necessary, but if if is indicated the script will use a customized colour palette for the individual motifs. Make sure it is encoded properly in the script!)")
 
@@ -25,8 +24,10 @@ if sys.argv[1] == 'C':
 else:
 	custom = 0
 
-custompalet = ['#ff4e50','#fc913a','#f9d62e','#4d7f17','#8ae429','#2e4045','#83adb5','#5e3c58','#bfb5b2','#c6c386','#5b391e','#66bbae',
-'#292929','#4a6084','#eae374','#372e29','#ff99cc','#ff5588','#ccec75','#204c39']
+custompalet = ['#b62020','#ff4e50','#fc913a','#f9d62e','#fff797','#c6c386',
+'#dff79e','#8ae429','#4d7f17','#204c39','#6b4423',
+'#272d70','#0392cf','#83adb5','#66bbae',
+'#bfb5b2','#a200ff','#6c2a7d','#ff99cc','#ff5588']
 
 
 '''
