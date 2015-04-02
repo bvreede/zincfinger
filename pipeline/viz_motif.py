@@ -16,15 +16,14 @@ Date: 11 December 2014
 
 import random,csv,sys,os,math
 
-if len(sys.argv) <= 1:
-	sys.exit("USAGE: viz_motif.py [C] (C is not necessary, but if if is indicated the script will use a customized colour palette for the individual motifs. Make sure it is encoded properly in the script!)")
+print "USAGE: viz_motif.py [C] (C is not necessary, but if it is indicated the script will use a customized colour palette for the individual motifs. Make sure it is encoded properly in the script!)\n\nNB: this is not an error message; the script is running, don't worry."
 
 if sys.argv[1] == 'C':
 	custom = 1
 else:
 	custom = 0
 
-custompalet = ['#b62020','#ff4e50','#fc913a','#f9d62e','#fff797','#c6c386',
+custompalet = ['#b62020','#ff2020','#fc913a','#f9d62e','#fff797','#c6c386',
 '#dff79e','#8ae429','#4d7f17','#204c39','#6b4423',
 '#272d70','#0392cf','#83adb5','#66bbae',
 '#bfb5b2','#a200ff','#6c2a7d','#ff99cc','#ff5588']
