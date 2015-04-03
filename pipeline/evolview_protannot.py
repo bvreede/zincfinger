@@ -2,7 +2,7 @@ import csv,sys,math
 from random import shuffle
 
 if len(sys.argv) <= 1:
-	sys.exit("USAGE: python evolview_protannot.py path/to/inputfile\n(inputfile is csv file with motifhits per protein)")
+	sys.exit("USAGE: python evolview_protannot.py path/to/inputfile [C]\nInputfile is csv file with motifhits per protein.\nC is not necessary, but if if is indicated the script will use a customized colour palette for the individual motifs. Make sure it is encoded properly in the script!")
 
 infile = sys.argv[1]
 #resfolder = ('/').join(infile.split('/')[:-1])
@@ -13,6 +13,18 @@ outname = infile[:-4] + '.txt'
 # load source file, open results file
 source = csv.reader(open(infile))
 result = open(outname, "w")
+
+if sys.argv[2] == 'C':
+	custom = 1
+else:
+	custom = 0
+
+custompalet = ['#b62020','#ff2020','#fc913a','#f9d62e','#fff797','#c6c386',
+'#dff79e','#8ae429','#4d7f17','#204c39','#6b4423',
+'#272d70','#0392cf','#83adb5','#66bbae',
+'#bfb5b2','#a200ff','#6c2a7d','#ff99cc','#ff5588']
+
+
 
 # define colours of motifs
 '''
@@ -64,7 +76,10 @@ def headerprint(colourdict):
 colourdict,msequence,mlen = {},{},{}
 for i,line in enumerate(source):
 	if i == 0: #only on the first (header) line
-		colours = getColour(len(line)-4)
+		if custom == 1:
+			colours = custompalet
+		else:
+			colours = getColour(len(line)-4)
 		for n,m in enumerate(line[4:]):
 			if len(m) > 0:
 				CC,CH,HH = m.split('_')
