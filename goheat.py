@@ -20,11 +20,12 @@ import scipy.cluster.hierarchy as sch
 
 #specify folder for inputfiles, and an errormessage given on every usage abort to the user
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/"
-datafolder = "%sresults/singlemotif/" %dbfolder
+datafolder = "%sresults/interest_clusters/gorilla/" %dbfolder
+#datafolder = "%sresults/singlemotif/" %dbfolder
 imagefolder = "%simages/" %dbfolder
 gosource = "%sdatabases/140720-SM00355-dmel2.csv" %dbfolder
 #gosource = "%sdatabases/150219-SM00355-dmel_corr.csv" %dbfolder
-errormess = "USAGE: goheat.py motif_incl/excl source GOname/term (e.g.: goheat.py 2_12_4_excl a n)\nThe program will automatically find the correct input files in %s\nThe source needs to be either a (for AMIGO) or b (for BioMart). BioMart requires a downloaded database, which may be incomplete. AMIGO takes longer to load (and requires an internet connection.\nGOname/term (n or t, respectively) indicates whether to use the NAME of GO terms or their code in the final heatmap." %datafolder
+errormess = "USAGE: goheat.py motif_incl/excl source GOname/term (e.g.: goheat.py 2_12_4_excl a n)\nThe program will automatically find the correct input files in %s\nThe source needs to be either a (for AMIGO) or b (for BioMart). BioMart requires a downloaded database, which may be incomplete. AMIGO takes longer to load (and requires an internet connection).\nGOname/term (n or t, respectively) indicates whether to use the NAME of GO terms or their code in the final heatmap." %datafolder
 
 #two parts of the AMIGO link, they are separated by the GO term.
 golink1 = "http://golr.geneontology.org/solr/select?defType=edismax&qt=standard&indent=on&wt=csv&rows=10000&start=0&fl=bioentity&facet=true&facet.mincount=1&facet.sort=count&json.nl=arrarr&facet.limit=25&hl=true&hl.simple.pre=%3Cem%20class=%22hilite%22%3E&csv.encapsulator=&csv.separator=%09&csv.header=false&csv.mv.separator=|&fq=document_category:%22bioentity%22&fq=taxon_closure_label:%22Drosophila%20%3Cfruit%20fly,%20genus%3E%22&facet.field=source&facet.field=type&facet.field=panther_family_label&facet.field=taxon_closure_label&facet.field=annotation_class_list_label&facet.field=regulates_closure_label&q="
@@ -41,14 +42,17 @@ if source != ('a' or 'b'):
 	sys.exit("ABORT: indicate 'a' for AMIGO or 'b' for BioMart as the GO source.\n%s" %errormess)
 
 #generate names of input files: the user only indicates the prefix
-genefile = datafolder + sys.argv[1] + ".csv"
-gofile = datafolder + sys.argv[1] + "_results.csv"
+#genefile = datafolder + sys.argv[1] + ".csv"
+#gofile = datafolder + sys.argv[1] + "_results.csv"
+genefile = datafolder + sys.argv[1] + "-gorillain.csv"
+gofile = datafolder + sys.argv[1] + "-gorilla-results.csv"
+
 
 #check if all input files are correct (if they don't exist: abort)
 if not path.exists(genefile):
-	sys.exit("ABORT: at least one of the input files was not found.\n%s" %errormess)
+	sys.exit("ABORT: at least one of the input files was not found.\nYour input files were:\nGOfile: %s\ngenefile: %s\n\n%s" %(gofile,genefile,errormess))
 if not path.exists(gofile):
-	sys.exit("ABORT: at least one of the input files was not found.\n%s" %errormess)
+	sys.exit("ABORT: at least one of the input files was not found.\nYour input files were:\nGOfile: %s\ngenefile: %s\n\n%s" %(gofile,genefile,errormess))
 if not path.exists(gosource):
 	sys.exit("ABORT: could not locate the GO database. Correct the path in the script.")
 
@@ -62,8 +66,8 @@ godb = csv.reader(open(gosource))
 goli, gnli, gidli, pidli = [],[],[],[] #lists of (unique) go IDs, gene names, protein IDs
 godict,genedict = {},{} #translation dictionaries to find gene names with gene IDs, and go description with go ID
 for n,line in enumerate(genes):
-	if n == 0:
-		continue
+	#if n == 0: #ONLY TURN THIS ON IF THE FIRST LINE IS A HEADER!
+	#	continue
 	genedict[line[0]] = line[1]
 	gidli.append(line[0])
 	gnli.append(line[1])
