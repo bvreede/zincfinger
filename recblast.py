@@ -36,10 +36,10 @@ ilistA = ['isca','smar','turt','tcas','dpul']
 comp = 'dmel'
 
 #CUSTOMIZE: what do you want to do?
-newdbs = 0 #set to 1 if you want to make new databases for blasting and searching; else set to 0
+newdbs = 1 #set to 1 if you want to make new databases for blasting and searching; else set to 0
 redoblast = 0 #set to 1 if you want to re-do the blasting; set to 0 if you want to use existing result files
 rewritefa = 0 #set to 1 if you want to rewrite your original fasta files to include the dmel/comp ortholog name; else set to 0
-tableout = 1 #set to 1 if you want a csv file with orthologs; else set to 0
+tableout = 0 #set to 1 if you want a csv file with orthologs; else set to 0
 
 #END CUSTOMIZATION.
 ilistC = ilistA + [comp]
