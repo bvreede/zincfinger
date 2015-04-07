@@ -1,5 +1,5 @@
-infile = open("/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results/evolview_clusters-average-allz.txt")
-outfile = open("/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results/evolview_clusters-average-allz2.txt", "w")
+infile = open("/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results/motifhits_allz.txt")
+outfile = open("/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results/motifhits_allz2.txt", "w")
 
 
 for line in infile:
