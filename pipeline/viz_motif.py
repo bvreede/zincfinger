@@ -19,9 +19,12 @@ import random,csv,sys,os,math
 
 print "USAGE: viz_motif.py [C] (C is not necessary, but if it is indicated the script will use a customized colour palette for the individual motifs. Make sure it is encoded properly in the script!)\n\nNB: this is not an error message; the script is running, don't worry."
 
-if sys.argv[1] == 'C':
-	custom = 1
-else:
+try:
+	if sys.argv[1] == 'C':
+		custom = 1
+	else:
+		custom = 0
+except IndexError:
 	custom = 0
 
 custompalet = ['#b62020','#ff2020','#fc913a','#f9d62e','#fff797','#c6c386',
