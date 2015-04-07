@@ -43,7 +43,7 @@ motiflist = ['2_7_4','2_8_3','2_9_3','2_10_5','2_11_3','2_11_4','2_12_2','2_12_3
 # options: what do you want the script to do?
 stats = 0 # set to 1 if you want to make stats (how many motifs were found; how many duplicates; etc) and images (heatmap)
 saveseq = 0 # set to 1 if you want to make fasta files of all motifs that were found
-translate_hits = 0 #set to 1 if you want to generate an output fasta file with the translated motifhits
+translate_hits = 1 #set to 1 if you want to generate an output fasta file with the translated motifhits
 
 
 '''
@@ -238,7 +238,8 @@ for key in fastadict:
 	# another for clustering: space or no space
 	if translate_hits == 1:
 		transl = translation(posmatrix,motdict,seqdict)
-		outfasta.write(">%s\n%s\n\n" %(key,transl))
+		if len(transl) > 0:
+			outfasta.write(">%s\n%s\n\n" %(key,transl))
 if translate_hits == 1:
 	outfasta.close()
 outputdb.close()
