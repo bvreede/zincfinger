@@ -146,6 +146,8 @@ def translation(posmatrix,motdict,seqdict):
 Per species, read the fasta file, open an output file, and scan all sequences for the presence of
 motifs.
 '''
+
+allseqfasta = open("%s/%s/motifseq_allz.fasta" %(dbfolder,resfolder), "w")
 for sp in species:
 	# write the header for the database
 	fastadb = open("%s/%s/%s-%s_%s" %(dbfolder,seqfolder,prefix,sp,suffix))
@@ -175,7 +177,7 @@ for sp in species:
 
 		# check each motif individually
 		for m in motifdict: #go through each motif and find all instances in the sequence
-			mfile = open("%s/%s/%s.txt" %(dbfolder,seqfolder,m), "a")
+			mfile = open("%s/%s/%s.txt" %(dbfolder,seqfolder,m), "a") #collects the actual aminoacid sequence of a motif
 			domain = motifdict[m]
 			CC,CH,HH = m.split('_')
 			for i in domain.finditer(fastadict[key]):
@@ -229,9 +231,13 @@ for sp in species:
 	
 		# another for clustering: space or no space
 		transl = translation(posmatrix,motdict,seqdict)
-		outfasta.write(">%s\n%s\n\n" %(key,transl))
+		if len(transl) > 0:
+			outfasta.write(">%s\n%s\n\n" %(key,transl))
+			allseqfasta.write(">%s\n%s\n\n" %(key,transl))
 	outfasta.close()
 	outputdb.close()
+
+allseqfasta.close()
 
 '''
 make the stats!
