@@ -11,7 +11,7 @@ Date: 1 April 2015
 import csv, sys
 
 maindb = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results/interest_clusters"
-infile = "nameclusters4.csv" #csv file with [geneID,genename,proteinID,clusternumber]
+infile = "nameclusters6.csv" #csv file with [geneID,genename,proteinID,clusternumber]
 
 #fasta file with sequences
 fasta = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/sequences/150111-SM00355-allz_seq.fasta"
@@ -60,7 +60,7 @@ def fastadicter(fastadb):
 		if line[0] == ">":
 			if header != "":
 				fastadict[header] = sequence
-			header = line[1:].strip()
+			header = line[1:].strip().replace(':','-')
 			sequence = ""
 		else:
 			sequence += line.strip()
@@ -71,7 +71,7 @@ fastadicter(fo)
 
 
 '''
-output:
+loutput:
 CHECK per cluster: fasta file with sequences (send to Ariel and have him make sequence trees)
 - per cluster: motif scores in separate file (and run the viz script on this)
 - Drosophila genes only; gorilla input list
