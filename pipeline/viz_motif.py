@@ -1,3 +1,4 @@
+#!/usr/bin/python
 '''
 This script can be used to visualize the motif hits in the resulting database
 from a motif search performed by 'findmotif.py', or similar looking databases.
