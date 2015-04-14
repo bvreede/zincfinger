@@ -30,8 +30,11 @@ outname = infile[:-4] + '.txt'
 source = csv.reader(open(infile))
 result = open(outname, "w")
 
-if sys.argv[2] == 'C':
-	custom = 1
+if len(sys.argv) > 2:
+	if sys.argv[2] == 'C':
+		custom = 1
+	else:
+		custom = 0
 else:
 	custom = 0
 
