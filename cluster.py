@@ -30,7 +30,7 @@ clustercrit = "inconsistent"
 
 #input/output files and folders:
 #the input file will be found at [dbfolder]/motifseq_[species].fasta
-species = "allz" #species should have 4 letters.
+species = "all2" #species should have 4 letters.
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results"
 motiffile = "%s/motifseq_%s.fasta" %(dbfolder,species) #the file used for the clustering
 infile = "%s/motifhits_%s.csv" %(dbfolder,species) #the file to apply the clustering to, and split into new files
