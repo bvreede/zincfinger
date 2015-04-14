@@ -1,3 +1,19 @@
+#!/usr/bin/python
+
+'''
+This script can be used to interpret the results from 'findmotif.py', and
+put these into a format that can be read by evolview for annotation
+as 'protein domains'.
+Optional is the customization of the colours; this option is not robust
+to different (higher) numbers of domains, but can be easily adjusted.
+However, a robust alternative is available by not opting in to the customized
+colour palet.
+
+Author: Barbara Vreede
+Contact: b.vreede@gmail.com
+Date: 14 April 2015
+'''
+
 import csv,sys,math
 from random import shuffle
 
