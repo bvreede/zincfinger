@@ -1,3 +1,15 @@
+#!/usr/bin/python
+
+'''
+This script can be used to run a first check on the headers (and sequences) of a fasta
+file, changing headers and checking whether there are any hits for zinc finger motifs
+in the sequence. Also a good starting point for further (header) customization.
+
+Author: Barbara Vreede
+Contact: b.vreede@gmail.com
+Date: 14 April 2015
+'''
+
 import csv,re
 
 # read fasta file into memory
