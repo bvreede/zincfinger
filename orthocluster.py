@@ -16,7 +16,7 @@ from jellyfish import levenshtein_distance as jld
 
 #CUSTOMIZE INPUT FILES
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
-clusterfile = "results/clustering-string_allz-average.csv"
+clusterfile = "results/clustering-string_all2-average.csv"
 orthologs = "sequences/dmel-orthologs.csv"
 #END CUSTOMIZATION
 
