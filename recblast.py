@@ -28,7 +28,7 @@ seqfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/sequences"
 #eg: 150111_dmel.fasta, 150111_tcas.fasta, 150111_isca.fasta would have '150111_' as prefix and '.fasta' as suffix.
 dbsuffix = "zfs.fa" #the name that will be given to databases as they are indexed for blast
 dbcurprefix = "150111-SM00355-" #the current fasta file name (prefix)
-dbcursuffix = "_seq.fasta" #the current fasta file name (suffix)
+dbcursuffix = "_seqTR.fasta" #the current fasta file name (suffix)
 dbnewsuffix = "_seqRW.fasta" #the rewritten fasta file name (suffix)
 
 #CUSTOMIZE: the individual species specifiers for each fasta file ('ilistA') and the comparative species (comp).
@@ -37,9 +37,9 @@ comp = 'dmel'
 
 #CUSTOMIZE: what do you want to do?
 newdbs = 1 #set to 1 if you want to make new databases for blasting and searching; else set to 0
-redoblast = 0 #set to 1 if you want to re-do the blasting; set to 0 if you want to use existing result files
+redoblast = 1 #set to 1 if you want to re-do the blasting; set to 0 if you want to use existing result files
 rewritefa = 0 #set to 1 if you want to rewrite your original fasta files to include the dmel/comp ortholog name; else set to 0
-tableout = 0 #set to 1 if you want a csv file with orthologs; else set to 0
+tableout = 1 #set to 1 if you want a csv file with orthologs; else set to 0
 
 #END CUSTOMIZATION.
 ilistC = ilistA + [comp]
