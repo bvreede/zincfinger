@@ -13,9 +13,9 @@ Date: 14 April 2015
 import csv,re
 
 # read fasta file into memory
-fasta = open("/home/barbara/Dropbox/shared_work/zinc_finger_data/data/sequences/150111-SM00355-allz_seq.fasta")
+fasta = open("/home/barbara/Dropbox/shared_work/zinc_finger_data/data/sequences/150111-SM00355-smar_seq.fasta")
 nametrans = csv.reader(open("/home/barbara/Dropbox/shared_work/zinc_finger_data/data/sequences/identified_sequences_ariel.csv"))
-newfasta = open("/home/barbara/Dropbox/shared_work/zinc_finger_data/data/sequences/150111-SM00355-all2_seq.fasta", "w")
+newfasta = open("/home/barbara/Dropbox/shared_work/zinc_finger_data/data/sequences/150111-SM00355-smar_seqTR.fasta", "w")
 
 
 names = {}
