@@ -56,7 +56,7 @@ def wordcomp(i,j):
 	# return the minimum distance
 	return min(distance)
 
-def distance(gene,dmorths,sdict): #genes is a list
+def distance(gene,dmorths,sdict): #NB: genes is a list
 	'''
 	Calculate the minimum distance between the gene and its dm orthologs
 	where distances are calculated between strings that summarize protein
@@ -83,24 +83,31 @@ for line in cf:
 	cdict[name] = line[3]
 	sdict[name] = line[4]
 
-#make a list of all the unique orthologs per species, and collect the isoforms
 for k in range(1,len(ol2)):
+	#make a list of all the unique orthologs per species
 	allorth = list(set(ol2[k][1:]))
 	allorth.remove('')
 	print 'species:', ol2[k][0]
 	print 'total no. detected orthologs:', len(allorth)
-	clcount = 0
+	clcount,idcount = 0,0
 	dists = []
 	for gene in allorth:
-		dmorths = orthos(gene,k,ol2)
+		dmorths = orthos(gene,k,ol2) #collect all Dmel isoforms that are mentioned as orthologs for this gene
 		gene = [gene] #the clusters function requires a list input
 		cl_gene = clusters(gene,cdict)
 		cl_orth = clusters(dmorths,cdict)
 		if cl_gene[0] in cl_orth: #If one of the isoforms has the same cluster hit as the spp ortholog, score as 1
 			clcount += 1
-		else:
-			dist = distance(gene,dmorths,sdict)
-			dists.append(dist)
+		#calculate the minimum distance between this gene and the dmel ortholog(s)
+		dist = distance(gene,dmorths,sdict)
+		dists.append(dist)
+		if dist == 0: # if the domain structures are identical, score as 1
+			idcount += 1
 	print 'total no. orthologs in same cluster:', clcount
-	print 'percentage:', clcount/float(len(allorth)) * 100
+	print 'percentage of orthologs in same cluster:', clcount/float(len(allorth)) * 100
+	print 'number of identical orthologs: ', idcount
+	print 'percentage of identical orthologs:', idcount/float(len(allorth)) * 100
 	print 'average distance:', sum(dists)/float(len(dists))
+	print '\n'
+
+	
