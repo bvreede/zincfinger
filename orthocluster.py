@@ -18,7 +18,11 @@ from jellyfish import levenshtein_distance as jld
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
 clusterfile = "results/clustering-string_all2-average.csv"
 orthologs = "sequences/dmel-orthologs.csv"
+seqvsseq = "results/orthologs/dmeltoother.csv"
 #END CUSTOMIZATION
+
+seqcomp = open("%s/%s" %(dbfolder,seqvsseq), "w")
+
 
 def orthos(gene,k,ol):
 	'''
@@ -49,14 +53,24 @@ def wordcomp(i,j):
 	for x in itertools.product(*sjsplit):
 		sj.append(''.join(x))
 	# check jld of all strings[i] options against all strings[j] options
-	distance,distance2 = [],[]
+	distance,distance2,sequencecomp = [],[],[]
 	for sin in si:
 		for sjn in sj:
 			distance.append(jld(sin,sjn))
 			#remove Zs and do it again
 			sin = sin.replace('Z','')
 			sjn = sjn.replace('Z','')
-			distance2.append(jld(sin,sjn))			
+			distance2.append(jld(sin,sjn))
+			sequencecomp.append("%s,%s" %(sin,sjn))
+	# if there are differences: which motif turned into which?
+	if min(distance2) > 0: #use the sequences without space/Z
+		for k,d in enumerate(distance2):
+			if d == min(distance2):
+				#distance2 and sequencecomp have the same order, so sequencecomp[k] has sequences corresponding to distance = d
+				comps = sequencecomp[k].split(',')
+				sik,sjk = comps[0],comps[1]
+				if len(sik) == len(sjk):
+					seqcomp.write("%s,%s\n" %(sik,sjk))
 	# return the minimum distance
 	return min(distance),min(distance2)
 
@@ -121,4 +135,6 @@ for k in range(1,len(ol2)):
 	print 'average distance (without space):', sum(distsnoZ)/float(len(distsnoZ))
 	print '\n'
 
-	
+seqcomp.close()
+
+
