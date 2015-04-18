@@ -13,15 +13,20 @@ Date: 17 March 2015
 
 import csv,itertools,re
 from jellyfish import levenshtein_distance as jld
+from collections import Counter
 
 #CUSTOMIZE INPUT FILES
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
 clusterfile = "results/clustering-string_all2-average.csv"
 orthologs = "sequences/dmel-orthologs.csv"
 seqvsseq = "results/orthologs/dmeltoother.csv"
+resultsummary = "results/orthologs/orthocomp_summary.csv"
+countreplacements = "results/orthologs/replacements_count.txt"
 #END CUSTOMIZATION
 
 seqcomp = open("%s/%s" %(dbfolder,seqvsseq), "w")
+ressum = open("%s/%s" %(dbfolder,resultsummary), "w")
+m2m = []
 
 
 def orthos(gene,k,ol):
@@ -44,6 +49,7 @@ def wordcomp(i,j):
 	are regular expressions, first expand the re. and then calculate all distances
 	pairwise. Return the minimal distance.
 	'''
+	global m2m
 	# translate strings[i] and strings[j] to all possible expressions
 	sisplit = [part.split('|') for part in re.split(r'\{(.*?)\}',i)]
 	sjsplit = [part.split('|') for part in re.split(r'\{(.*?)\}',j)]
@@ -70,6 +76,10 @@ def wordcomp(i,j):
 				comps = sequencecomp[k].split(',')
 				sik,sjk = comps[0],comps[1]
 				if len(sik) == len(sjk):
+					for ki,si in enumerate(sik):
+						if si != sjk[ki]:
+							fs = frozenset([si,sjk[ki]])
+							m2m.append(fs)
 					seqcomp.write("%s,%s\n" %(sik,sjk))
 	# return the minimum distance
 	return min(distance),min(distance2)
@@ -100,6 +110,9 @@ for line in cf:
 	name = line[2]
 	cdict[name] = line[3]
 	sdict[name] = line[4]
+
+#Header line of results file
+ressum.write("Species,Orthologs,Orth in same cluster,percentage,Identical orth,percentage,Levenshtein total,Levenshtein average,Identical orth (no space),Levenshtein total (no space),Levenshtein average (no space)\n")
 
 for k in range(1,len(ol2)):
 	#make a list of all the unique orthologs per species
@@ -134,7 +147,10 @@ for k in range(1,len(ol2)):
 	print 'total levenshtein distance (without space):', sum(distsnoZ)
 	print 'average distance (without space):', sum(distsnoZ)/float(len(distsnoZ))
 	print '\n'
+	ressum.write("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n" %(ol2[k][0],len(allorth),clcount,clcount/float(len(allorth)),idcount,idcount/float(len(allorth)),sum(dists),sum(dists)/float(len(dists)),idcountnoZ,sum(distsnoZ),sum(distsnoZ)/float(len(distsnoZ))))
 
 seqcomp.close()
+ressum.close()
+
 
 
