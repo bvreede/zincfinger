@@ -49,12 +49,16 @@ def wordcomp(i,j):
 	for x in itertools.product(*sjsplit):
 		sj.append(''.join(x))
 	# check jld of all strings[i] options against all strings[j] options
-	distance = []
+	distance,distance2 = [],[]
 	for sin in si:
 		for sjn in sj:
 			distance.append(jld(sin,sjn))
+			#remove Zs and do it again
+			sin = sin.replace('Z','')
+			sjn = sjn.replace('Z','')
+			distance2.append(jld(sin,sjn))			
 	# return the minimum distance
-	return min(distance)
+	return min(distance),min(distance2)
 
 def distance(gene,dmorths,sdict): #NB: genes is a list
 	'''
@@ -89,8 +93,8 @@ for k in range(1,len(ol2)):
 	allorth.remove('')
 	print 'species:', ol2[k][0]
 	print 'total no. detected orthologs:', len(allorth)
-	clcount,idcount = 0,0
-	dists = []
+	clcount,idcount,idcountnoZ = 0,0,0
+	dists,distsnoZ = [],[]
 	for gene in allorth:
 		dmorths = orthos(gene,k,ol2) #collect all Dmel isoforms that are mentioned as orthologs for this gene
 		gene = [gene] #the clusters function requires a list input
@@ -99,15 +103,22 @@ for k in range(1,len(ol2)):
 		if cl_gene[0] in cl_orth: #If one of the isoforms has the same cluster hit as the spp ortholog, score as 1
 			clcount += 1
 		#calculate the minimum distance between this gene and the dmel ortholog(s)
-		dist = distance(gene,dmorths,sdict)
+		dist,distnoZ = distance(gene,dmorths,sdict)
 		dists.append(dist)
+		distsnoZ.append(distnoZ)
 		if dist == 0: # if the domain structures are identical, score as 1
 			idcount += 1
+		if distnoZ == 0:
+			idcountnoZ += 1
 	print 'total no. orthologs in same cluster:', clcount
 	print 'percentage of orthologs in same cluster:', clcount/float(len(allorth)) * 100
-	print 'number of identical orthologs: ', idcount
+	print 'number of identical orthologs:', idcount
 	print 'percentage of identical orthologs:', idcount/float(len(allorth)) * 100
+	print 'total levenshtein distance:', sum(dists)
 	print 'average distance:', sum(dists)/float(len(dists))
+	print 'number of identical orthologs (without space):', idcountnoZ
+	print 'total levenshtein distance (without space):', sum(distsnoZ)
+	print 'average distance (without space):', sum(distsnoZ)/float(len(distsnoZ))
 	print '\n'
 
 	
