@@ -14,6 +14,8 @@ Date: 17 March 2015
 import csv,itertools,re
 from jellyfish import levenshtein_distance as jld
 from collections import Counter
+import pylab as pl
+import numpy as np
 
 #CUSTOMIZE INPUT FILES
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
@@ -21,6 +23,7 @@ clusterfile = "results/clustering-string_all2-average.csv"
 orthologs = "sequences/dmel-orthologs.csv"
 seqvsseq = "results/orthologs/dmeltoother.csv"
 resultsummary = "results/orthologs/orthocomp_summary.csv"
+hmimage = "images/ortholog_combinations.svg"
 #END CUSTOMIZATION
 
 #open resultfiles and make resultlists
@@ -187,5 +190,23 @@ for m1 in motiflist:
 		row.append(freq/total)
 	table.append(row)
 
-print table
 
+###HEATMAP###
+data = pl.array(table)
+colourformap = "YlOrBr"
+fig,ax = pl.subplots()
+heatmap = pl.pcolor(data, cmap=colourformap)
+cbar = pl.colorbar(heatmap)
+	
+# put the major ticks at the middle of each cell
+ax.set_xticks(np.arange(data.shape[1]) + 0.5, minor=False)
+ax.set_yticks(np.arange(data.shape[0]) + 0.5, minor=False)
+pl.axis('tight') #remove the white bar
+ax.invert_yaxis() #make sure it starts counting from the top
+	
+#make the labels
+ax.set_xticklabels(motiflist, minor=False, rotation=90)
+ax.set_yticklabels(motiflist, minor=False)
+	
+# save the figure
+pl.savefig("%s/%s" %(dbfolder,hmimage), dpi = 300)
