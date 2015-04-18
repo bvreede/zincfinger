@@ -21,12 +21,18 @@ clusterfile = "results/clustering-string_all2-average.csv"
 orthologs = "sequences/dmel-orthologs.csv"
 seqvsseq = "results/orthologs/dmeltoother.csv"
 resultsummary = "results/orthologs/orthocomp_summary.csv"
-countreplacements = "results/orthologs/replacements_count.txt"
 #END CUSTOMIZATION
 
+#open resultfiles and make resultlists
 seqcomp = open("%s/%s" %(dbfolder,seqvsseq), "w")
 ressum = open("%s/%s" %(dbfolder,resultsummary), "w")
-m2m = []
+m2m,letters = [],[] #lists to collect combinations of letters (orthologs where two different domain classes are found in the same location) and the total appearance of those letters, respectively. 
+
+#TAKE THIS FROM FINDMOTIF.PY: the alphabet and corresponding motiflist
+motiflist = ['2_7_4','2_8_3','2_9_3','2_10_5','2_11_3','2_11_4','2_12_2','2_12_3','2_12_4','2_12_5','2_12_6','2_13_3',
+'2_13_4','2_14_3','2_14_4','2_15_4','3_8_3','4_12_3','4_12_4','4_15_3']
+alphabet = """ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`"""
+translationdict = {motif: alphabet[a] for a,motif in enumerate(motiflist)} # dictionary of motifs and the corresponding string element
 
 
 def orthos(gene,k,ol):
@@ -47,9 +53,12 @@ def wordcomp(i,j):
 	'''
 	Calculate pairwise distances for all the strings collected. As strings
 	are regular expressions, first expand the re. and then calculate all distances
-	pairwise. Return the minimal distance.
+	pairwise. Return the minimal distance (with and without spaces).
+	Additionally: find out which domain classes 'replace' each other in orthologs.
+	Save these results in global lists.
 	'''
 	global m2m
+	global letters
 	# translate strings[i] and strings[j] to all possible expressions
 	sisplit = [part.split('|') for part in re.split(r'\{(.*?)\}',i)]
 	sjsplit = [part.split('|') for part in re.split(r'\{(.*?)\}',j)]
@@ -77,6 +86,8 @@ def wordcomp(i,j):
 				sik,sjk = comps[0],comps[1]
 				if len(sik) == len(sjk):
 					for ki,si in enumerate(sik):
+						letters.append(sjk[ki])
+						letters.append(si)
 						if si != sjk[ki]:
 							fs = frozenset([si,sjk[ki]])
 							m2m.append(fs)
@@ -152,5 +163,29 @@ for k in range(1,len(ol2)):
 seqcomp.close()
 ressum.close()
 
+'''
+Part II:
+Which domain classes are parallel in non-identical orthologs?
+Make a heatmap of this data.
+'''
+combocount = Counter(m2m) #dictionary with frozenset-motifcombinations, and their frequency
+letterscount = Counter(letters) #dictionary with individual letters, and their frequency
 
+#collect data for the heatmap in a 2d list
+table = []
+for m1 in motiflist:
+	l1 = translationdict[m1] #corresponding string element of main motif
+	total = letterscount[l1] #total frequency of this motif in the dataset
+	row = [] #empty row that will collect relative frequency data
+	for m2 in motiflist:
+		l2 = translationdict[m2] #corresponding string element of comparing motif
+		fs = frozenset([l1,l2]) #combined frozenset of main and comparing motif
+		if fs in combocount: #if this combination is found:
+			freq = float(combocount[fs]) #give total frequency of combination (float to enable float result)
+		else:
+			freq = 0
+		row.append(freq/total)
+	table.append(row)
+
+print table
 
