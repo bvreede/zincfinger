@@ -156,7 +156,7 @@ for spp in ilistA:
 	outdb.close()
 
 # blast each file from the five species against dmel and save the name of its top hit
-# output: csv file with dmel in column 1, spp in column 2; named: spp-dmel
+# output: csv file with comparing species in column 1, spp in column 2; named: spp-comp
 for spp in ilistA:
 	if redoblast == 0:
 		break
@@ -192,7 +192,10 @@ for spp in ilistA:
 	todmeldx = {}
 	for g in todmel:
 		spg = g[1].strip()
-		dmg = g[0].split('-333-')[1] #the middle argument is the gene name
+		if rewritefa == 1:
+			dmg = g[0].split('-333-')[1] #the middle argument is the gene name
+		elif rewritefa == 0:
+			dmg = g[0].split('-333-')[0] #the first argument is the gene ID
 		spg = spg.replace('-333-','|')
 		spg = spg.replace('-111-','(')
 		spg = spg.replace('-222-',')')
@@ -211,7 +214,10 @@ for spp in ilistA:
 		compgenes.append(cgene)
 		# distill the species-hit and the dmel/comp gene
 		spg = g[1].strip()
-		dmg = g[0].split('-333-')[1] #the middle argument is the gene name
+		if rewritefa == 1:
+			dmg = g[0].split('-333-')[1] #the middle argument is the gene name
+		elif rewritefa == 0:
+			dmg = g[0].split('-333-')[0] #the first argument is the gene ID
 		spg = spg.replace('-333-','|')
 		spg = spg.replace('-111-','(')
 		spg = spg.replace('-222-',')')
