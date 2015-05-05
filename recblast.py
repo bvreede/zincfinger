@@ -32,11 +32,11 @@ dbcursuffix = "_seqTR.fasta" #the current fasta file name (suffix)
 dbnewsuffix = "_seqRW.fasta" #the rewritten fasta file name (suffix)
 
 #CUSTOMIZE: the individual species specifiers for each fasta file ('ilistA') and the comparative species (comp).
-ilistA = ['isca','smar','turt','tcas','dpul']
-comp = 'dmel'
+ilistA = ['dpul'] #['isca','smar','turt','tcas','dpul']
+comp = 'tcas' #'dmel'
 
 #CUSTOMIZE: what do you want to do?
-newdbs = 1 #set to 1 if you want to make new databases for blasting and searching; else set to 0
+newdbs = 0 #set to 1 if you want to make new databases for blasting and searching; else set to 0
 redoblast = 1 #set to 1 if you want to re-do the blasting; set to 0 if you want to use existing result files
 rewritefa = 0 #set to 1 if you want to rewrite your original fasta files to include the dmel/comp ortholog name; else set to 0
 tableout = 1 #set to 1 if you want a csv file with orthologs; else set to 0
@@ -95,7 +95,7 @@ for fasta in os.listdir(zffolder):
 	os.remove("%s/%s" %(zffolder,fasta))
 	os.rename("%s/%s2" %(zffolder,fasta), "%s/%s" %(zffolder,fasta))
 
-# prep databases for future reciprocal searches by individually saving all sequences in the fasta
+# prep databases for future reciprocal searches by individually saving all sequences present in the fasta
 def prepdb(spp):
 	infasta = open("%s/%s%s" %(zffolder,spp,dbsuffix))
 	outfolder = "%s/%s" %(zffolder,spp)
@@ -187,7 +187,7 @@ hitcollect = [] #list of lists containing hits to dmel genes per species
 compgenes = []
 for spp in ilistA:
 	print "Making dictionary from %s to %s..." %(comp,spp)
-	hcspp = [spp] #the list containing all dmel hits for this species (and a header with the species name)
+	hcspp = [spp] #the list containing all comp hits for this species (and a header with the species name)
 	todmel = csv.reader(open("%s/%s-%s.csv" %(zffolder,spp,comp)))
 	todmeldx = {}
 	for g in todmel:
@@ -201,6 +201,7 @@ for spp in ilistA:
 		spg = spg.replace('-222-',')')
 		dmg = dmg.replace('-111-','(')
 		dmg = dmg.replace('-222-',')')
+		dmg = dmg.strip()
 		todmeldx[spg] = dmg
 	fromdmel = csv.reader(open("%s/%s-%s.csv" %(zffolder,comp,spp)))
 	for g in fromdmel:
