@@ -13,7 +13,7 @@ for line in db:
 	if line[0] == ">":
 		if len(head) > 0:
 			dbdix[head] = seq
-			seq == ""
+			seq = ""
 		head = line.strip()
 		sp = head.split('|')[1][:4].lower() #head is eg. >ISCW007582|ISCA-(dm-Zn72D)|ISCW007582-PA so this selects ISCA and makes it lower case.
 		if sp not in spp:
