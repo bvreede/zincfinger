@@ -20,7 +20,7 @@ Contact: b.vreede@gmail.com
 import os,csv,sys
 
 #CUSTOMIZE: zffolder is for the databases and individual query files; seqfolder is for the original fasta files
-zffolder = "/home/barbara/data/zincfingers"
+zffolder = "/home/barbara/data/zincfingers2"
 seqfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/sequences"
 
 #CUSTOMIZE: the names given to databases, and the names the fasta files currently have. This requires
@@ -28,11 +28,11 @@ seqfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/sequences"
 #eg: 150111_dmel.fasta, 150111_tcas.fasta, 150111_isca.fasta would have '150111_' as prefix and '.fasta' as suffix.
 dbsuffix = "zfs.fa" #the name that will be given to databases as they are indexed for blast
 dbcurprefix = "150111-SM00355-" #the current fasta file name (prefix)
-dbcursuffix = "_seqTR.fasta" #the current fasta file name (suffix)
+dbcursuffix = "2_seq.fasta" #the current fasta file name (suffix)
 dbnewsuffix = "_seqRW.fasta" #the rewritten fasta file name (suffix)
 
 #CUSTOMIZE: the individual species specifiers for each fasta file ('ilistA') and the comparative species (comp).
-ilistA = ['dpul'] #['isca','smar','turt','tcas','dpul']
+ilistA =  ['dpul'] #['isca','smar','turt','tcas','dpul']
 comp = 'tcas' #'dmel'
 
 #CUSTOMIZE: what do you want to do?
@@ -42,6 +42,8 @@ rewritefa = 0 #set to 1 if you want to rewrite your original fasta files to incl
 tableout = 1 #set to 1 if you want a csv file with orthologs; else set to 0
 
 #END CUSTOMIZATION.
+
+
 ilistC = ilistA + [comp]
 
 '''
