@@ -254,6 +254,8 @@ for key in fastadict:
 			outfasta.write(">%s\n%s\n\n" %(key,transl))
 if translate_hits == 1:
 	outfasta.close()
+if frequency == 1:
+	allmotifstxt.close()
 outputdb.close()
 
 '''
