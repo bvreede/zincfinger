@@ -260,6 +260,9 @@ def list_re(seq):
 			seqli.append(s)
 	return seqli
 
+def aacomp()
+
+
 '''
 Process the data in each ortholog comparison file.
 '''
@@ -309,25 +312,36 @@ for orthfile in orthologli:
 ressum.close()
 
 
+# SIMILARITY THRESHOLD:
+simthr = 0.5 #if the levenshtein distance over sequence length is too large, comparison is probably not warranted and will distort the data.
+
 ## for each item in the ortholog-combo list:
 for pair in orthocombos:
 	# pick up the motif structure
 	seqli_g = list_re(mseq_dx[pair[0]]) #make a list of the elements in this sequence, no spaces
 	for o in pair[1]:
 		seqli_o = list_re(mseq_dx[o])
-		if len(seqli_o) == len(seqli_g):
-			
+		# should we do a simple_wordcomp with a max levenshtein distance for the length here?
+		if len(seqli_o) == len(seqli_g): #lists contain the same number of elements, so side-by-side comparisons are possibly warranted...
+			# but only run the side-by-side comparison if they are below a similarity threshold.
+			testdis = simple_wordcomp(mseq_dx[o],mseq_dx[pair[0]])
+			if testdis/float(len(seqli_o)) > simthr:
+				print "No comparison made between", pair, "with levenshtein distance", testdis
+				continue #the similarity level is not high enough to warrant comparison
+			for n in range(len(seqli_o)):
+				sdis = simple_wordcomp(seqli_o[n],seqli_g[n]) #distance between single elements in list
+				if sdis == 0: #homologous motifs identified
+					#account for regex in some way
+					#pick up sequences
+					#compare sequence AA by AA, and do +1 for each different AA in the corresponding index of the motif's reference list
+					#don't forget to add null model comparison and +1 in the count index
+				else: #motifs have replaced each other.
+					#+1 in the array for replaced orthologs
 			
 
-### remove Z
-### if they are the same length:
-#### for each letter (or REs):
-##### if they are the same:
-###### pick up sequence for both
-###### compare sequence, and do +1 for each different AA in the corresponding index of the motif's reference list
-##### if they are NOT the same:
-###### +1 in the array
 
+
+#null model for sequence comparisons of orthologous motifs: randomly chosen motif of same type
 
 
 
