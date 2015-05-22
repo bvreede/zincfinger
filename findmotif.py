@@ -28,6 +28,7 @@ dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
 seqfolder = "sequences"
 resfolder = "results"
 imgfolder = "images"
+dbfolder2 = "databases"
 
 #define motifs: first a complete dataset
 moCC = [2,3,4] #distances between CC
@@ -44,7 +45,11 @@ motiflist = ['2_7_4','2_8_3','2_9_3','2_10_5','2_11_3','2_11_4','2_12_2','2_12_3
 stats = 0 # set to 1 if you want to make stats (how many motifs were found; how many duplicates; etc) and images (heatmap)
 saveseq = 0 # set to 1 if you want to make fasta files of all motifs that were found
 translate_hits = 1 #set to 1 if you want to generate an output fasta file with the translated motifhits
+frequency = 1 #set to 1 if you want to generate the list of all motifs used for frequency-dependent motif sampling (NB only works when translate_hits is also set to 1!
 
+# output file with list of all motifs, to be used for frequency-dependent sampling
+if frequency == 1:
+	allmotifstxt = open("%s/%s/allmotifs.txt" %(dbfolder,dbfolder2), "w")
 
 '''
 Define regular expressions for all zf-domains (by the C-H distances), and save in a
@@ -142,12 +147,14 @@ def translation(posmatrix,motdict,seqdict):
 			for a in allmots:
 				combodict[a] += 1
 			transl += '{' + regex[:-1] + '}'
+			allmotifstxt.write('{' + regex[:-1] + '}\n') #add the regex to the 'allmotifs' document for frequency-dependent sampling
 			for m in mots[n]:
 				motifdoublecount[m] += 1
 				if mots[n].count(m) > 1:
 					combodict[frozenset([m])] += (1./mots[n].count(m)) #divide by total count, otherwise it will count +2 or more if it passes this point twice
 		else:
 			transl += translationdict[mots[n][0]]
+			allmotifstxt.write("%s\n" %translationdict[mots[n][0]]) #add the (translated) motif to the 'allmotifs' document for frequency-dependent sampling
 	return transl
 	
 '''
@@ -158,6 +165,8 @@ motifs.
 sp = infile.split('/')[-1].split('.')[0]
 fastadb = open("%s" %(infile))
 outputdb = open("%s/%s/%s_motifhits.csv" %(dbfolder,resfolder,sp), "w")
+allmotifsfa = open("%s/%s/allmotifs.fasta" %(dbfolder,seqfolder), "w")
+
 if translate_hits == 1:
 	outfasta = open("%s/%s/%s_motifseq.fasta" %(dbfolder,resfolder,sp), "w")
 outputdb.write("Gene_stable_ID,Gene_name,Protein_stable_ID,Sequence_length,")
@@ -180,6 +189,7 @@ for key in fastadict:
 	poslist = [] #for the fasta file: collect all positions to put them in order later on
 		# check each motif individually
 	for m in motifdict: #go through each motif and find all instances in the sequence
+		thisseqcount = 0 #per motif per seq, to give an index for each aminoacid sequence found
 		if saveseq == 1:
 			mfile = open("%s/%s/%s.txt" %(dbfolder,seqfolder,m), "a")
 		domain = motifdict[m]
@@ -189,6 +199,8 @@ for key in fastadict:
 			mseq = i.group() # the sequence picked up by the RE
 			if saveseq == 1:
 				mfile.write(">%s\n%s\n\n" %(key,mseq))
+			allmotifsfa.write(">%s|%s-%s\n%s\n\n" %(key,translationdict[m],thisseqcount,mseq))
+			thisseqcount += 1
 			strt = i.start() + plink
 			if strt in seqdict:
 				ns = seqdict[strt] + "/" + mseq
