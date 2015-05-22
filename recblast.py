@@ -22,6 +22,7 @@ import os,csv,sys
 #CUSTOMIZE: zffolder is for the databases and individual query files; seqfolder is for the original fasta files
 zffolder = "/home/barbara/data/zincfingers2"
 seqfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/sequences"
+orthfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results/orthologs"
 
 #CUSTOMIZE: the names given to databases, and the names the fasta files currently have. This requires
 #all fasta files used for the reciprocal blast to have the same name structure (+ individualized specifier);
@@ -278,7 +279,7 @@ for gene in compgenes:
 
 collectdb = [compgenes2] + hitcollect
 
-collectcsv = open("%s/%s-orthologs.csv" %(seqfolder,comp), "w")
+collectcsv = open("%s/%s-orthologs.csv" %(orthfolder,comp), "w")
 
 for k in range(len(collectdb[0])): #k is the row number
 	orthos = ''
