@@ -36,9 +36,6 @@ motifseq = "results/150111-SM00355-all2_seq_motifseq.fasta"
 motifaaseq = "sequences/allmotifs.fasta"
 
 
-### RESULT FILES ###
-# output tables: n orthologs, n identical, average distance, null model
-
 
 
 #END CUSTOMIZATION
@@ -239,6 +236,30 @@ def randomorth(gene):
 				ranseq += allmotli.pop(0)
 	return ranseq
 
+def list_re(seq):
+	'''
+	Removes spaces ('Z') and returns the sequence in list
+	format for easy comparison, pooling regex elements.
+	'''
+	seq = seq.replace('Z','')
+	seqli = []
+	flag = 0 # used to mark regular expression
+	regex = ''
+	for s in seq:
+		if s == '{':
+			regex += s
+			flag = 1
+		elif s == '}':
+			regex += s
+			seqli.append(regex)
+			regex = ''
+			flag = 0
+		elif flag == 1:
+			regex += s
+		else:
+			seqli.append(s)
+	return seqli
+
 '''
 Process the data in each ortholog comparison file.
 '''
@@ -285,17 +306,27 @@ for orthfile in orthologli:
 		idcount = dists.count(0)
 		idcount_r = dists_ran.count(0)
 		ressum.write('%s,%s,%s,%s,%s,%s,%s,%s,%s\n' %(sp1,sp2,amean,astdv,amean_r,astdv_r,orthototal,idcount,idcount_r))
-
+ressum.close()
 
 
 ## for each item in the ortholog-combo list:
-### pick up the motif structure
+for pair in orthocombos:
+	# pick up the motif structure
+	seqli_g = list_re(mseq_dx[pair[0]]) #make a list of the elements in this sequence, no spaces
+	for o in pair[1]:
+		seqli_o = list_re(mseq_dx[o])
+		if len(seqli_o) == len(seqli_g):
+			
+			
+
 ### remove Z
 ### if they are the same length:
 #### for each letter (or REs):
 ##### if they are the same:
 ###### pick up sequence for both
 ###### compare sequence, and do +1 for each different AA in the corresponding index of the motif's reference list
+##### if they are NOT the same:
+###### +1 in the array
 
 
 
