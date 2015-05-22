@@ -20,7 +20,7 @@ import numpy as np
 #CUSTOMIZE INPUT FILES
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
 clusterfile = "results/clustering-string_all2-average.csv"
-orthologs = "sequences/dmel-orthologs.csv"
+orthologs = "sequences/dmel-orthologs.csv" # ["sequences/%s-orthologs.csv" %spp for spp in ['dmel','dpul','smar','isca','turt','tcas']]
 seqvsseq = "results/orthologs/dmeltoother.csv"
 resultsummary = "results/orthologs/orthocomp_summary.csv"
 hmimage = "images/ortholog_combinations.svg"
