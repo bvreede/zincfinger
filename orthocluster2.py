@@ -16,6 +16,7 @@ from jellyfish import levenshtein_distance as jld
 from collections import Counter
 import pylab as pl
 import numpy as np
+import matplotlib.pyplot as plt
 
 #CUSTOMIZE INPUT AND OUTPUT FILES
 allspp = ['dmel','tcas','dpul','smar','isca','turt']
@@ -260,8 +261,109 @@ def list_re(seq):
 			seqli.append(s)
 	return seqli
 
-def aacomp()
+'''
+def plotmakr(x,y,title,descr,calc,xlab='segments',xran=[0,10]):
+	# calculate the averages:
+	xavg = list(set(x)) #collect all distinct x values in the dataset
+	xavg.sort()
+	yavg = []
+	y_bp = []
+	for n in range(min(xavg)-1):
+		y_bp.append([])
+	for xval in xavg:
+		ycoll = []
+		for p,q in zip(x,y):
+			if p == xval:
+				ycoll.append(q)
+		yval = sum(ycoll)/len(ycoll)
+		yavg.append(yval)
+		y_bp.append(ycoll)
 
+	# open figure, apply labels, set graph limits
+	plt.figure()
+	plt.xlabel(xlab)
+	#plt.ylabel(ylab)
+	plt.xlim(xran)
+	#plt.ylim([0,4])
+	plt.title(title)
+
+	# name the plot & write the readme description
+	global plotcount
+	plotcount += 1
+	name = 'plot' + str(plotcount)
+	readme.write("%s:\t%s\n\t%s\n\t%s\n\n" %(name,title,descr,calc))
+
+	# plot the actual data
+	plt.plot(x,y,'r.') #optional for multiple plots in 1 fig: label='label'
+	#plt.legend() #when applying a label
+	plt.savefig('%s/%s/%s-basic.svg' %(folder,outfolder,name)) #save the plot without the trendline
+	plt.savefig('%s/%s/%s-basic.png' %(folder,outfolder,name)) #also save a .png
+
+	# calculate and plot the trendline/average
+	z = numpy.polyfit(xavg, yavg, len(xavg)-1) #calculate trendline as n-degree polynomial where n < number of x categories
+	p = numpy.poly1d(z)
+	plt.plot(xavg,p(xavg),"k--")
+	plt.plot(xavg,yavg,'ko')
+	plt.savefig('%s/%s/%s-trend.svg' %(folder,outfolder,name))#save the plot with the trendline
+	plt.savefig('%s/%s/%s-trend.png' %(folder,outfolder,name))#also save a .png
+	plt.clf()
+	plt.close()
+
+	# boxplot with the data
+	plt.figure()
+	plt.xlabel(xlab)
+	#plt.ylabel(ylab)
+	plt.xlim(xran) # no idea why, but this does not seem to work! boxplot finds its own limits.
+	#plt.ylim([0,4])
+	plt.title(title)
+	plt.boxplot(y_bp)
+	#plt.savefig('%s/%s/%s-boxplot.svg' %(folder,outfolder,name))#save the plot with the trendline
+	plt.savefig('%s/%s/%s-boxplot.png' %(folder,outfolder,name))#also save a .png
+	plt.clf()
+	plt.close()
+	return [],[]
+'''
+
+def plotbars(sp1,sp2,data1,data2):
+	nrbins = max(max(data1),max(data2))
+	plt.hist(data1, bins=nrbins, histtype='stepfilled', normed=True, color='c', alpha=0.8 label='Orthologs')
+	plt.hist(data2, bins=nrbins, histtype='stepfilled', normed=True, color='r', alpha=0.4, label='Random')
+	plt.xlabel("Levenshtein distance")
+	plt.ylabel("Probability")
+	plt.legend()
+	plt.savefig("%s/%s-%s_Levensh-distr.png" %(orthfolder,sp1,sp2))
+
+
+def aacomp_det(aa1,aa2,li):
+	'''
+	Function for the detailed comparison of two aminoacid sequences
+	(called within aacomp).
+	'''	
+	#for each element in aa1:
+	#compare with the corresponding letter in aa2
+	#adjust the list with +1 if it is different, and not if it is not different
+	#update the final element in the list with +1
+	#return the list
+
+def aacomp(gene1,m1,gene2,m2):
+	'''
+	Function that compares the aminoacid sequences of homologous
+	motifs to identify conserved aminoacids
+	'''
+	#get sequence for gene1,m1
+	#get sequence for gene2,m2 
+	#get the sequence of a random motif in the same class
+	#get the global dictionary for motif lists
+	### PART 1: compare gene1 + gene 2
+	#li_mot = globaldictionary[motif]
+	#limot_updated = aacomp(m1seq,m2seq,li_mot)
+	#update global dictionary with limot_updated
+	### PART 2: compare either gene 1 or gene 2, and random
+	#pick gene 1 or 2
+	#li_mot = globaldictionary[motif_random]
+	#limot_updated = aacomp(mseq,ranseq,li_mot)
+	#update global dictionary with limot_updated
+	
 
 '''
 Process the data in each ortholog comparison file.
