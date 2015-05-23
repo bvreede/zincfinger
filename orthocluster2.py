@@ -18,7 +18,7 @@ import pylab as pl
 import numpy as np
 
 #CUSTOMIZE INPUT AND OUTPUT FILES
-allspp = ['tcas'] #['dmel','tcas','dpul','smar','isca','turt']
+allspp = ['dmel','tcas','dpul','smar','isca','turt']
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
 orthfolder = "%s/results/orthologs" %dbfolder
 
@@ -379,7 +379,8 @@ def makeheatmap(table,name,xlab,ylab):
 	ax.set_yticklabels(ylab, minor=False)
 		
 	# save the figure
-	pl.savefig("%s/heatmaps/%s" %(orthfolder,name), dpi = 300)
+	pl.savefig("%s/heatmaps/%s.png" %(orthfolder,name), dpi = 300)
+	pl.savefig("%s/heatmaps/%s.svg" %(orthfolder,name), dpi = 300)
 	pl.clf()
 	pl.close()
 	
@@ -516,24 +517,31 @@ combocount = Counter(m2m) #dictionary with frozenset-motifcombinations, and thei
 letterscount = Counter(letters) #dictionary with individual letters, and their frequency
 
 #collect data for the heatmap in a 2d list
-table = []
+table1,table2 = [],[]
 for m1 in motiflist:
 	l1 = translationdict[m1] #corresponding string element of main motif
-	total = letterscount[l1] #total frequency of this motif in the dataset
-	row = [] #empty row that will collect relative frequency data
+	tot1 = letterscount[l1] #total frequency of this motif in the dataset
+	row1,row2 = [],[] #empty rows that will collect relative frequency data
 	for m2 in motiflist:
 		l2 = translationdict[m2] #corresponding string element of comparing motif
+		tot2 = letterscount[l2]
 		fs = frozenset([l1,l2]) #combined frozenset of main and comparing motif
 		if fs in combocount: #if this combination is found:
 			freq = float(combocount[fs]) #give total frequency of combination (float to enable float result)
 		else:
 			freq = 0
-		if total == 0:
-			row.append('0.0')
+		if tot1 == 0:
+			row1.append('0.0')
 		else:
-			row.append(freq/total)
-	table.append(row)
+			row1.append(freq/tot1)
+		if tot1 + tot2 == 0:
+			row2.append('0.0')
+		else:
+			row2.append(2*freq/(tot1+tot2))
+	table1.append(row1)
+	table2.append(row2)
 
-makeheatmap(table,"substitutions",motiflist,motiflist)
+makeheatmap(table1,"substitutions_norm1",motiflist,motiflist)
+makeheatmap(table2,"substitutions_norm2",motiflist,motiflist)
 
 
