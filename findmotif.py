@@ -42,7 +42,7 @@ motiflist = ['2_7_4','2_8_3','2_9_3','2_10_5','2_11_3','2_11_4','2_12_2','2_12_3
 '2_13_4','2_14_3','2_14_4','2_15_4','3_8_3','4_12_3','4_12_4','4_15_3']
 
 # options: what do you want the script to do?
-stats = 0 # set to 1 if you want to make stats (how many motifs were found; how many duplicates; etc) and images (heatmap)
+stats = 1 # set to 1 if you want to make stats (how many motifs were found; how many duplicates; etc) and images (heatmap)
 saveseq = 0 # set to 1 if you want to make fasta files of all motifs that were found
 translate_hits = 1 #set to 1 if you want to generate an output fasta file with the translated motifhits
 frequency = 1 #set to 1 if you want to generate the list of all motifs used for frequency-dependent motif sampling (NB only works when translate_hits is also set to 1!
@@ -267,7 +267,7 @@ Make a heatmap with the stats.
 if stats == 1:
 	#open file and array
 	stats = open("%s/%s/motifstats_total.csv" %(dbfolder,resfolder), "w")
-	doublematrix = []
+	doublematrix1,doublematrix2 = [],[]
 	#print headers
 	stats.write(",")
 	for m in motiflist:
@@ -276,38 +276,50 @@ if stats == 1:
 	#per motif count combinations
 	for m in motiflist:
 		stats.write("%s," %m)
-		doublelist = []
+		doublelist1,doublelist2 = [],[]
 		for n in motiflist:
 			if motifcount[m] == 0:
-				norm_combo = 0
+				norm_combo1 = 0
 			else:
-				norm_combo = combodict[frozenset([m,n])]/float(motifcount[m])
-			stats.write("%s," %norm_combo)
-			doublelist.append(norm_combo)
-		doublematrix.append(doublelist)
+				norm_combo1 = combodict[frozenset([m,n])]/float(motifcount[m])
+			if motifcount[m] + motifcount[n] == 0:
+				norm_combo2 = 0
+			else:
+				norm_combo2 = 2*combodict[frozenset([m,n])]/float(motifcount[m] + motifcount[n])
+			stats.write("%s," %norm_combo1)
+			doublelist1.append(norm_combo1)
+			doublelist2.append(norm_combo2)
+		doublematrix1.append(doublelist1)
+		doublematrix2.append(doublelist2)
 		stats.write("%s,%s\n" %(motifdoublecount[m],motifcount[m]))
 	stats.close()
 	
 	###HEATMAP###
-	data = pl.array(doublematrix)
-	colourformap = "YlOrBr"
-	fig,ax = pl.subplots()
-	heatmap = pl.pcolor(data, cmap=colourformap)
-	cbar = pl.colorbar(heatmap)
+	def makeheatmap(doublematrix,name):
+		data = pl.array(doublematrix)
+		colourformap = "YlOrBr"
+		fig,ax = pl.subplots()
+		heatmap = pl.pcolor(data, cmap=colourformap)
+		cbar = pl.colorbar(heatmap)
+		
+		# following commented code from stackoverflow; probably not necessary, but leaving it just in case
+		#cbar.ax.set_yticklabels(['0','1','2','>3'])
+		#cbar.set_label('#double motifs / total motifs', rotation=270)	
+		
+		# put the major ticks at the middle of each cell
+		ax.set_xticks(np.arange(data.shape[1]) + 0.5, minor=False)
+		ax.set_yticks(np.arange(data.shape[0]) + 0.5, minor=False)
+		pl.axis('tight') #remove the white bar
+		ax.invert_yaxis() #make sure it starts counting from the top
+		
+		#make the labels
+		ax.set_xticklabels(motiflist, minor=False, rotation=90)
+		ax.set_yticklabels(motiflist, minor=False)
+		
+		# save the figure
+		pl.savefig("%s/%s/heatmap_%s.svg" %(dbfolder,imgfolder,name), dpi = 300)
+		pl.clf()
+		pl.close()
 	
-	# following commented code from stackoverflow; probably not necessary, but leaving it just in case
-	#cbar.ax.set_yticklabels(['0','1','2','>3'])
-	#cbar.set_label('#double motifs / total motifs', rotation=270)
-	
-	# put the major ticks at the middle of each cell
-	ax.set_xticks(np.arange(data.shape[1]) + 0.5, minor=False)
-	ax.set_yticks(np.arange(data.shape[0]) + 0.5, minor=False)
-	pl.axis('tight') #remove the white bar
-	ax.invert_yaxis() #make sure it starts counting from the top
-	
-	#make the labels
-	ax.set_xticklabels(motiflist, minor=False, rotation=90)
-	ax.set_yticklabels(motiflist, minor=False)
-	
-	# save the figure
-	pl.savefig("%s/%s/heatmap_%s.svg" %(dbfolder,imgfolder,colourformap), dpi = 300)
+	makeheatmap(doublematrix1,"singlenorm")
+	makeheatmap(doublematrix2,"doublenorm")
