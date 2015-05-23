@@ -19,7 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 #CUSTOMIZE INPUT AND OUTPUT FILES
-allspp = ['dmel','tcas','dpul','smar','isca','turt']
+allspp = ['tcas'] #['dmel','tcas','dpul','smar','isca','turt']
 dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data"
 orthfolder = "%s/results/orthologs" %dbfolder
 
@@ -59,13 +59,12 @@ translationdict = {motif: alphabet[a] for a,motif in enumerate(motiflist)} # dic
 translationreverse = {translationdict[m]: m for m in motiflist}
 
 orthocombos = [] #list where combinations of matching orthologs will be stored
-conservation = {} #dictionary where lists of conservation per side are stored per motif
+conservation,conserv_rand = {},{} #dictionary where lists of conservation per side are stored per motif, and same for random comparisons
 for m in motiflist:
 	mlen = sum([int(mi) for mi in m.split('_')]) + plink + alink + 5
 	mli = [0 for n in range(mlen)] #a 0 for each site, and finally a 0 that will count how many times this motif was found conserved
-	conservation[m] = mli
-
-
+	conservation[m] = list(mli)
+	conserv_rand[m] = list(mli)
 
 '''
 Prep libraries from existing result files
@@ -89,18 +88,27 @@ mseq_dx[key] = seq_value
 #dictionary with the aminoacid sequence of each motif hit
 mhit_fa = open("%s/%s" %(dbfolder,motifaaseq))
 mhit_dx = {}
+
+#dictionary with lists of motif sequences, ordered per motif
+mhit_rand_dx = {}
+for a in alphabet:
+	mhit_rand_dx[a] = [] #add empty lists for each possible motif identifier
+
 seq_value = ''
 for line in mhit_fa:
 	if line[0] == ">":
 		try:
 			mhit_dx[key] = seq_value
+			mhit_rand_dx[m_ran] = mhit_rand_dx[m_ran] + [seq_value]
 			seq_value = ''
 		except NameError:
 			pass
 		key = line[1:].strip()
+		m_ran = line.strip().split('|')[-1].split('-')[0]
 	else:
 		seq_value += line.strip()
 mhit_dx[key] = seq_value
+mhit_rand_dx[m_ran] = mhit_rand_dx[m_ran] + [seq_value]
 
 #random list of motifs for frequency-dependent selection of motifs
 allmotxt = open("%s/%s" %(dbfolder,allmotifs))
@@ -261,113 +269,98 @@ def list_re(seq):
 			seqli.append(s)
 	return seqli
 
-'''
-def plotmakr(x,y,title,descr,calc,xlab='segments',xran=[0,10]):
-	# calculate the averages:
-	xavg = list(set(x)) #collect all distinct x values in the dataset
-	xavg.sort()
-	yavg = []
-	y_bp = []
-	for n in range(min(xavg)-1):
-		y_bp.append([])
-	for xval in xavg:
-		ycoll = []
-		for p,q in zip(x,y):
-			if p == xval:
-				ycoll.append(q)
-		yval = sum(ycoll)/len(ycoll)
-		yavg.append(yval)
-		y_bp.append(ycoll)
 
-	# open figure, apply labels, set graph limits
+def plotbars(data1,data2,sp1,sp2):
 	plt.figure()
-	plt.xlabel(xlab)
-	#plt.ylabel(ylab)
-	plt.xlim(xran)
-	#plt.ylim([0,4])
-	plt.title(title)
-
-	# name the plot & write the readme description
-	global plotcount
-	plotcount += 1
-	name = 'plot' + str(plotcount)
-	readme.write("%s:\t%s\n\t%s\n\t%s\n\n" %(name,title,descr,calc))
-
-	# plot the actual data
-	plt.plot(x,y,'r.') #optional for multiple plots in 1 fig: label='label'
-	#plt.legend() #when applying a label
-	plt.savefig('%s/%s/%s-basic.svg' %(folder,outfolder,name)) #save the plot without the trendline
-	plt.savefig('%s/%s/%s-basic.png' %(folder,outfolder,name)) #also save a .png
-
-	# calculate and plot the trendline/average
-	z = numpy.polyfit(xavg, yavg, len(xavg)-1) #calculate trendline as n-degree polynomial where n < number of x categories
-	p = numpy.poly1d(z)
-	plt.plot(xavg,p(xavg),"k--")
-	plt.plot(xavg,yavg,'ko')
-	plt.savefig('%s/%s/%s-trend.svg' %(folder,outfolder,name))#save the plot with the trendline
-	plt.savefig('%s/%s/%s-trend.png' %(folder,outfolder,name))#also save a .png
-	plt.clf()
-	plt.close()
-
-	# boxplot with the data
-	plt.figure()
-	plt.xlabel(xlab)
-	#plt.ylabel(ylab)
-	plt.xlim(xran) # no idea why, but this does not seem to work! boxplot finds its own limits.
-	#plt.ylim([0,4])
-	plt.title(title)
-	plt.boxplot(y_bp)
-	#plt.savefig('%s/%s/%s-boxplot.svg' %(folder,outfolder,name))#save the plot with the trendline
-	plt.savefig('%s/%s/%s-boxplot.png' %(folder,outfolder,name))#also save a .png
-	plt.clf()
-	plt.close()
-	return [],[]
-'''
-
-def plotbars(sp1,sp2,data1,data2):
-	nrbins = max(max(data1),max(data2))
-	plt.hist(data1, bins=nrbins, histtype='stepfilled', normed=True, color='c', alpha=0.8 label='Orthologs')
-	plt.hist(data2, bins=nrbins, histtype='stepfilled', normed=True, color='r', alpha=0.4, label='Random')
+	nrbins1 = max(data1)
+	nrbins2 = max(data2)
+	plt.hist(data1, bins=nrbins1, histtype='stepfilled', normed=True, color='c', alpha=0.8, label='Orthologs')
+	plt.hist(data2, bins=nrbins2, histtype='stepfilled', normed=True, color='r', alpha=0.4, label='Random')
 	plt.xlabel("Levenshtein distance")
 	plt.ylabel("Probability")
-	plt.legend()
-	plt.savefig("%s/%s-%s_Levensh-distr.png" %(orthfolder,sp1,sp2))
+	if sp1 == "total":
+		plt.legend()
+	plt.savefig("%s/histograms/%s-%s_Levensh-distr.png" %(orthfolder,sp1,sp2))
+	plt.clf()
 
+def regexrem(el):
+	'''
+	remove regex components
+	'''
+	el = el.replace('{','')
+	el = el.replace('}','')
+	el = el.replace('|','')
+	return el
+
+def mchecker(el,mcheck):
+	'''
+	Updates the list 'mcheck' that contains all motifs that have been
+	passed so far in the protein. Using a count function, mcheck can
+	later be used to determine the rank of the latest motif.
+	'''
+	el = regexrem(el)
+	#add each element independently
+	for e in el:
+		mcheck.append(e)
+	return mcheck
 
 def aacomp_det(aa1,aa2,li):
 	'''
 	Function for the detailed comparison of two aminoacid sequences
 	(called within aacomp).
-	'''	
+	'''
 	#for each element in aa1:
-	#compare with the corresponding letter in aa2
-	#adjust the list with +1 if it is different, and not if it is not different
-	#update the final element in the list with +1
-	#return the list
+	for n,el1 in enumerate(aa1):
+		el2 = aa2[n]
+		if el1 != el2: #compare with the corresponding letter in aa2
+			li[n] += 1 #adjust the list with +1 if it is different, and not if it is not different
+	li[-1] += 1 #update the final element in the list with +1
+	return li
+
 
 def aacomp(gene1,m1,gene2,m2):
 	'''
 	Function that compares the aminoacid sequences of homologous
-	motifs to identify conserved aminoacids
+	motifs to identify conserved aminoacids.
 	'''
-	#get sequence for gene1,m1
-	#get sequence for gene2,m2 
-	#get the sequence of a random motif in the same class
-	#get the global dictionary for motif lists
+	#compile gene names
+	g1 = gene1 + '|' + m1 
+	g2 = gene2 + '|' + m2
+	m = m1[0] #the motif identifier
+	#get the random sequence
+	mrandomlist = mhit_rand_dx[m] #from the orthologs: all orths
+	rand_n = random.randint(0,len(mrandomlist)-1)
+	s_r = mrandomlist[rand_n]
+	#collect sequences to be compared
+	s1 = mhit_dx[g1]
+	s2 = mhit_dx[g2]
+
+	#motif name, and get the global dictionary for motif lists
+	motname = translationreverse[m]
+	global conservation
+	global conserv_rand
+	
+	#now run comparisons
 	### PART 1: compare gene1 + gene 2
-	#li_mot = globaldictionary[motif]
-	#limot_updated = aacomp(m1seq,m2seq,li_mot)
-	#update global dictionary with limot_updated
+	li_mot = conservation[motname]
+	limot_updated = aacomp_det(s1,s2,li_mot)
+	conservation[motname] = limot_updated #update global dictionary with limot_updated
+
 	### PART 2: compare either gene 1 or gene 2, and random
 	#pick gene 1 or 2
-	#li_mot = globaldictionary[motif_random]
-	#limot_updated = aacomp(mseq,ranseq,li_mot)
-	#update global dictionary with limot_updated
+	if random.randint(1,2) == 1:
+		s_g = s1
+	else:
+		s_g = s2
+	li_mot_ran = conserv_rand[motname]
+	limot_updated_ran = aacomp_det(s_g,s_r,li_mot_ran)
+	conserv_rand[motname] = limot_updated_ran #update global dictionary with limot_updated
 	
 
 '''
 Process the data in each ortholog comparison file.
 '''
+alldists,alldists_ran = [],[]
 for orthfile in orthologli:
 	try:
 		of = csv.reader(open(orthfile))
@@ -393,6 +386,8 @@ for orthfile in orthologli:
 			di,di_r = calcdistance(gene,corths,ranseq)
 			dists.append(di)
 			dists_ran.append(di_r)
+		#make plot of distance distributions
+		plotbars(dists,dists_ran,sp1,sp2)
 		#calculate mean, stdev, no. identical orthologs; respectively (for data and random model)
 		arrdi = np.array(dists) #make array for numpy analysis...
 		arrdi_ran = np.array(dists_ran)
@@ -411,6 +406,9 @@ for orthfile in orthologli:
 		idcount = dists.count(0)
 		idcount_r = dists_ran.count(0)
 		ressum.write('%s,%s,%s,%s,%s,%s,%s,%s,%s\n' %(sp1,sp2,amean,astdv,amean_r,astdv_r,orthototal,idcount,idcount_r))
+		alldists += dists
+		alldists_ran += dists_ran
+plotbars(alldists,alldists_ran,"total","total")
 ressum.close()
 
 
@@ -430,22 +428,25 @@ for pair in orthocombos:
 			if testdis/float(len(seqli_o)) > simthr:
 				print "No comparison made between", pair, "with levenshtein distance", testdis
 				continue #the similarity level is not high enough to warrant comparison
+			mcheck_g,mcheck_o = [],[] # to collect motifs that were investigated, as the sequence of each motif is identified by the order in the protein.
 			for n in range(len(seqli_o)):
-				sdis = simple_wordcomp(seqli_o[n],seqli_g[n]) #distance between single elements in list
+				el_o = seqli_o[n]
+				el_g = seqli_g[n]
+				#add motifs to mcheck lists so order can be determined
+				mcheck_g = mchecker(el_g,mcheck_g)
+				mcheck_o = mchecker(el_o,mcheck_o)
+				#determine the distance between homologous elements in list
+				sdis = simple_wordcomp(el_o,el_g)
 				if sdis == 0: #homologous motifs identified
-					#account for regex in some way
-					#pick up sequences
-					#compare sequence AA by AA, and do +1 for each different AA in the corresponding index of the motif's reference list
-					#don't forget to add null model comparison and +1 in the count index
-				else: #motifs have replaced each other.
+					el_o = regexrem(el_o) #remove regexcomponents
+					for l in el_o:
+						if l in el_g:
+							mlo = l + '-' + str(mcheck_o.count(l) - 1)
+							mlg = l + '-' + str(mcheck_g.count(l) - 1)
+							aacomp(pair[0],mlg,o,mlo)
+				#else: #motifs have replaced each other.
 					#+1 in the array for replaced orthologs
 			
-
-
-
-#null model for sequence comparisons of orthologous motifs: randomly chosen motif of same type
-
-
 
 """
 
