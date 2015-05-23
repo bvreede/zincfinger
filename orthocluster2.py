@@ -16,7 +16,6 @@ from jellyfish import levenshtein_distance as jld
 from collections import Counter
 import pylab as pl
 import numpy as np
-import matplotlib.pyplot as plt
 
 #CUSTOMIZE INPUT AND OUTPUT FILES
 allspp = ['tcas'] #['dmel','tcas','dpul','smar','isca','turt']
@@ -245,12 +244,13 @@ def randomorth(gene):
 				ranseq += allmotli.pop(0)
 	return ranseq
 
-def list_re(seq):
+def list_re(seq,keepz="no"):
 	'''
 	Removes spaces ('Z') and returns the sequence in list
 	format for easy comparison, pooling regex elements.
 	'''
-	seq = seq.replace('Z','')
+	if keepz == "no":
+		seq = seq.replace('Z','')
 	seqli = []
 	flag = 0 # used to mark regular expression
 	regex = ''
@@ -271,17 +271,18 @@ def list_re(seq):
 
 
 def plotbars(data1,data2,sp1,sp2):
-	plt.figure()
+	pl.figure()
 	nrbins1 = max(data1)
 	nrbins2 = max(data2)
-	plt.hist(data1, bins=nrbins1, histtype='stepfilled', normed=True, color='c', alpha=0.8, label='Orthologs')
-	plt.hist(data2, bins=nrbins2, histtype='stepfilled', normed=True, color='r', alpha=0.4, label='Random')
-	plt.xlabel("Levenshtein distance")
-	plt.ylabel("Probability")
+	pl.hist(data1, bins=nrbins1, histtype='stepfilled', normed=False, color='c', alpha=0.8, label='Orthologs')
+	pl.hist(data2, bins=nrbins2, histtype='stepfilled', normed=False, color='r', alpha=0.4, label='Random')
+	pl.xlabel("Levenshtein distance")
+	pl.ylabel("Proportion")
 	if sp1 == "total":
-		plt.legend()
-	plt.savefig("%s/histograms/%s-%s_Levensh-distr.png" %(orthfolder,sp1,sp2))
-	plt.clf()
+		pl.legend()
+	pl.savefig("%s/histograms/%s-%s_Levensh-distr.png" %(orthfolder,sp1,sp2))
+	pl.clf()
+	pl.close()
 
 def regexrem(el):
 	'''
@@ -356,6 +357,32 @@ def aacomp(gene1,m1,gene2,m2):
 	limot_updated_ran = aacomp_det(s_g,s_r,li_mot_ran)
 	conserv_rand[motname] = limot_updated_ran #update global dictionary with limot_updated
 	
+def makeheatmap(table,name,xlab,ylab):
+	'''
+	Use 2D data (list of lists) to generate a heatmap of the data.
+	'''
+	pl.figure()
+	data = pl.array(table)
+	colourformap = "YlOrBr"
+	fig,ax = pl.subplots()
+	heatmap = pl.pcolor(data, cmap=colourformap,vmin=0,vmax=1)
+	cbar = pl.colorbar(heatmap)
+	
+	# put the major ticks at the middle of each cell
+	ax.set_xticks(np.arange(data.shape[1]) + 0.5, minor=False)
+	ax.set_yticks(np.arange(data.shape[0]) + 0.5, minor=False)
+	pl.axis('tight') #remove the white bar
+	ax.invert_yaxis() #make sure it starts counting from the top
+		
+	#make the labels
+	ax.set_xticklabels(xlab, minor=False, rotation=90)
+	ax.set_yticklabels(ylab, minor=False)
+		
+	# save the figure
+	pl.savefig("%s/heatmaps/%s" %(orthfolder,name), dpi = 300)
+	pl.clf()
+	pl.close()
+	
 
 '''
 Process the data in each ortholog comparison file.
@@ -412,8 +439,14 @@ plotbars(alldists,alldists_ran,"total","total")
 ressum.close()
 
 
+'''
+Part II:
+Is conservation of aminoacid sequence rather than spacing responsible
+for conservation of motif type?
+'''
+
 # SIMILARITY THRESHOLD:
-simthr = 0.5 #if the levenshtein distance over sequence length is too large, comparison is probably not warranted and will distort the data.
+simthr = 1 #average levenshtein distance per motif has to be below this threshold
 
 ## for each item in the ortholog-combo list:
 for pair in orthocombos:
@@ -444,64 +477,38 @@ for pair in orthocombos:
 							mlo = l + '-' + str(mcheck_o.count(l) - 1)
 							mlg = l + '-' + str(mcheck_g.count(l) - 1)
 							aacomp(pair[0],mlg,o,mlo)
-				#else: #motifs have replaced each other.
-					#+1 in the array for replaced orthologs
-			
+				else: #motifs have replaced each other.
+					if len(el_o) == 1 and len(el_g) == 1: #neither is ambiguous.
+						fs = frozenset([el_o,el_g])
+						letters.append(el_o)
+						letters.append(el_g)
+						m2m.append(fs)
 
-"""
+## make the data for final processing: proportional to number of comparisons, remove the counter
+countdx = {} #add a dictionary that keeps the counter separate
+for m in motiflist:
+	consli = list(conservation[m])
+	consli_r = list(conserv_rand[m])
+	counter = consli[-1]
+	countdx[m] = counter
+	if counter == 0:
+		continue
+	consli_new,consli_new_r = [],[]
+	for n in range(len(consli)-1):
+		c = consli[n]/float(counter)
+		consli_new.append(c)
+		c_r = consli_r[n]/float(counter)
+		consli_new_r.append(c_r)
+	conservation[m] = list(consli_new)
+	conserv_rand[m] = list(consli_new_r)
+	table = [consli_new] + [consli_new_r]
+	xlab = []
+	ylab = ["orthologous","random"]
+	makeheatmap(table,m,xlab,ylab)
 
-
-#Read cluster file and make dictionary
-cf = csv.reader(open("%s/%s" %(dbfolder,clusterfile)))
-cdict,sdict = {},{}
-for line in cf:
-	name = line[2]
-	cdict[name] = line[3]
-	sdict[name] = line[4]
-
-#Header line of results file
-ressum.write("Species,Orthologs,Orth in same cluster,percentage,Identical orth,percentage,Levenshtein total,Levenshtein average,Identical orth (no space),Levenshtein total (no space),Levenshtein average (no space)\n")
-
-for k in range(1,len(ol2)):
-	#make a list of all the unique orthologs per species
-	allorth = list(set(ol2[k][1:]))
-	allorth.remove('')
-	print 'species:', ol2[k][0]
-	print 'total no. detected orthologs:', len(allorth)
-	clcount,idcount,idcountnoZ = 0,0,0
-	dists,distsnoZ = [],[]
-	for gene in allorth:
-		dmorths = orthos(gene,k,ol2) #collect all Dmel isoforms that are mentioned as orthologs for this gene
-		gene = [gene] #the clusters function requires a list input
-		cl_gene = clusters(gene,cdict)
-		cl_orth = clusters(dmorths,cdict)
-		if cl_gene[0] in cl_orth: #If one of the isoforms has the same cluster hit as the spp ortholog, score as 1
-			clcount += 1
-		#calculate the minimum distance between this gene and the dmel ortholog(s)
-		dist,distnoZ = distance(gene,dmorths,sdict)
-		dists.append(dist)
-		distsnoZ.append(distnoZ)
-		if dist == 0: # if the domain structures are identical, score as 1
-			idcount += 1
-		if distnoZ == 0:
-			idcountnoZ += 1
-	print 'total no. orthologs in same cluster:', clcount
-	print 'percentage of orthologs in same cluster:', clcount/float(len(allorth)) * 100
-	print 'number of identical orthologs:', idcount
-	print 'percentage of identical orthologs:', idcount/float(len(allorth)) * 100
-	print 'total levenshtein distance:', sum(dists)
-	print 'average distance:', sum(dists)/float(len(dists))
-	print 'number of identical orthologs (without space):', idcountnoZ
-	print 'total levenshtein distance (without space):', sum(distsnoZ)
-	print 'average distance (without space):', sum(distsnoZ)/float(len(distsnoZ))
-	print '\n'
-	ressum.write("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n" %(ol2[k][0],len(allorth),clcount,clcount/float(len(allorth)),idcount,idcount/float(len(allorth)),sum(dists),sum(dists)/float(len(dists)),idcountnoZ,sum(distsnoZ),sum(distsnoZ)/float(len(distsnoZ))))
-
-seqcomp.close()
-ressum.close()
 
 '''
-Part II:
+Part III:
 Which domain classes are parallel in non-identical orthologs?
 Make a heatmap of this data.
 '''
@@ -521,32 +528,12 @@ for m1 in motiflist:
 			freq = float(combocount[fs]) #give total frequency of combination (float to enable float result)
 		else:
 			freq = 0
-		row.append(freq/total)
+		if total == 0:
+			row.append('0.0')
+		else:
+			row.append(freq/total)
 	table.append(row)
 
+makeheatmap(table,"substitutions",motiflist,motiflist)
 
-###HEATMAP###
-data = pl.array(table)
-colourformap = "YlOrBr"
-fig,ax = pl.subplots()
-heatmap = pl.pcolor(data, cmap=colourformap)
-cbar = pl.colorbar(heatmap)
-	
-# put the major ticks at the middle of each cell
-ax.set_xticks(np.arange(data.shape[1]) + 0.5, minor=False)
-ax.set_yticks(np.arange(data.shape[0]) + 0.5, minor=False)
-pl.axis('tight') #remove the white bar
-ax.invert_yaxis() #make sure it starts counting from the top
-	
-#make the labels
-ax.set_xticklabels(motiflist, minor=False, rotation=90)
-ax.set_yticklabels(motiflist, minor=False)
-	
-# save the figure
-pl.savefig("%s/%s" %(dbfolder,hmimage), dpi = 300)
 
-'''
-PART III: sequence comparisons of conserved motifs
-'''
-
-"""
