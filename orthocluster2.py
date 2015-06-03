@@ -50,7 +50,7 @@ ressum.write('sp1,sp2,ortholog_avgdist,std,random_avgdist,std,n_orthologs,n_iden
 m2m,letters = [],[] #lists to collect combinations of letters (orthologs where two different domain classes are found in the same location) and the total appearance of those letters, respectively. 
 
 #TAKE THIS FROM FINDMOTIF.PY: the alphabet and corresponding motiflist, and the length of plink/alink
-plink,alink = 4,4
+plink,alink = 0,0
 motiflist = ['2_7_4','2_8_3','2_9_3','2_10_5','2_11_3','2_11_4','2_12_2','2_12_3','2_12_4','2_12_5','2_12_6','2_13_3',
 '2_13_4','2_14_3','2_14_4','2_15_4','3_8_3','4_12_3','4_12_4','4_15_3']
 alphabet = """ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`"""
@@ -274,15 +274,15 @@ def plotbars(data1,data2,sp1,sp2):
 	pl.figure()
 	nrbins1 = max(data1)
 	nrbins2 = max(data2)
-	pl.hist(data1, bins=nrbins1, histtype='stepfilled', normed=False, color='c', alpha=0.8, label='Orthologs')
-	pl.hist(data2, bins=nrbins2, histtype='stepfilled', normed=False, color='r', alpha=0.4, label='Random')
+	pl.hist(data1, bins=nrbins1, histtype='stepfilled', normed=True, color='c', alpha=0.8, label='Orthologs')
+	pl.hist(data2, bins=nrbins2, histtype='stepfilled', normed=True, color='r', alpha=0.4, label='Random')
 	pl.xlabel("Levenshtein distance")
 	pl.ylabel("Proportion")
 	if sp1 == "total":
 		pl.legend()
 	pl.savefig("%s/histograms/%s-%s_Levensh-distr.png" %(orthfolder,sp1,sp2))
 	pl.clf()
-	pl.close()
+	pl.close("all")
 
 def regexrem(el):
 	'''
@@ -361,11 +361,11 @@ def makeheatmap(table,name,xlab,ylab):
 	'''
 	Use 2D data (list of lists) to generate a heatmap of the data.
 	'''
-	pl.figure()
+	#pl.figure()
 	data = pl.array(table)
 	colourformap = "YlOrBr"
 	fig,ax = pl.subplots()
-	heatmap = pl.pcolor(data, cmap=colourformap,vmin=0,vmax=1)
+	heatmap = pl.pcolor(data, cmap=colourformap,vmin=0,vmax=0.25)
 	cbar = pl.colorbar(heatmap)
 	
 	# put the major ticks at the middle of each cell
@@ -382,7 +382,7 @@ def makeheatmap(table,name,xlab,ylab):
 	pl.savefig("%s/heatmaps/%s.png" %(orthfolder,name), dpi = 300)
 	pl.savefig("%s/heatmaps/%s.svg" %(orthfolder,name), dpi = 300)
 	pl.clf()
-	pl.close()
+	pl.close("all")
 	
 
 '''
@@ -437,7 +437,7 @@ for orthfile in orthologli:
 		alldists += dists
 		alldists_ran += dists_ran
 plotbars(alldists,alldists_ran,"total","total")
-ressum.close()
+
 
 
 '''
@@ -447,7 +447,7 @@ for conservation of motif type?
 '''
 
 # SIMILARITY THRESHOLD:
-simthr = 1 #average levenshtein distance per motif has to be below this threshold
+#simthr = 1 #average levenshtein distance per motif has to be below this threshold
 
 ## for each item in the ortholog-combo list:
 for pair in orthocombos:
@@ -459,9 +459,9 @@ for pair in orthocombos:
 		if len(seqli_o) == len(seqli_g): #lists contain the same number of elements, so side-by-side comparisons are possibly warranted...
 			# but only run the side-by-side comparison if they are below a similarity threshold.
 			testdis = simple_wordcomp(mseq_dx[o],mseq_dx[pair[0]])
-			if testdis/float(len(seqli_o)) > simthr:
-				print "No comparison made between", pair, "with levenshtein distance", testdis
-				continue #the similarity level is not high enough to warrant comparison
+			#if testdis/float(len(seqli_o)) > simthr:
+			#	print "No comparison made between", pair, "with levenshtein distance", testdis
+			#	continue #the similarity level is not high enough to warrant comparison
 			mcheck_g,mcheck_o = [],[] # to collect motifs that were investigated, as the sequence of each motif is identified by the order in the protein.
 			for n in range(len(seqli_o)):
 				el_o = seqli_o[n]
@@ -485,12 +485,15 @@ for pair in orthocombos:
 						letters.append(el_g)
 						m2m.append(fs)
 
+ressum.write("\nHomologous motifs counted:\n")
+
 ## make the data for final processing: proportional to number of comparisons, remove the counter
 countdx = {} #add a dictionary that keeps the counter separate
 for m in motiflist:
 	consli = list(conservation[m])
 	consli_r = list(conserv_rand[m])
 	counter = consli[-1]
+	ressum.write("%s,%s\n" %(m,counter))
 	countdx[m] = counter
 	if counter == 0:
 		continue
@@ -513,12 +516,19 @@ Part III:
 Which domain classes are parallel in non-identical orthologs?
 Make a heatmap of this data.
 '''
+
+ressum.write("\nMotif transitions counted:\n,")
+for m in motiflist:
+	ressum.write("%s," %m)
+ressum.write("\n")
+
 combocount = Counter(m2m) #dictionary with frozenset-motifcombinations, and their frequency
 letterscount = Counter(letters) #dictionary with individual letters, and their frequency
 
 #collect data for the heatmap in a 2d list
 table1,table2 = [],[]
 for m1 in motiflist:
+	ressum.write("%s," %m1)
 	l1 = translationdict[m1] #corresponding string element of main motif
 	tot1 = letterscount[l1] #total frequency of this motif in the dataset
 	row1,row2 = [],[] #empty rows that will collect relative frequency data
@@ -527,21 +537,26 @@ for m1 in motiflist:
 		tot2 = letterscount[l2]
 		fs = frozenset([l1,l2]) #combined frozenset of main and comparing motif
 		if fs in combocount: #if this combination is found:
+			ressum.write("%s," %combocount[fs])
 			freq = float(combocount[fs]) #give total frequency of combination (float to enable float result)
 		else:
+			ressum.write("0,")
 			freq = 0
 		if tot1 == 0:
 			row1.append('0.0')
 		else:
 			row1.append(freq/tot1)
-		if tot1 + tot2 == 0:
+		if tot1 * tot2 == 0:
 			row2.append('0.0')
 		else:
-			row2.append(2*freq/(tot1+tot2))
+			row2.append(freq/(tot1*tot2))
 	table1.append(row1)
 	table2.append(row2)
+	ressum.write("\n")
 
 makeheatmap(table1,"substitutions_norm1",motiflist,motiflist)
 makeheatmap(table2,"substitutions_norm2",motiflist,motiflist)
+
+ressum.close()
 
 
