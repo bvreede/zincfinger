@@ -43,7 +43,7 @@ motiflist = ['2_7_4','2_8_3','2_9_3','2_10_5','2_11_3','2_11_4','2_12_2','2_12_3
 
 # options: what do you want the script to do?
 stats = 1 # set to 1 if you want to make stats (how many motifs were found; how many duplicates; etc) and images (heatmap)
-saveseq = 0 # set to 1 if you want to make fasta files of all motifs that were found
+saveseq = 1 # set to 1 if you want to make fasta files of all motifs that were found
 translate_hits = 1 #set to 1 if you want to generate an output fasta file with the translated motifhits
 frequency = 1 #set to 1 if you want to generate the list of all motifs used for frequency-dependent motif sampling (NB only works when translate_hits is also set to 1!
 
@@ -57,8 +57,8 @@ dictionary. Each domain is only represented as a forward domain.
 '''
 motifdict = {} # dictionary of motifs and their regular expression
 motiflength = {} # dictionary of motifs and their lengths
-plink = 4
-alink = 4
+plink = 0
+alink = 0
 for m in motiflist:
 	cc,ch,hh = m.split('_')
 	motif = '[A-Z]{%s}C[A-Z]{%s}C[A-Z]{%s}H[A-Z]{%s}H[A-Z]{%s}' %(plink,cc,ch,hh,alink) # construct the regular expression
@@ -80,7 +80,8 @@ Make dictionaries to count all motifs and combinations of motifs.
 '''
 motifcount = {m: 0 for m in motiflist}
 motifdoublecount = {m: 0 for m in motiflist}
-combodict = {a: 0 for a in set([frozenset([m,n]) for m in motiflist for n in motiflist])}
+combodict = {a:
+ 0 for a in set([frozenset([m,n]) for m in motiflist for n in motiflist])}
 
 '''
 Open files to save the sequences of all hits per motif
@@ -165,7 +166,7 @@ motifs.
 sp = infile.split('/')[-1].split('.')[0]
 fastadb = open("%s" %(infile))
 outputdb = open("%s/%s/%s_motifhits.csv" %(dbfolder,resfolder,sp), "w")
-allmotifsfa = open("%s/%s/allmotifs.fasta" %(dbfolder,seqfolder), "w")
+allmotifsfa = open("%s/%s/%s_allmotifs.fasta" %(dbfolder,seqfolder,sp), "w")
 
 if translate_hits == 1:
 	outfasta = open("%s/%s/%s_motifseq.fasta" %(dbfolder,resfolder,sp), "w")
@@ -266,7 +267,7 @@ Make a heatmap with the stats.
 '''
 if stats == 1:
 	#open file and array
-	stats = open("%s/%s/motifstats_total.csv" %(dbfolder,resfolder), "w")
+	stats = open("%s/%s/%s_motifstats_total.csv" %(dbfolder,resfolder,sp), "w")
 	doublematrix1,doublematrix2 = [],[]
 	#print headers
 	stats.write(",")
@@ -317,7 +318,7 @@ if stats == 1:
 		ax.set_yticklabels(motiflist, minor=False)
 		
 		# save the figure
-		pl.savefig("%s/%s/heatmap_%s.svg" %(dbfolder,imgfolder,name), dpi = 300)
+		pl.savefig("%s/%s/%s_heatmap_%s.svg" %(dbfolder,imgfolder,sp,name), dpi = 300)
 		pl.clf()
 		pl.close()
 	
