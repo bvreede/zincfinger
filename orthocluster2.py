@@ -446,9 +446,7 @@ Is conservation of aminoacid sequence rather than spacing responsible
 for conservation of motif type?
 '''
 
-# SIMILARITY THRESHOLD:
-#simthr = 1 #average levenshtein distance per motif has to be below this threshold
-
+print "All ortholog comparisons made. Now comparing amino acid sequences..."
 ## for each item in the ortholog-combo list:
 for pair in orthocombos:
 	# pick up the motif structure
@@ -459,9 +457,6 @@ for pair in orthocombos:
 		if len(seqli_o) == len(seqli_g): #lists contain the same number of elements, so side-by-side comparisons are possibly warranted...
 			# but only run the side-by-side comparison if they are below a similarity threshold.
 			testdis = simple_wordcomp(mseq_dx[o],mseq_dx[pair[0]])
-			#if testdis/float(len(seqli_o)) > simthr:
-			#	print "No comparison made between", pair, "with levenshtein distance", testdis
-			#	continue #the similarity level is not high enough to warrant comparison
 			mcheck_g,mcheck_o = [],[] # to collect motifs that were investigated, as the sequence of each motif is identified by the order in the protein.
 			for n in range(len(seqli_o)):
 				el_o = seqli_o[n]
@@ -516,6 +511,7 @@ Part III:
 Which domain classes are parallel in non-identical orthologs?
 Make a heatmap of this data.
 '''
+print "Checking homologous but not identical motifs..."
 
 ressum.write("\nMotif transitions counted:\n,")
 for m in motiflist:
