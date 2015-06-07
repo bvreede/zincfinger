@@ -12,7 +12,7 @@ Author: Barbara Vreede
 Contact: b.vreede@gmail.com
 Date: 10 October 2014
 '''
-import re, sys,config
+import re, sys,config,os.path
 import pylab as pl
 import numpy as np
 pl.rcParams['xtick.labelsize']=4
@@ -44,6 +44,7 @@ heatmapfig = "%s/%s/%s_motifshmm-heat" %(config.mainfolder,config.imgfolder,infi
 hitsdb = "%s/%s/%s_hmmhitsdb" %(config.mainfolder,config.dbfolder,infilebrev)
 motseq = "%s/%s/%s-hmmmotseq" %(config.mainfolder,config.dbfolder,infilebrev)
 allmotifs = "%s/%s/%s_hmmallmotifs" %(config.mainfolder,config.dbfolder,infilebrev) #for frequency and aa sequence of specific motifs
+resultsum = "%s/%s/hitcount_allspp" %(config.mainfolder,config.dbfolder)
 # fasta files: translated hits, aa sequence of hits
 transdb = "%s/%s/%s_hmmprotstring" %(config.mainfolder,config.seqfolder,infilebrev)
 statsdb = "%s/%s/%s_hmmmotifstats" %(config.mainfolder,config.resfolder,infilebrev)
@@ -230,7 +231,7 @@ for key in fastadict:
 	poslist = [] #for the fasta file: collect all positions to put them in order later on
 		# check each motif individually
 	if key not in hmmdict:
-		print "No motifs found with pfam screen of", key
+		#print "No motifs found with pfam screen of", key
 		continue
 	for m in config.motifdict: #go through each motif and find all instances in the sequence
 		thisseqcount = 0 #per motif per seq, to give an index for each aminoacid sequence found
@@ -238,17 +239,17 @@ for key in fastadict:
 		domain = config.motifdict[m]
 		CC,CH,HH = m.split('_')
 		for i in domain.finditer(fastadict[key]):
-			motifcount[m] += 1 # count the found motif
 			mseq = i.group() # the sequence picked up by the RE
-			mfile.write(">%s\n%s\n\n" %(key,mseq))
-			allmotifsfa.write(">%s|%s-%s\n%s\n\n" %(key,config.translationdict[m],thisseqcount,mseq))
-			thisseqcount += 1
 			strt = i.start() + config.plink
 			# test whether this hit was found also by the pfam screen: hmmdict
 			hmmverify = test_hmmentry(strt,key)
 			if hmmverify == 0:
-				print "rejected motif %s in %s with sequence %s" %(m,key,mseq)
+				#print "rejected motif %s in %s with sequence %s" %(m,key,mseq)
 				continue
+			motifcount[m] += 1 # count the found motif
+			mfile.write(">%s\n%s\n\n" %(key,mseq))
+			allmotifsfa.write(">%s|%s-%s\n%s\n\n" %(key,config.translationdict[m],thisseqcount,mseq))
+			thisseqcount += 1
 			if strt in seqdict:
 				ns = seqdict[strt] + "/" + mseq
 				nm = motdict[strt] + "/" + m
@@ -301,6 +302,13 @@ outfasta.close()
 allmotifstxt.close()
 outputdb.close()
 
+#to show which pfam identified motifs were not picked up by RE:
+for key in hmmdicttest:
+	if hmmdicttest[key] == []:
+		continue
+	#else:
+	#	print key, hmmdicttest[key]
+
 
 '''
 make the stats!
@@ -310,12 +318,25 @@ Make a heatmap with the stats.
 '''
 #open file and array
 stats = open("%s.csv" %statsdb, "w")
+if os.path.isfile("%s.csv" %resultsum):
+	summary = open("%s.csv" %resultsum, "a")
+else:
+	summary = open("%s.csv" %resultsum, "w")
+	summary.write("File,")
+	motifcsv = ""
+	for m in config.motiflist:
+		motifcsv += "%s," %m
+	summary.write("%s\n" %motifcsv[:-1])
 doublematrix1,doublematrix2,mcounts = [],[],[]
 #print headers
 stats.write(",")
+summary.write("%s," %infilebrev)
+mcountscsv = ""
 for m in config.motiflist:
 	stats.write("%s," %m)
 	mcounts.append(motifcount[m])
+	mcountscsv += "%s," %motifcount[m]
+summary.write("%s\n" %mcountscsv[:-1])
 stats.write("total_combo,total\n")
 #per motif count combinations
 for m in config.motiflist:
@@ -337,6 +358,7 @@ for m in config.motiflist:
 	doublematrix2.append(doublelist2)
 	stats.write("%s,%s\n" %(motifdoublecount[m],motifcount[m]))
 stats.close()
+summary.close()
 
 makeheatmap(doublematrix1,"singlenorm")
 makeheatmap(doublematrix2,"doublenorm")
