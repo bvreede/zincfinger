@@ -15,6 +15,7 @@ Date: 10 October 2014
 import re, sys,config
 import pylab as pl
 import numpy as np
+pl.rcParams['xtick.labelsize']=4
 
 
 if len(sys.argv) <= 1:
@@ -40,10 +41,10 @@ bargraphfig = "%s/%s/%s_motifs-bar" %(config.mainfolder,config.imgfolder,infileb
 heatmapfig = "%s/%s/%s_motifs-heat" %(config.mainfolder,config.imgfolder,infilebrev)
 # databases: hit results by site
 hitsdb = "%s/%s/%s_hitsdb" %(config.mainfolder,config.dbfolder,infilebrev)
+motseq = "%s/%s/%s-motseq" %(config.mainfolder,config.dbfolder,infilebrev)
+allmotifs = "%s/%s/%s_allmotifs" %(config.mainfolder,config.dbfolder,infilebrev) #for frequency and aa sequence of specific motifs
 # fasta files: translated hits, aa sequence of hits
 transdb = "%s/%s/%s_protstring" %(config.mainfolder,config.seqfolder,infilebrev)
-motseq = "%s/%s/%s-motseq" %(config.mainfolder,config.seqfolder,infilebrev)
-allmotifs = "%s/%s/%s_allmotifs" %(config.mainfolder,config.seqfolder,infilebrev) #for frequency and aa sequence of specific motifs
 statsdb = "%s/%s/%s_motifstats" %(config.mainfolder,config.resfolder,infilebrev)
 
 
@@ -128,6 +129,17 @@ def makeheatmap(doublematrix,name):
 	pl.clf()
 	pl.close()
 
+def makebargraph(values,labels,name):
+	'''
+	Makes a simple bar chart with values on y and labels on x.
+	'''
+	fig = pl.figure()
+	ind = np.arange(len(values))
+	pl.bar(ind,values,color="c")
+	pl.xticks(ind + 0.5, labels, rotation=90)
+	pl.savefig("%s-%s.svg" %(bargraphfig,name))
+	pl.clf()
+	pl.close()
 
 # Read the fasta file, open output files
 fastadb = open("%s" %(infile))
@@ -236,11 +248,12 @@ Make a heatmap with the stats.
 '''
 #open file and array
 stats = open("%s.csv" %statsdb, "w")
-doublematrix1,doublematrix2 = [],[]
+doublematrix1,doublematrix2,mcounts = [],[],[]
 #print headers
 stats.write(",")
 for m in config.motiflist:
 	stats.write("%s," %m)
+	mcounts.append(motifcount[m])
 stats.write("total_combo,total\n")
 #per motif count combinations
 for m in config.motiflist:
@@ -265,3 +278,5 @@ stats.close()
 
 makeheatmap(doublematrix1,"singlenorm")
 makeheatmap(doublematrix2,"doublenorm")
+
+makebargraph(mcounts,config.motiflist,"motifs")
