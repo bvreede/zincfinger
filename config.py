@@ -13,9 +13,9 @@ evfolder = "evolview"
 
 # define motifs
 # a complete dataset
-moCC = [2,3,4] #distances between CC
-moCH = [7,8,9,10,11,12,13,14,15] #distances between CH
-moHH = [2,3,4,5,6] #distances between HH
+moCC = [1,2,3,4,5] #distances between CC
+moCH = [7,8,9,10,11,12,13,14,15,16,17] #distances between CH
+moHH = [1,2,3,4,5,6] #distances between HH
 
 # turn this on if you want to search for all possible combinations of the above: (and don't forget to turn the custom list off!)
 motiflist = ['%s_%s_%s' %(m,n,o) for m in moCC for n in moCH for o in moHH]
