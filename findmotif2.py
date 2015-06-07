@@ -143,7 +143,13 @@ def makebargraph(values,labels,name):
 	pl.close()
 
 def hmmdicter(infile):
-	hmmdict,hmmdicttest = {},{}
+	'''
+	Takes the result file from hmmsearch and turns it into a dictionary
+	which has gene names as key, and hits (start site, sequence, end site)
+	as values. All hits are collected as lists in a list, so that
+	multiple hits are saved with the same protein as key.
+	'''
+	hmmdict= {}
 	linename = ""
 	for line in infile:
 		try:
@@ -155,20 +161,20 @@ def hmmdicter(infile):
 			linename = lineli[1]
 		if lineli[0] == linename: # this line contains positional information and sequence of the hmm hit
 			if linehead in hmmdict: #protein already has an entry; append information
-				# in hmmdict: list of lists of hits (incl
+				# in hmmdict: list of lists of hits
 				newvalue = hmmdict[linehead]
 				newvalue += [lineli[1:]]
 				hmmdict[linehead] = newvalue
-				# in hmmdicttest: list of lists of start-end sties
-				#newvaluetest = hmmdicttest[linehead]
-				#newvaluetest.append([int(lineli[1]),int(lineli[3])])
-				#hmmdicttest[linehead] = newvaluetest
 			else: #make new entry for the protein
 				hmmdict[linehead] = [lineli[1:]] #lineli in 2nd dimension because further hits may follow
-				#hmmdicttest[linehead] = [[int(lineli[1]),int(lineli[3])]]
-	return hmmdict#,hmmdicttest
+	return hmmdict
 
 def test_hmmentry(strt,key):
+	'''
+	Tests a hit found by the regular expression against the db created
+	with the pfam hmm. If it is found, return 1. If not, return 0 (this
+	will then reject the regular expression hit).
+	'''
 	global hmmdicttest
 	verify = 0
 	hits = hmmdict[key]
@@ -176,6 +182,10 @@ def test_hmmentry(strt,key):
 		strt_h, end_h = int(h[0])-4,int(h[2])+4
 		if strt >= strt_h and strt <= end_h:
 			verify = 1
+			# now remove the hmm hit from dicttest
+			newvalue = hmmdicttest[key]
+			newvalue.remove(h)
+			hmmdicttest[key] = newvalue
 	return verify
 
 
