@@ -1,4 +1,6 @@
 import re
+import matplotlib.pyplot as plt
+import numpy as np
 
 # path info
 mainfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/newdata"
@@ -63,5 +65,18 @@ def fastadicter(fastadb):
 			sequence += line.strip()
 	fastadict[header] = sequence
 	return fastadict
+
+plt.rcParams['xtick.labelsize']=28
+
+def makebarchart(values,labels,name):
+	'''
+	Makes a simple bar chart with values on y and labels on x.
+	'''
+	fig = plt.figure()
+	ind = np.arange(len(values))
+	plt.bar(ind,values,color="c")
+	plt.xticks(ind + 0.5, labels, rotation=90)
+	plt.savefig("%s.svg" %name)
+
 
 
