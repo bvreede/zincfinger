@@ -16,6 +16,9 @@ from jellyfish import levenshtein_distance as jld
 from collections import Counter
 import pylab as pl
 import numpy as np
+import config
+
+
 
 #CUSTOMIZE INPUT AND OUTPUT FILES
 allspp = ['dmel','tcas','dpul','smar','isca','turt']
