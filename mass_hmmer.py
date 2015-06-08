@@ -1,7 +1,7 @@
 #!/bin/python
 import os
 
-spp = ['dmel2','tcas2','dpul2','isca2','smar2','turt2','all2']
+spp = ['atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','cele','hrob','lgig','mlei','nvec','sman','spur','tadh','drer','ggal','hsap','mmus','xtro','dmel2','tcas2','dpul2','isca2','smar2','turt2','arth2']
 
 for sp in spp:
 	command = "findmotif.py /home/barbara/Dropbox/shared_work/zinc_finger_data/newdata/sequences/150111-SM00355-%s_seq.fasta" %sp
