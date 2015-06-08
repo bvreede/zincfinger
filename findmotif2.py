@@ -44,7 +44,7 @@ heatmapfig = "%s/%s/%s_motifshmm-heat" %(config.mainfolder,config.imgfolder,infi
 hitsdb = "%s/%s/%s_hmmhitsdb" %(config.mainfolder,config.dbfolder,infilebrev)
 motseq = "%s/%s/%s-hmmmotseq" %(config.mainfolder,config.dbfolder,infilebrev)
 allmotifs = "%s/%s/%s_hmmallmotifs" %(config.mainfolder,config.dbfolder,infilebrev) #for frequency and aa sequence of specific motifs
-resultsum = "%s/%s/hitcount_allspp" %(config.mainfolder,config.dbfolder)
+resultsum = "%s/%s/hitcount_allspp" %(config.mainfolder,config.resfolder)
 # fasta files: translated hits, aa sequence of hits
 transdb = "%s/%s/%s_hmmprotstring" %(config.mainfolder,config.seqfolder,infilebrev)
 statsdb = "%s/%s/%s_hmmmotifstats" %(config.mainfolder,config.resfolder,infilebrev)
@@ -360,7 +360,7 @@ for m in config.motiflist:
 stats.close()
 summary.close()
 
-makeheatmap(doublematrix1,"singlenorm")
-makeheatmap(doublematrix2,"doublenorm")
+#makeheatmap(doublematrix1,"singlenorm")
+#makeheatmap(doublematrix2,"doublenorm")
 
 makebargraph(mcounts,config.motiflist,"motifs")
