@@ -20,8 +20,8 @@ for sp in spp1:
 
 
 for sp in spp2:
-	#command = "python findmotif2.py /home/barbara/Dropbox/shared_work/zinc_finger_data/newdata/sequences/150602-SM00355-%s_seq.fasta" %sp
-	command = "/Users/BarbaraMaria/Downloads/hmmer-3.1b2-macosx-intel/binaries/hmmsearch -o ~/Dropbox/shared_work/zinc_finger_data/newdata/results/150602-SM00355-%s_hmmsearch.txt --incT 3.0 /Users/BarbaraMaria/Dropbox/shared_work/zinc_finger_data/newdata/sequences/zf-C2H2.hmm /Users/BarbaraMaria/Dropbox/shared_work/zinc_finger_data/newdata/sequences/150602-SM00355-%s_seq.fasta" %(sp,sp)
+	command = "python findmotif2.py /home/barbara/Dropbox/shared_work/zinc_finger_data/newdata/sequences/150602-SM00355-%s_seq.fasta" %sp
+	#command = "/Users/BarbaraMaria/Downloads/hmmer-3.1b2-macosx-intel/binaries/hmmsearch -o ~/Dropbox/shared_work/zinc_finger_data/newdata/results/150602-SM00355-%s_hmmsearch.txt --incT 3.0 /Users/BarbaraMaria/Dropbox/shared_work/zinc_finger_data/newdata/sequences/zf-C2H2.hmm /Users/BarbaraMaria/Dropbox/shared_work/zinc_finger_data/newdata/sequences/150602-SM00355-%s_seq.fasta" %(sp,sp)
 	os.system(command)
-	#print "motifs identified for", sp
-	print "hmm screen done for", sp
+	print "motifs identified for", sp
+	#print "hmm screen done for", sp
