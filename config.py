@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # path info
-mainfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/newdata"
+mainfolder = "/home/barbara/Dropbox/zinc_finger_data/newdata"
 seqfolder = "sequences"
 resfolder = "results"
 imgfolder = "images"
