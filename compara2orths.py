@@ -6,6 +6,11 @@ import urllib2, os, config, sys
 
 # spp list (in sequence)
 spp = ['isca']#['cele']# ['dmel','smar','turt','dpul','tcas']
+
+
+spp = ['dmel','tcas','dpul','smar','turt','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','hrob','lgig','mlei','nvec','sman','spur','tadh','drer','ggal','hsap','mmus','xtro','bnat','ehux','glam','gthe','lmaj','pinf','pfal','tthe']
+
+
 ctype = "pan_homology"
 seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
 
