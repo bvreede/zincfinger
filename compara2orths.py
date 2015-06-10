@@ -1,13 +1,15 @@
 import urllib2, os, config, sys
 
 
-# species in pancompara: Arthropods: dmel,smar,turt,dpul,tcas
-
+### OPTIONS ###
+saving = 1 # Set to 1 if you want to save the compara data locally as a text doc.
+parse-online = 0 # Set to 1 if you want to parse ONLINE compara data
+parse-local = 0 # Set to 1 if you want to parse LOCAL compara data (as a text file)
 
 # spp list (in sequence)
-vertebrates = ['mmus','drer','ggal','hsap','mmus','xtro']
-spp = ['isca','dmel','tcas','dpul','smar','turt','cele','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','hrob','lgig','mlei','nvec','sman','spur','tadh','bnat','ehux','glam','gthe','lmaj','pinf','pfal','tthe','mmus','drer','ggal','hsap','mmus','xtro']
+spp = ['hsap','mmus','xtro'] # ['isca','dmel','tcas','dpul','smar','turt','cele','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','hrob','lgig','mlei','nvec','sman','spur','tadh','bnat','ehux','glam','gthe','lmaj','pinf','pfal','tthe','mmus','drer','ggal','hsap','mmus','xtro']
 
+vertebrates = ['mmus','drer','ggal','hsap','mmus','xtro']
 
 ctype = "pan_homology"
 seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
@@ -58,17 +60,22 @@ def comparahtml(gene,sp):
 	html = response.read()
 	return html
 
-def parsecompara(html,sp,gene):
-	#following four lines only to save file instead of parsing right away (so I can run it overnight)
+def savecompara(html,sp,gene):
+	'''
+	Instead of parsing right away, this function gives the option to save
+	the page separately as a text document, so it can be parsed later and locally.
+	'''
 	out = open("%s/compara/%s-%s.txt" %(config.mainfolder,sp,gene),"w")
 	for line in html:
 		out.write(line)
 	out.close()
 
+
+def parsecompara(html):
 	orthoscsv = ""
 	for sp in spp:
 		orthoscsv += ""
-	#orthoscsv = orthoscsv[:-1] #remove last comma
+	orthoscsv = orthoscsv[:-1] #remove last comma
 	return(orthoscsv)
 
 
@@ -80,10 +87,19 @@ if __name__ == "__main__":
 		# open file, write headers
 		#out = ""
 		for gene in genes: # per gene
-			print "Opening compara for %s in %s..." %(gene,sp)
+			print "Reading compara for %s in %s..." %(gene,sp)
 			#out.write(gene) # write gene in output
-			html = comparahtml(gene,sp)
-			#print html[0:10]
-			orthoscsv = parsecompara(html,sp,gene)
-			print "Parsing complete."
-			# write orthos in output
+			if saving == 1 or parse-online == 1:
+				html = comparahtml(gene,sp)
+			# save or parse?
+			if saving == 1:
+				savecompara(html,sp,gene)
+				print "Saved file."
+			if parse-online == 1:
+				orthoscsv = parsecompara(html) # to parse directly from online file
+				print "Parsed online data."
+			if parse-local == 1:
+				orthoscsv = parselocal(sp,gene)
+				print "Parsed local data."
+			if parse-online == 1 or parse-local == 1:
+				# write orthos in output
