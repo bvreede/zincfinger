@@ -2,17 +2,21 @@ import urllib2, os, config, sys
 
 
 ### OPTIONS ###
-saving = 1 # Set to 1 if you want to save the compara data locally as a text doc.
-parse-online = 0 # Set to 1 if you want to parse ONLINE compara data
-parse-local = 0 # Set to 1 if you want to parse LOCAL compara data (as a text file)
+saving = 0 # Set to 1 if you want to save the compara data locally as a text doc.
+parseonline = 0 # Set to 1 if you want to parse ONLINE compara data
+parselocal = 1 # Set to 1 if you want to parse LOCAL compara data (as a text file)
+
+
 
 # spp list (in sequence)
-spp = ['hsap','mmus','xtro'] # ['isca','dmel','tcas','dpul','smar','turt','cele','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','hrob','lgig','mlei','nvec','sman','spur','tadh','bnat','ehux','glam','gthe','lmaj','pinf','pfal','tthe','mmus','drer','ggal','hsap','mmus','xtro']
+spp = ['hsap','mmus','xtro']
+spp = ['isca','dmel','tcas','dpul','smar','turt','cele','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','hrob','lgig','mlei','nvec','sman','spur','tadh','bnat','ehux','glam','gthe','lmaj','pinf','pfal','tthe','mmus','drer','ggal','hsap','mmus','xtro']
 
 vertebrates = ['mmus','drer','ggal','hsap','mmus','xtro']
 
 ctype = "pan_homology"
 seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
+comparafolder = "%s/compara" %config.mainfolder
 
 
 def filelist(spp):
@@ -65,18 +69,29 @@ def savecompara(html,sp,gene):
 	Instead of parsing right away, this function gives the option to save
 	the page separately as a text document, so it can be parsed later and locally.
 	'''
-	out = open("%s/compara/%s-%s.txt" %(config.mainfolder,sp,gene),"w")
+	out = open("%s/%s-%s.txt" %(comparafolder,sp,gene),"w")
 	for line in html:
 		out.write(line)
 	out.close()
 
+def findorthos(txt):
+	'''
+	Goes through compara json file to return orthologs in a dictionary.
+	'''
+	orthosdict = {}
+	return orthosdict
 
-def parsecompara(html):
+def parsecompara(txt):
+	'''
+	From text file, call json dictionary extractor (findorthos) and
+	generate a string that can be used in a csv file as output.
+	'''
+	orthosdict = findorthos(txt)
 	orthoscsv = ""
 	for sp in spp:
-		orthoscsv += ""
+		orthoscsv += ","
 	orthoscsv = orthoscsv[:-1] #remove last comma
-	return(orthoscsv)
+	return orthoscsv
 
 
 if __name__ == "__main__":
@@ -89,17 +104,23 @@ if __name__ == "__main__":
 		for gene in genes: # per gene
 			print "Reading compara for %s in %s..." %(gene,sp)
 			#out.write(gene) # write gene in output
-			if saving == 1 or parse-online == 1:
+			if saving == 1 or parseonline == 1:
 				html = comparahtml(gene,sp)
 			# save or parse?
 			if saving == 1:
 				savecompara(html,sp,gene)
 				print "Saved file."
-			if parse-online == 1:
+			if parseonline == 1:
 				orthoscsv = parsecompara(html) # to parse directly from online file
 				print "Parsed online data."
-			if parse-local == 1:
-				orthoscsv = parselocal(sp,gene)
-				print "Parsed local data."
-			if parse-online == 1 or parse-local == 1:
+			if parselocal == 1:
+				try:
+					txt = open("%s/%s-%s.txt" %(comparafolder,sp,gene))
+					orthoscsv = parsecompara(txt) # to parse from a local file
+					print "Parsed local data."
+				except IOError:
+					print "No file found for %s in %s." %(gene,sp)
+					orthoscsv = ""
+			if parseonline == 1 or parselocal == 1:
 				# write orthos in output
+				print "Output added."
