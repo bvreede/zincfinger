@@ -5,10 +5,8 @@ import urllib2, os, config, sys
 
 
 # spp list (in sequence)
-spp = ['isca']#['cele']# ['dmel','smar','turt','dpul','tcas']
-
-
-spp = ['dmel','tcas','dpul','smar','turt','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','hrob','lgig','mlei','nvec','sman','spur','tadh','drer','ggal','hsap','mmus','xtro','bnat','ehux','glam','gthe','lmaj','pinf','pfal','tthe']
+vertebrates = ['mmus','drer','ggal','hsap','mmus','xtro']
+spp = ['isca','dmel','tcas','dpul','smar','turt','cele','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','hrob','lgig','mlei','nvec','sman','spur','tadh','bnat','ehux','glam','gthe','lmaj','pinf','pfal','tthe','mmus','drer','ggal','hsap','mmus','xtro']
 
 
 ctype = "pan_homology"
@@ -47,12 +45,15 @@ def fastaheaders(infile):
 	return genes,names,proteins,prot2gene
 		
 
-def comparahtml(genename):
+def comparahtml(gene,sp):
 	'''
 	From the geneID, retrieve the compara REST API url.
 	See more information at ensemblgenomes.org/info/data/pan_compara
 	'''
-	url = "http://rest.ensemblgenomes.org/homology/id/%s?compara=%s&content-type=application/json" %(genename,ctype)
+	if sp in vertebrates:
+		url = "http://rest.ensembl.org/homology/id/%s?compara=%s&content-type=application/json" %(gene,ctype) #vertebrate url
+	else:
+		url = "http://rest.ensemblgenomes.org/homology/id/%s?compara=%s&content-type=application/json" %(genename,ctype) #metazoa, plants, protists url
 	response = urllib2.urlopen(url)
 	html = response.read()
 	return html
@@ -81,7 +82,7 @@ if __name__ == "__main__":
 		for gene in genes: # per gene
 			print "Opening compara for %s in %s..." %(gene,sp)
 			#out.write(gene) # write gene in output
-			html = comparahtml(gene)
+			html = comparahtml(gene,sp)
 			#print html[0:10]
 			orthoscsv = parsecompara(html,sp,gene)
 			print "Parsing complete."
