@@ -2,17 +2,16 @@ import urllib2, os, config, sys, re
 
 
 ### OPTIONS ###
-saving = 1 # Set to 1 if you want to save the compara data locally as a text doc.
+saving = 0 # Set to 1 if you want to save the compara data locally as a text doc.
 parseonline = 0 # Set to 1 if you want to parse ONLINE compara data
-parselocal = 0 # Set to 1 if you want to parse LOCAL compara data (as a text file)
+parselocal = 1 # Set to 1 if you want to parse LOCAL compara data (as a text file)
 
 
 
 # spp list (in sequence)
-spp = ['hsap','mmus','xtro']
-#spp = ['isca','dmel','tcas','dpul','smar','turt','cele','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','hrob','lgig','mlei','nvec','sman','spur','tadh','bnat','ehux','glam','gthe','lmaj','pinf','pfal','tthe','mmus','drer','ggal','hsap','mmus','xtro']
+spp = ['isca','dmel','tcas','dpul','smar','turt','cele','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','hrob','lgig','mlei','nvec','sman','spur','tadh','bnat','ehux','glam','gthe','lmaj','pinf','pfal','tthe','mmus','drer','ggal','hsap','mmus','xtro']
 
-#spp = ['dmel','smar']
+spp = ['dmel','smar']
 
 vertebrates = ['mmus','drer','ggal','hsap','mmus','xtro']
 
@@ -20,8 +19,15 @@ ctype = "pan_homology"
 seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
 comparafolder = "%s/compara" %config.mainfolder
 
+proteinre = re.compile('protein_id.*taxon_id')
+
 
 def filelist(spp):
+	'''
+	Gets the list of input files that are associated with the species in
+	spp. NB! If there are multiple files associated with one species, the
+	script aborts. Or if one of the species is missing...
+	'''
 	fastas = []
 	for sp in spp:
 		for f in os.listdir(seqfolder):
@@ -84,7 +90,8 @@ def findorthos(txt):
 	txtli = txt.split("source")[1:] #splits each ortholog hit (removing the first one, which contains text prior to the source statement)
 	for source in txtli:
 		entry = source.split("target")[1] #picks the part of the hit that contains species and gene ID information
-		proteinre = 'protein_id[*]{*}taxon_id'
+		result = proteinre.search(entry)
+		print result.group()
 	return orthosdict
 
 def parsecompara(txt):
@@ -126,7 +133,7 @@ if __name__ == "__main__":
 					for line in txtfile:
 						txt += line
 					orthoscsv = parsecompara(txt) # to parse from a local file
-					print "Parsed local data.\n"
+					print "Parsed local data."
 				except IOError:
 					print "No file found for %s in %s." %(gene,sp)
 					orthoscsv = ""
