@@ -45,6 +45,7 @@ hitsdb = "%s/%s/%s_hmmhitsdb" %(config.mainfolder,config.dbfolder,infilebrev)
 motseq = "%s/%s/%s-hmmmotseq" %(config.mainfolder,config.dbfolder,infilebrev)
 allmotifs = "%s/%s/%s_hmmallmotifs" %(config.mainfolder,config.dbfolder,infilebrev) #for frequency and aa sequence of specific motifs
 resultsum = "%s/%s/hitcount_allspp" %(config.mainfolder,config.resfolder)
+resultsum_nonamb = "%s/%s/hitcount_allspp_nonambg" %(config.mainfolder,config.resfolder)
 # fasta files: translated hits, aa sequence of hits
 transdb = "%s/%s/%s_hmmprotstring" %(config.mainfolder,config.seqfolder,infilebrev)
 statsdb = "%s/%s/%s_hmmmotifstats" %(config.mainfolder,config.resfolder,infilebrev)
@@ -53,6 +54,7 @@ statsdb = "%s/%s/%s_hmmmotifstats" %(config.mainfolder,config.resfolder,infilebr
 #Make dictionaries to count all motifs and combinations of motifs.
 motifcount = {m: 0 for m in config.motiflist}
 motifdoublecount = {m: 0 for m in config.motiflist}
+nonambcount = {m: 0 for m in config.motiflist}
 combodict = {a: 0 for a in set([frozenset([m,n]) for m in config.motiflist for n in config.motiflist])}
 
 
@@ -100,6 +102,7 @@ def translation(posmatrix,motdict,seqdict):
 				if mots[n].count(m) > 1:
 					combodict[frozenset([m])] += (1./mots[n].count(m)) #divide by total count, otherwise it will count +2 or more if it passes this point twice
 		else:
+			nonambcount[mots[n][0]] += 1 # counter only for nonambiguous motifs
 			transl += config.translationdict[mots[n][0]]
 			allmotifstxt.write("%s\n" %config.translationdict[mots[n][0]]) #add the (translated) motif to the 'allmotifs' document for frequency-dependent sampling
 	return transl
@@ -315,8 +318,9 @@ in rows: for each motif, count the times it coincides with another motif, and di
 for that motif.
 Make a heatmap with the stats.
 '''
-#open file and array
+#open files and array
 stats = open("%s.csv" %statsdb, "w")
+#summary that counts all motifs found per file
 if os.path.isfile("%s.csv" %resultsum):
 	summary = open("%s.csv" %resultsum, "a")
 else:
@@ -326,26 +330,47 @@ else:
 	for m in config.motiflist:
 		motifcsv += "%s," %m
 	summary.write("%s\n" %motifcsv[:-1])
-doublematrix1,doublematrix2,mcounts = [],[],[]
+
+#summary that counts all nonambiguous motifs found per file
+if os.path.isfile("%s.csv" %resultsum_nonamb):
+	sum_na = open("%s.csv" %resultsum_nonamb, "a")
+else:
+	sum_na = open("%s.csv" %resultsum_nonamb, "w")
+	sum_na.write("File,")
+	motifcsv = ""
+	for m in config.motiflist:
+		motifcsv += "%s," %m
+	sum_na.write("%s\n" %motifcsv[:-1])
+
+doublematrix1,doublematrix2,mcounts,mcounts_na = [],[],[],[]
 #print headers
 stats.write(",")
 summary.write("%s," %infilebrev)
-mcountscsv = ""
+sum_na.write("%s," %infilebrev)
+
+mcountscsv,nonambcsv = "",""
 for m in config.motiflist:
 	stats.write("%s," %m)
+	# for total counts
 	mcounts.append(motifcount[m])
 	mcountscsv += "%s," %motifcount[m]
+	# for non-ambiguous counts
+	mcounts_na.append(nonambcount[m])
+	nonambcsv += "%s," %nonambcount[m]
 summary.write("%s\n" %mcountscsv[:-1])
+sum_na.write("%s\n" %nonambcsv[:-1])
 stats.write("total_combo,total\n")
 #per motif count combinations
 for m in config.motiflist:
 	stats.write("%s," %m)
 	doublelist1,doublelist2 = [],[]
 	for n in config.motiflist:
+		# for single normalized array:
 		if motifcount[m] == 0:
 			norm_combo1 = 0
 		else:
 			norm_combo1 = combodict[frozenset([m,n])]/float(motifcount[m])
+		# for double normalized array:
 		if motifcount[m] + motifcount[n] == 0:
 			norm_combo2 = 0
 		else:
@@ -358,8 +383,10 @@ for m in config.motiflist:
 	stats.write("%s,%s\n" %(motifdoublecount[m],motifcount[m]))
 stats.close()
 summary.close()
+sum_na.close()
 
 #makeheatmap(doublematrix1,"singlenorm")
 #makeheatmap(doublematrix2,"doublenorm")
 
 makebargraph(mcounts,config.motiflist,"motifs")
+makebargraph(mcounts_na,config.motiflist,"non-ambiguous_motifs")
