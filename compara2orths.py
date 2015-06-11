@@ -6,13 +6,8 @@ saving = 0 # Set to 1 if you want to save the compara data locally as a text doc
 parseonline = 0 # Set to 1 if you want to parse ONLINE compara data
 parselocal = 1 # Set to 1 if you want to parse LOCAL compara data (as a text file)
 
-
-
-# spp list (in sequence)
+# spp lists
 spp = ['dmel','tcas','isca','dpul','smar','turt','cele','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','hrob','lgig','mlei','nvec','sman','spur','tadh','bnat','ehux','glam','gthe','lmaj','pinf','pfal','tthe','mmus','drer','ggal','hsap','mmus','xtro']
-
-#spp = ['dmel','smar']
-
 vertebrates = ['mmus','drer','ggal','hsap','mmus','xtro']
 
 ctype = "pan_homology"
@@ -59,7 +54,7 @@ def fastaheaders(infile):
 			names.append(gnp[1])
 			proteins.append(gnp[2])
 			prot2gene[gnp[2]] = gnp[0]
-	return genes,names,proteins,prot2gene
+	return genes,names,proteins,prot2gene #probably 'genes' is the only necessary component
 		
 
 def comparahtml(gene,sp):
@@ -109,18 +104,6 @@ def findorthos(txt):
 		oprotein = oprotfind.group()[13:-11]
 		orthosdict[osp_abbr + '_' + oprotein] = sprotein
 	return orthosdict
-
-def parsecompara(txt):
-	'''
-	From text file, call json dictionary extractor (findorthos) and
-	generate a string that can be used in a csv file as output.
-	'''
-	orthosdict = findorthos(txt)
-	orthoscsv = ""
-	for sp in spp:
-		orthoscsv += ","
-	orthoscsv = orthoscsv[:-1] #remove last comma
-	return orthoscsv
 
 
 if __name__ == "__main__":
