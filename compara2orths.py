@@ -1,16 +1,18 @@
-import urllib2, os, config, sys
+import urllib2, os, config, sys, re
 
 
 ### OPTIONS ###
-saving = 0 # Set to 1 if you want to save the compara data locally as a text doc.
+saving = 1 # Set to 1 if you want to save the compara data locally as a text doc.
 parseonline = 0 # Set to 1 if you want to parse ONLINE compara data
-parselocal = 1 # Set to 1 if you want to parse LOCAL compara data (as a text file)
+parselocal = 0 # Set to 1 if you want to parse LOCAL compara data (as a text file)
 
 
 
 # spp list (in sequence)
 spp = ['hsap','mmus','xtro']
-spp = ['isca','dmel','tcas','dpul','smar','turt','cele','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','hrob','lgig','mlei','nvec','sman','spur','tadh','bnat','ehux','glam','gthe','lmaj','pinf','pfal','tthe','mmus','drer','ggal','hsap','mmus','xtro']
+#spp = ['isca','dmel','tcas','dpul','smar','turt','cele','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','hrob','lgig','mlei','nvec','sman','spur','tadh','bnat','ehux','glam','gthe','lmaj','pinf','pfal','tthe','mmus','drer','ggal','hsap','mmus','xtro']
+
+#spp = ['dmel','smar']
 
 vertebrates = ['mmus','drer','ggal','hsap','mmus','xtro']
 
@@ -79,6 +81,10 @@ def findorthos(txt):
 	Goes through compara json file to return orthologs in a dictionary.
 	'''
 	orthosdict = {}
+	txtli = txt.split("source")[1:] #splits each ortholog hit (removing the first one, which contains text prior to the source statement)
+	for source in txtli:
+		entry = source.split("target")[1] #picks the part of the hit that contains species and gene ID information
+		proteinre = 'protein_id[*]{*}taxon_id'
 	return orthosdict
 
 def parsecompara(txt):
@@ -115,9 +121,12 @@ if __name__ == "__main__":
 				print "Parsed online data."
 			if parselocal == 1:
 				try:
-					txt = open("%s/%s-%s.txt" %(comparafolder,sp,gene))
+					txtfile = open("%s/%s-%s.txt" %(comparafolder,sp,gene))
+					txt = ""
+					for line in txtfile:
+						txt += line
 					orthoscsv = parsecompara(txt) # to parse from a local file
-					print "Parsed local data."
+					print "Parsed local data.\n"
 				except IOError:
 					print "No file found for %s in %s." %(gene,sp)
 					orthoscsv = ""
