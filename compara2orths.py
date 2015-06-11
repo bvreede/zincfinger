@@ -128,11 +128,11 @@ if __name__ == "__main__":
 	for k,sp in enumerate(spp):
 		infile = "%s/%s" %(seqfolder,fastas[k])
 		genes,names,proteins,prot2gene = fastaheaders(infile) #read fasta file
-		outfile = "%s/%s-allorth.csv" %(resfolder,sp)
-		out = open(outfile, "w")
+		if parseonline ==1 or parselocal == 1:
+			outfile = "%s/%s-allorth.csv" %(resfolder,sp)
+			out = open(outfile, "w")
 		for gene in genes: # per gene
-			print "Reading compara for %s in %s..." %(gene,sp)
-			#out.write(gene) # write gene in output
+			#print "Reading compara for %s in %s..." %(gene,sp)
 			if saving == 1 or parseonline == 1:
 				html = comparahtml(gene,sp)
 			# save or parse?
@@ -150,8 +150,12 @@ if __name__ == "__main__":
 				except IOError:
 					print "No file found for %s in %s." %(gene,sp)
 					continue
+			# if parsing: write results to file
 			if parseonline == 1 or parselocal == 1:
 				for ortho in orthosdict:
+					if ortho[:4] == sp: #paralog identified; not interesting for our purposes
+						continue
 					out.write("%s,%s,%s,%s\n" %(sp,orthosdict[ortho],ortho[:4],ortho[5:]))
-		out.close
+		if parseonline ==1 or parselocal == 1:
+			out.close
 					
