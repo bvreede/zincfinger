@@ -233,11 +233,10 @@ for key in fastadict:
 	if key not in hmmdict:
 		#print "No motifs found with pfam screen of", key
 		continue
-	for m in config.motifdict: #go through each motif and find all instances in the sequence
+	for m in config.motifdict: #go through each motif and find all instances in the sequence. NB: m is a regular expression.
 		thisseqcount = 0 #per motif per seq, to give an index for each aminoacid sequence found
 		mfile = open("%s-%s.fa" %(motseq,m), "a")
 		domain = config.motifdict[m]
-		CC,CH,HH = m.split('_')
 		for i in domain.finditer(fastadict[key]):
 			mseq = i.group() # the sequence picked up by the RE
 			strt = i.start() + config.plink
