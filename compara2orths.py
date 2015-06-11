@@ -3,8 +3,8 @@ import urllib2, os, config, sys, re
 
 ### OPTIONS ###
 saving = 0 # Set to 1 if you want to save the compara data locally as a text doc.
-parseonline = 1 # Set to 1 if you want to parse ONLINE compara data
-parselocal = 0 # Set to 1 if you want to parse LOCAL compara data (as a text file)
+parseonline = 0 # Set to 1 if you want to parse ONLINE compara data
+parselocal = 1 # Set to 1 if you want to parse LOCAL compara data (as a text file)
 
 
 
@@ -18,6 +18,7 @@ vertebrates = ['mmus','drer','ggal','hsap','mmus','xtro']
 ctype = "pan_homology"
 seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
 comparafolder = "%s/compara" %config.mainfolder
+resfolder = "%s/orthologs" %(config.mainfolder)
 
 # regular expressions to search for in json results
 proteinre = re.compile('protein_id.*taxon_id')
@@ -126,7 +127,9 @@ if __name__ == "__main__":
 	fastas = filelist(spp) #retrieve the input file (in this case fasta) to extract gene and protein IDs
 	for k,sp in enumerate(spp):
 		infile = "%s/%s" %(seqfolder,fastas[k])
-		genes,names,proteins,prot2gene = fastaheaders(infile) #read fasta file 
+		genes,names,proteins,prot2gene = fastaheaders(infile) #read fasta file
+		outfile = "%s/%s-allorth.csv" %(resfolder,sp)
+		out = open(outfile, "w")
 		for gene in genes: # per gene
 			print "Reading compara for %s in %s..." %(gene,sp)
 			#out.write(gene) # write gene in output
@@ -137,7 +140,6 @@ if __name__ == "__main__":
 				savecompara(html,sp,gene)
 			if parseonline == 1:
 				orthosdict = findorthos(html) # to parse directly from online file
-				print orthosdict
 			if parselocal == 1:
 				try:
 					txtfile = open("%s/%s-%s.txt" %(comparafolder,sp,gene))
@@ -148,6 +150,8 @@ if __name__ == "__main__":
 				except IOError:
 					print "No file found for %s in %s." %(gene,sp)
 					continue
-			#if parseonline == 1 or parselocal == 1:
-			#	for sp2 in spp:
+			if parseonline == 1 or parselocal == 1:
+				for ortho in orthosdict:
+					out.write("%s,%s,%s,%s\n" %(sp,orthosdict[ortho],ortho[:4],ortho[5:]))
+		out.close
 					
