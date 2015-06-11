@@ -126,6 +126,7 @@ def parsecompara(txt):
 if __name__ == "__main__":
 	fastas = filelist(spp) #retrieve the input file (in this case fasta) to extract gene and protein IDs
 	for k,sp in enumerate(spp):
+		print "Reading compara for %s." %sp
 		infile = "%s/%s" %(seqfolder,fastas[k])
 		genes,names,proteins,prot2gene = fastaheaders(infile) #read fasta file
 		if parseonline ==1 or parselocal == 1:
