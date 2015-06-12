@@ -13,7 +13,7 @@ spp2 = ['bnat','ehux','glam','gthe','lmaj','pinf','pfal','tthe']
 spp2 = ['dmel','tcas','isca','dpul','smar','turt']
 
 
-sppall = ['dmel','tcas','isca','dpul','smar','turt','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','cele','hrob','lgig','mlei','nvec','sman','spur','tadh','drer','ggal','hsap','mmus','xtro']
+sppall = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam']#['dmel','tcas','isca','dpul','smar','turt','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','cele','hrob','lgig','mlei','nvec','sman','spur','tadh','drer','ggal','hsap','mmus','xtro']
 
 
 '''
