@@ -240,7 +240,6 @@ for key in fastadict:
 			# test whether this hit was found also by the pfam screen: hmmdict
 			hmmverify = test_hmmentry(strt,key)
 			if hmmverify == 0:
-				#print "rejected motif %s in %s with sequence %s" %(m,key,mseq)
 				continue
 			motifcount[m] += 1 # count the found motif
 			mfile.write(">%s\n%s\n\n" %(key,mseq))
