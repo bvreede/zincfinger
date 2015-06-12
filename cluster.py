@@ -12,7 +12,7 @@ Contact: b.vreede@gmail.com
 Date: 15 October 2014
 '''
 
-import scipy, pylab, re, itertools, csv, os, math
+import scipy, pylab, re, itertools, csv, os, math, config, sys
 import scipy.cluster.hierarchy as sch
 import matplotlib.pyplot as plt
 from jellyfish import levenshtein_distance as jld
@@ -22,20 +22,29 @@ from ete2 import Tree
 from random import shuffle
 
 
+#input from command line: the motif sequence file (translated string) that needs to be clustered.
+if len(sys.argv) <= 1:
+	sys.exit("USAGE: cluster.py path/to/inputfile (input needs to be a motif sequence fasta file).\nOutputfolders are indicated in the script; edit the script if you want to alter them.")
+
+infile = sys.argv[1]
+infilebrev = infile.split('/')[-1].split('_')[0]
+#NB! filenames should always start with an input ID specifier (separate elements in dashes) and end with output ID specifiers.
+#e.g.: 150525-dmel_seq.fa or 141212-tcas_heatmap.svg
+
+
 ##### INPUT SPECIFICATIONS: CUSTOMIZE HERE! #####
 
 #options for clustering:
 clustermeth = "average"
-threshold = [1.1547]
+threshold = 1.1547
 clustercrit = "inconsistent"
 
-#input/output files and folders:
-#the input file will be found at [dbfolder]/motifseq_[species].fasta
-species = "all2" #species should have 4 letters.
-dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results"
-motiffile = "%s/motifseq_%s.fasta" %(dbfolder,species) #the file used for the clustering
-infile = "%s/motifhits_%s.csv" %(dbfolder,species) #the file to apply the clustering to, and split into new files
-clusterorder = "%s/clustering-string_%s-%s.csv" %(dbfolder,species,clustermeth) #this file will be made: contains group data
+#output files and folders:
+#dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results"
+clusterorder = "%s/%s/%s_clusters" %(config.mainfolder,config.resfolder,infilebrev) #database that contains group data
+clusterevolv = "%s/%s/%s_cluster-newick" %(config.mainfolder,config.evfolder,infilebrev) #evolview input file in newick format
+clustercolour = "%s/%s/%s_cluster-colours" %(config.mainfolder,config.evfolder,infilebrev) #evolview input file labeling clusters
+
 
 #### END OF CUSTOMIZATION! PLEASE DON'T EDIT BELOW #####
 # set up the measurement of levenshtein distance of a combination of strings
@@ -90,49 +99,12 @@ def sof_tree2newick(T):
 	return root.write() #translate the tree to a newick string
 
 
-def getColour(maxcol):
-	'''
-	Function to translate numbers into a hex colour.
-	Input required: the total number of colours needed. Returns
-	a list of colours as long as (or longer) than the number.
-	'''
-	a = 1/3.
-	n = int(math.pow(maxcol,a)) # the number of elements there have to be from 00-FF (minus one, because int is rounded down)
-	k = 255/n # the space in integers from 0-255 between each element
-	CC,CR,CG,CB,colours = [],[],[],[],[]
-	# construct the list of elements from 00-FF
-	for i in range(n+1):
-		hn = hex(i*k)[2:]
-		if len(hn) < 2:
-			hn = hn+hn
-		CC.append(hn)
-	#red: pick each element (n+1)^2 times before moving on to the next
-	for c in CC:
-		for r in range(pow((n+1),2)):
-			CR.append(c)
-	#green: pick each element (n+1) times before moving on to the next; repeat (n+1) times
-	for g in range(n+1):
-		for c in CC:
-			for h in range(n+1):
-				CG.append(c)
-	#blue, pick each element once before moving on to the next, repeat (n+1)^2 times
-	for b in range(pow((n+1),2)):
-		for c in CC:
-			CB.append(c)
-	for X,red in enumerate(CR):
-		colour = '#' + red + CG[X] + CB[X]
-		colours.append(colour)
-	shuffle(colours)
-	return colours
-
-
-'''
-Read the input fasta file; extract:
-- string [with motif data]
-- ID labels [customized to separate on | character] + genenames and protein numbers separately
-'''
-inputfile = open(motiffile)
+# Read the input fasta file; extract:
+# string [with motif data]
+# ID labels [customized to separate on | character] + genenames and protein numbers separately
+inputfile = open(infile)
 strings,gID,genenames,protnumbers = [],[],[],[] #will collect the clusterable data (1) + header information (2-4)
+### SECTION BELOW FLAGGED FOR FIXING: USE FASTA READER TO DICTIONARY ###
 for line in inputfile:
 	if line[0] == ">": # indicates fasta header: collect header info
 		header = line.strip()[1:].split('|')
@@ -163,105 +135,47 @@ for n,s in enumerate(protnumbers): #use any desired label here.
 	tree = tree.replace(nwstr1,str1)
 	tree = tree.replace(nwstr2,str2)
 # save the newick text to a file
-newick = open("%s/clusternewick_%s.txt" %(dbfolder,clustermeth), "w")
+newick = open("%s.txt" %(clusterevolv), "w")
 newick.write(tree)
 newick.close()
 
-#save the dendrogram
-sch.dendrogram(C,labels=strings,color_threshold=2,leaf_font_size=1)
-plt.savefig("%s/dendrogram_%s.png" %(dbfolder,clustermeth), dpi=1800)
-
-'''
-Collect data from the file that needs to be sorted into clusters.
-'''
-# collect infile to memory
-infileread = csv.reader(open(infile))
-ftc = []
-for n,line in enumerate(infileread):
-	if n == 0:
-		ftchead = line
-	else:
-		ftc.append(line)
-# find the column with protein ID (= unique identifying information)
-pID = ftchead.index("Protein_stable_ID")
-
-def sortdata(thresh,nclust,cldict,outfolder):
-	'''
-	interpret the clustering and apply it to a file with data (e.g. visualization,
-	GO terms, etc), so that these are clustered similarly.
-	Turned into a function so it can be repeated with different thresholds.
-	'''
-	global pID,infile,ftchead
-	for n in range(1,nclust+1):
-		clusterfile = open("%s/%s_cluster%s.csv" %(outfolder,infile.split('/')[-1][:-4],n), "w")
-		#write header
-		lcollect = ""
-		for item in ftchead:
-			lcollect += item + ','
-		clusterfile.write("%s\n" %lcollect[:-1])
-		# write content
-		for line in ftc:
-			if cldict[line[pID]] == n:
-				lcollect = ""
-				for item in line:
-					lcollect += item + ','
-				clusterfile.write("%s\n" %lcollect[:-1])
-		clusterfile.close()
 
 clustcoll = []
-for t in threshold:
-	# define clusters given the threshold
-	L = sch.fcluster(C,t,criterion=clustercrit)
-	# translate the cluster into a dictionary
-	cID = list(L)
-	clustcoll.append(cID)
-	cldict = {}
-	for n,cluster in enumerate(cID):
-		cldict[protnumbers[n]] = cluster
-	# make a folder for these clusters
-	outfolder = "%s/%s-clusters" %(dbfolder,t)
-	if not os.path.exists(outfolder):
-		os.system("mkdir %s" %(outfolder))
-	sortdata(t,max(cID),cldict,outfolder)
+# define clusters given the threshold
+L = sch.fcluster(C,t,criterion=clustercrit)
+### I DO NOT UNDERSTAND THE FOLLOWING OPERATIONS ###
+cID = list(L)
+clustcoll.append(cID)
+cldict = {}
+for n,cluster in enumerate(cID):
+	cldict[protnumbers[n]] = cluster
 
 # save clusterdata as a database
-orderfile = open(clusterorder, "w")
-orderfile.write("Gene_stable_ID,Gene_name,Protein_stable_ID,")
-tline = ""
-for t in threshold:
-	tline += str(t) + '_clusters,'
-orderfile.write("%s,sequence\n" %tline[:-1])
+orderfile = open("%.csv" %clusterorder, "w")
+orderfile.write("Gene_stable_ID,Gene_name,Protein_stable_ID,cluster,sequence\n") #write header
 
 for n,gene in enumerate(gID):
-	orderfile.write("%s,%s,%s," %(gene[0],gene[1],gene[2]))
-	ccline = ""
-	for t,thresh in enumerate(threshold):
-		ccline += str(clustcoll[t][n]) + ','
-	orderfile.write("%s,%s\n" %(ccline[:-1],strings[n]))
+	orderfile.write("%s,%s,%s,%s,%s\n" %(gene[0],gene[1],gene[2],clustcoll[n],strings[n]))
 orderfile.close()
 
 # save clusterdata as EvolView-readable data
-print "Method: " + clustermeth
-for t,thresh in enumerate(threshold):
-	evolview = open("%s/evolview_clusters-%s-%s.txt" %(dbfolder,clustermeth,thresh),"w")
-	evolview.write(" ## leaf background color\n\n")
-	colours = getColour(max(clustcoll[t]))
-	countclust = 0
-	whichclust = []
-	# for each gene
-	for n,gene in enumerate(gID):
-		#if clustcoll[t].count(clustcoll[t][n]) < 2: #to remove clusters that are too short
-		#	continue
-		# get the cluster and the assigned colour
-		cluster = clustcoll[t][n]
-		clr = colours[cluster-1]
-		# get the gene name
-		gn = genenames[n] + '|' + protnumbers[n]
-		# write to file
-		evolview.write("%s\t%s\tprefix\n" %(gn,clr))
-		if cluster not in whichclust:
-			whichclust.append(cluster)
-			countclust += 1
-	evolview.close()
-	print "Threshold: %s, Clusters: %s (%s)" %(thresh,max(clustcoll[t]),countclust)
+evolview = open("%s.txt" %clustercolours,"w")
+evolview.write(" ## leaf background color\n\n")
+colours = config.getColour(max(clustcoll[t]))
+countclust = 0
+whichclust = []
+# for each gene
+for n,gene in enumerate(gID):
+	# get the cluster and the assigned colour
+	cluster = clustcoll[n]
+	clr = colours[cluster-1]
+	# get the gene name
+	gn = genenames[n] + '|' + protnumbers[n]
+	# write to file
+	evolview.write("%s\t%s\tprefix\n" %(gn,clr))
+	if cluster not in whichclust:
+		whichclust.append(cluster)
+		countclust += 1
+evolview.close()
+print "Found %s (%s) clusters." %(max(clustcoll),countclust)
 
