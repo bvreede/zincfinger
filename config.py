@@ -22,7 +22,7 @@ motiflist = ['%s_%s_%s' %(m,n,o) for m in moCC for n in moCH for o in moHH]
 # turn this on for custom motif list
 #motiflist = ['2_7_4','2_8_3','2_9_3','2_10_5','2_11_3','2_11_4','2_12_2','2_12_3','2_12_4','2_12_5','2_12_6','2_13_3','2_13_4','2_14_3','2_14_4','2_15_4','3_8_3','4_12_3','4_12_4','4_15_3']
 
-motiflist = ['1_13_3', '1_13_4', '1_15_1', '1_7_4', '1_8_3', '1_8_6', '2_10_1', '2_10_4', '2_11_3', '2_11_4', '2_11_5', '2_12_1', '2_12_2', '2_12_3', '2_12_4', '2_12_5', '2_12_6', '2_13_3', '2_13_4', '2_14_1', '2_14_2', '2_14_3', '2_14_4', '2_14_5', '2_15_3', '2_15_4', '2_15_5', '2_16_1', '2_16_2', '2_16_3', '2_16_4', '2_16_5', '2_16_6', '2_17_4', '2_7_4', '2_8_3', '2_8_4', '2_8_6', '2_9_2', '2_9_3', '2_9_4', '2_9_5', '2_9_6', '3_11_1', '3_11_3', '3_11_4', '3_12_4', '4_10_1', '4_10_3', '4_10_4', '4_10_5', '4_12_1', '4_12_2', '4_12_3', '4_12_4', '4_12_5', '4_12_6', '4_15_3', '5_10_5', '5_11_1', '5_12_3', '5_12_4', '5_14_5', '5_15_3', '5_15_4', '5_9_1', '5_9_3', '5_9_4', '5_9_5', '6_10_3', '6_12_3', '6_12_4', '6_12_5', '6_12_6', '6_14_6', '6_15_3', '6_15_4', '6_8_3', '6_8_4', '6_8_5']
+#motiflist = ['1_13_3', '1_13_4', '1_15_1', '1_7_4', '1_8_3', '1_8_6', '2_10_1', '2_10_4', '2_11_3', '2_11_4', '2_11_5', '2_12_1', '2_12_2', '2_12_3', '2_12_4', '2_12_5', '2_12_6', '2_13_3', '2_13_4', '2_14_1', '2_14_2', '2_14_3', '2_14_4', '2_14_5', '2_15_3', '2_15_4', '2_15_5', '2_16_1', '2_16_2', '2_16_3', '2_16_4', '2_16_5', '2_16_6', '2_17_4', '2_7_4', '2_8_3', '2_8_4', '2_8_6', '2_9_2', '2_9_3', '2_9_4', '2_9_5', '2_9_6', '3_11_1', '3_11_3', '3_11_4', '3_12_4', '4_10_1', '4_10_3', '4_10_4', '4_10_5', '4_12_1', '4_12_2', '4_12_3', '4_12_4', '4_12_5', '4_12_6', '4_15_3', '5_10_5', '5_11_1', '5_12_3', '5_12_4', '5_14_5', '5_15_3', '5_15_4', '5_9_1', '5_9_3', '5_9_4', '5_9_5', '6_10_3', '6_12_3', '6_12_4', '6_12_5', '6_12_6', '6_14_6', '6_15_3', '6_15_4', '6_8_3', '6_8_4', '6_8_5']
 
 #distances before and after each C/H
 plink,alink = 0,0
@@ -45,9 +45,11 @@ def make_motif_dict(motiflist):
 
 motiflength,motifdict = make_motif_dict(motiflist)
 
+#short alphabet
 alphabet = '''ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_+=[];\<,>.?/'''
 
-#alphabet = '''~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`'''
+#long alphabet
+alphabet = '''~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`'''
 translationdict = {motif: alphabet[a] for a,motif in enumerate(motiflist)} # dictionary of motifs and the corresponding string element
 
 
@@ -81,5 +83,38 @@ def makebarchart(values,labels,name):
 	plt.xticks(ind + 0.5, labels, rotation=90)
 	plt.savefig("%s.svg" %name)
 
-
+def getColour(maxcol):
+	'''
+	Function to translate numbers into a hex colour.
+	Input required: the total number of colours needed. Returns
+	a list of colours as long as (or longer) than the number.
+	'''
+	a = 1/3.
+	n = int(math.pow(maxcol,a)) # the number of elements there have to be from 00-FF (minus one, because int is rounded down)
+	k = 255/n # the space in integers from 0-255 between each element
+	CC,CR,CG,CB,colours = [],[],[],[],[]
+	# construct the list of elements from 00-FF
+	for i in range(n+1):
+		hn = hex(i*k)[2:]
+		if len(hn) < 2:
+			hn = hn+hn
+		CC.append(hn)
+	#red: pick each element (n+1)^2 times before moving on to the next
+	for c in CC:
+		for r in range(pow((n+1),2)):
+			CR.append(c)
+	#green: pick each element (n+1) times before moving on to the next; repeat (n+1) times
+	for g in range(n+1):
+		for c in CC:
+			for h in range(n+1):
+				CG.append(c)
+	#blue, pick each element once before moving on to the next, repeat (n+1)^2 times
+	for b in range(pow((n+1),2)):
+		for c in CC:
+			CB.append(c)
+	for X,red in enumerate(CR):
+		colour = '#' + red + CG[X] + CB[X]
+		colours.append(colour)
+	shuffle(colours)
+	return colours
 
