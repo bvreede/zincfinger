@@ -1,3 +1,5 @@
+#!/bin/python
+
 import urllib2, os, config, sys, re
 
 
