@@ -18,11 +18,12 @@ moCH = [7,8,9,10,11,12,13,14,15,16,17] #distances between CH
 moHH = [1,2,3,4,5,6] #distances between HH
 
 # turn this on if you want to search for all possible combinations of the above: (and don't forget to turn the custom list off!)
-motiflist = ['%s_%s_%s' %(m,n,o) for m in moCC for n in moCH for o in moHH]
+#motiflist = ['%s_%s_%s' %(m,n,o) for m in moCC for n in moCH for o in moHH]
 # turn this on for custom motif list
 #motiflist = ['2_7_4','2_8_3','2_9_3','2_10_5','2_11_3','2_11_4','2_12_2','2_12_3','2_12_4','2_12_5','2_12_6','2_13_3','2_13_4','2_14_3','2_14_4','2_15_4','3_8_3','4_12_3','4_12_4','4_15_3']
 
-#motiflist = ['1_13_3', '1_13_4', '1_15_1', '1_7_4', '1_8_3', '1_8_6', '2_10_1', '2_10_4', '2_11_3', '2_11_4', '2_11_5', '2_12_1', '2_12_2', '2_12_3', '2_12_4', '2_12_5', '2_12_6', '2_13_3', '2_13_4', '2_14_1', '2_14_2', '2_14_3', '2_14_4', '2_14_5', '2_15_3', '2_15_4', '2_15_5', '2_16_1', '2_16_2', '2_16_3', '2_16_4', '2_16_5', '2_16_6', '2_17_4', '2_7_4', '2_8_3', '2_8_4', '2_8_6', '2_9_2', '2_9_3', '2_9_4', '2_9_5', '2_9_6', '3_11_1', '3_11_3', '3_11_4', '3_12_4', '4_10_1', '4_10_3', '4_10_4', '4_10_5', '4_12_1', '4_12_2', '4_12_3', '4_12_4', '4_12_5', '4_12_6', '4_15_3', '5_10_5', '5_11_1', '5_12_3', '5_12_4', '5_14_5', '5_15_3', '5_15_4', '5_9_1', '5_9_3', '5_9_4', '5_9_5', '6_10_3', '6_12_3', '6_12_4', '6_12_5', '6_12_6', '6_14_6', '6_15_3', '6_15_4', '6_8_3', '6_8_4', '6_8_5']
+motiflist = ['1_12_3', '1_12_6', '1_7_3', '2_10_1', '2_11_3', '2_11_4', '2_12_2', '2_12_3', '2_12_4', '2_12_5', '2_12_6', '2_13_2', '2_13_3', '2_13_4', '2_14_3', '2_14_4', '2_15_4', '2_17_4', '2_7_4', '2_8_3', '2_9_3', '3_12_3', '3_12_4', '3_8_3', '4_12_3', '4_12_4', '4_12_6', '4_15_3', '5_14_3', '5_15_3', '5_15_4', '5_16_2', '5_7_6', '6_12_3', '6_14_6', '6_15_3', '6_15_4', '6_15_5', '6_17_4']
+
 
 #distances before and after each C/H
 plink,alink = 0,0
@@ -118,3 +119,27 @@ def getColour(maxcol):
 	shuffle(colours)
 	return colours
 
+
+def sortdata(thresh,nclust,cldict,outfolder):
+	'''
+	interpret the clustering and apply it to a file with data (e.g. visualization,
+	GO terms, etc), so that these are clustered similarly.
+	Turned into a function so it can be repeated with different thresholds.
+	Defunct function, only kept here for archival purposes.
+	'''
+	global pID,infile,ftchead #fix this before applying the function anywhere!
+	for n in range(1,nclust+1):
+		clusterfile = open("%s/%s_cluster%s.csv" %(outfolder,infile.split('/')[-1][:-4],n), "w")
+		#write header
+		lcollect = ""
+		for item in ftchead:
+			lcollect += item + ','
+		clusterfile.write("%s\n" %lcollect[:-1])
+		# write content
+		for line in ftc:
+			if cldict[line[pID]] == n:
+				lcollect = ""
+				for item in line:
+					lcollect += item + ','
+				clusterfile.write("%s\n" %lcollect[:-1])
+		clusterfile.close()
