@@ -15,7 +15,8 @@ Date: 10 October 2014
 import re, sys,config,os.path
 import pylab as pl
 import numpy as np
-pl.rcParams['xtick.labelsize']=4
+pl.rcParams['xtick.labelsize']=8
+pl.rcParams['ytick.labelsize']=8
 
 
 if len(sys.argv) <= 1:
