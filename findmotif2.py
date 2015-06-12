@@ -238,10 +238,10 @@ for key in fastadict:
 			mseq = i.group() # the sequence picked up by the RE
 			strt = i.start() + config.plink
 			# test whether this hit was found also by the pfam screen: hmmdict
-			#hmmverify = test_hmmentry(strt,key)
-			#if hmmverify == 0:
+			hmmverify = test_hmmentry(strt,key)
+			if hmmverify == 0:
 				#print "rejected motif %s in %s with sequence %s" %(m,key,mseq)
-			#	continue
+				continue
 			motifcount[m] += 1 # count the found motif
 			mfile.write(">%s\n%s\n\n" %(key,mseq))
 			allmotifsfa.write(">%s|%s-%s\n%s\n\n" %(key,config.translationdict[m],thisseqcount,mseq))
