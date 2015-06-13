@@ -9,6 +9,10 @@ if len(sys.argv) <= 1:
 infile = sys.argv[1]
 infilebrev = infile.split('/')[-1].split('_')[0]
 
+### OPTION: only treat non-ambiguous zfs! ###
+# set this to 0 if you want to treat all.
+na = 1
+
 # output
 
 
@@ -38,6 +42,14 @@ def re2str(s):
 	s = s.replace('|','')
 	return s
 
+def removere(s):
+	p = s.count('{')
+	for k in range(p):
+		start = s.index('{')
+		end = s.index('}') + 1
+		s = s[:start] + s[end:]
+	return s
+
 def re2list(s):
 	'''
 	Takes a string that contains regular expression elements, and returns
@@ -47,7 +59,10 @@ def re2list(s):
 	#identify first
 	if s[0] == '{':
 		ends1=s.index('}') + 1
-		s1 = re2str(s[:ends1])
+		if na == 1:
+			s1 = ''
+		else:
+			s1 = re2str(s[:ends1])
 		s = s[ends1:] #remove first element from s
 	else:
 		s1= s[0]
@@ -55,13 +70,19 @@ def re2list(s):
 	#identify last
 	if s[-1] == '}':
 		starts2 = s.rfind('{')
-		s2 = re2str(s[starts2:])
+		if na == 1:
+			s2 = ''
+		else:
+			s2 = re2str(s[starts2:])
 		s = s[:starts2] #remove last element from s
 	else:
 		s2 = s[-1]
 		s = s[:-1]  #remove last element from s
 	# now remove re elements from the leftover middle
-	s = re2str(s)
+	if na == 1:
+		s = removere(s)
+	else:
+		s = re2str(s)
 	reli = [s1,s,s2]
 	return reli
 
@@ -108,8 +129,8 @@ for protein in fadict:
 			last(sli[2])
 			middle(sli[1])
 
-print resultdict
-print "\n"
+#print resultdict
+#print "\n"
 
 percdict = {}
 for r in resultdict:
@@ -121,4 +142,9 @@ for r in resultdict:
 		continue
 	percdict[r] = percli
 
-print percdict
+
+for p in percdict:
+	if p == 'total':
+		print 'total:', percdict[p]
+	elif int(p.split('_')[1]) > 12:
+		print p, percdict[p]
