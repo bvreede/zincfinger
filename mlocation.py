@@ -129,9 +129,6 @@ for protein in fadict:
 			last(sli[2])
 			middle(sli[1])
 
-#print resultdict
-#print "\n"
-
 percdict = {}
 for r in resultdict:
 	resli = resultdict[r]
@@ -143,8 +140,34 @@ for r in resultdict:
 	percdict[r] = percli
 
 
+
+# now assemble the dataset:
+
+
+# for each CH length, assemble (1) frequency of appearance in first element of loop,
+# (2) frequency in middle, and (3) frequency in last element.
+fifre = [n-7 for n in range(7,19)]
+mifre = [n-7 for n in range(7,19)]
+enfre = [n-7 for n in range(7,19)]
+tofre = [n-7 for n in range(7,19)]
+
+for p in resultdict:
+	if p == 'total':
+		fifre[11] += resultdict[p][0]
+		mifre[11] += resultdict[p][1]
+		enfre[11] += resultdict[p][2]
+		tofre[11] += resultdict[p][3]
+	else:
+		for n in range(12):
+			if int(p.split('_')[1]) == n+7:
+				fifre[n] += resultdict[p][0]
+				mifre[n] += resultdict[p][1]
+				enfre[n] += resultdict[p][2]
+				tofre[n] += resultdict[p][3]
+
+
 for p in percdict:
 	if p == 'total':
 		print 'total:', percdict[p]
-	elif int(p.split('_')[1]) > 12:
+	elif int(p.split('_')[1]) < 12:
 		print p, percdict[p]
