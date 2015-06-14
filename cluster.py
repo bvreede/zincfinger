@@ -40,7 +40,6 @@ threshold = 1.1547
 clustercrit = "inconsistent"
 
 #output files and folders:
-#dbfolder = "/home/barbara/Dropbox/shared_work/zinc_finger_data/data/results"
 clusterorder = "%s/%s/%s_clusters" %(config.mainfolder,config.resfolder,infilebrev) #database that contains group data
 clusterevolv = "%s/%s/%s_cluster-newick" %(config.mainfolder,config.evfolder,infilebrev) #evolview input file in newick format
 clustercolour = "%s/%s/%s_cluster-colours" %(config.mainfolder,config.evfolder,infilebrev) #evolview input file labeling clusters
