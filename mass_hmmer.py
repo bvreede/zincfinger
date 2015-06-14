@@ -10,7 +10,7 @@ prot = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam'] #prot
 anim = ['hrob','spur','lgig','bmal','cele','drer','ggal','hsap','mmus','xtro','dmel','tcas','isca','dpul','smar','turt','nvec','mlei','tadh','sman','aque']
 
 #all species
-sppall = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam','dmel','tcas','isca','dpul','smar','turt','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','cele','hrob','lgig','mlei','nvec','sman','spur','tadh','drer','ggal','hsap','mmus','xtro']
+sppall = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam','dmel','tcas','isca','dpul','smar','turt','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','cele','cgig','hrob','lgig','mlei','nvec','sman','spur','tadh','drer','ggal','hsap','mmus','xtro']
 
 #species in concatenated files
 sppcombi = ['arth','chor','eani','anim','prot','plan']
