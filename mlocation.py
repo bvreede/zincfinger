@@ -133,7 +133,7 @@ percdict = {}
 for r in resultdict:
 	resli = resultdict[r]
 	try:
-		percli = [int(100*rl/float(resli[0])) for rl in resli[1:]]
+		percli = [100*rl/float(resli[0]) for rl in resli[1:]]
 		percli.append(resli[0])
 	except ZeroDivisionError:
 		continue
@@ -144,30 +144,32 @@ for r in resultdict:
 # now assemble the dataset:
 
 
-# for each CH length, assemble (1) frequency of appearance in first element of loop,
-# (2) frequency in middle, and (3) frequency in last element.
-fifre = [n-7 for n in range(7,19)]
-mifre = [n-7 for n in range(7,19)]
-enfre = [n-7 for n in range(7,19)]
-tofre = [n-7 for n in range(7,19)]
-
-for p in resultdict:
-	if p == 'total':
-		fifre[11] += resultdict[p][0]
-		mifre[11] += resultdict[p][1]
-		enfre[11] += resultdict[p][2]
-		tofre[11] += resultdict[p][3]
+bardata = {}
+for n in range(18):
+	cfi,cmi,cen,total = 0,0,0,0
+	for p in percdict:
+		if p == 'total':
+			continue
+		CC,CH,HH = p.split('_')
+		if int(HH) == n:
+			c1 = percdict[p][0]
+			cm = percdict[p][1]
+			c2 = percdict[p][2]
+			ct = float(percdict[p][3])
+			cfi += c1*ct
+			cmi += cm*ct
+			cen += c2*ct
+			total += ct
+	if total == 0:
+		bardata[n] = [0,0,0,0]
 	else:
-		for n in range(12):
-			if int(p.split('_')[1]) == n+7:
-				fifre[n] += resultdict[p][0]
-				mifre[n] += resultdict[p][1]
-				enfre[n] += resultdict[p][2]
-				tofre[n] += resultdict[p][3]
+		bardata[n] = [int(cfi/total),int(cmi/total),int(cen/total),int(total)]
+print bardata
 
+for m in config.motiflist:
+	try:
+		res = percdict[m]
+		#print m, res
+	except KeyError:
+		continue
 
-for p in percdict:
-	if p == 'total':
-		print 'total:', percdict[p]
-	elif int(p.split('_')[1]) < 12:
-		print p, percdict[p]
