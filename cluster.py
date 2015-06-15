@@ -12,14 +12,14 @@ Contact: b.vreede@gmail.com
 Date: 15 October 2014
 '''
 
-import scipy, pylab, re, itertools, csv, os, math, config, sys
+import scipy, pylab, re, itertools, csv, os, config, sys
 import scipy.cluster.hierarchy as sch
 import matplotlib.pyplot as plt
 from jellyfish import levenshtein_distance as jld
 from numpy import triu_indices as nti
 from numpy import apply_along_axis as naaa
 from ete2 import Tree
-from random import shuffle
+
 
 
 #input from command line: the motif sequence file (translated string) that needs to be clustered.
@@ -103,17 +103,13 @@ def sof_tree2newick(T):
 # ID labels [customized to separate on | character] + genenames and protein numbers separately
 inputfile = open(infile)
 strings,gID,genenames,protnumbers = [],[],[],[] #will collect the clusterable data (1) + header information (2-4)
-### SECTION BELOW FLAGGED FOR FIXING: USE FASTA READER TO DICTIONARY ###
-for line in inputfile:
-	if line[0] == ">": # indicates fasta header: collect header info
-		header = line.strip()[1:].split('|')
-		genenames.append(header[1])
-		protnumbers.append(header[2])
-		gID.append(header)
-		flag = 1 # turn on data collector
-	elif flag == 1:
-		strings.append(line.strip())
-		flag = 0 # turn off data collector
+inputdict = config.fastadicter(inputfile)
+for key in inputdict:
+	header = key.strip()[1:].split('|')
+	genenames.append(header[1])
+	protnumbers.append(header[2])
+	gID.append(header)
+	strings.append(inputdict[key])
 
 # make an array of coordinates for reciprocal comparisons
 ar = nti(len(strings),1)
@@ -139,34 +135,31 @@ newick.write(tree)
 newick.close()
 
 
-clustcoll = []
 # define clusters given the threshold
-L = sch.fcluster(C,t,criterion=clustercrit)
-### I DO NOT UNDERSTAND THE FOLLOWING OPERATIONS ###
+L = sch.fcluster(C,threshold,criterion=clustercrit)
 cID = list(L)
-clustcoll.append(cID)
 cldict = {}
 for n,cluster in enumerate(cID):
 	cldict[protnumbers[n]] = cluster
 
 # save clusterdata as a database
-orderfile = open("%.csv" %clusterorder, "w")
+orderfile = open("%s.csv" %clusterorder, "w")
 orderfile.write("Gene_stable_ID,Gene_name,Protein_stable_ID,cluster,sequence\n") #write header
 
 for n,gene in enumerate(gID):
-	orderfile.write("%s,%s,%s,%s,%s\n" %(gene[0],gene[1],gene[2],clustcoll[n],strings[n]))
+	orderfile.write("%s,%s,%s,%s,%s\n" %(gene[0],gene[1],gene[2],cID[n],strings[n]))
 orderfile.close()
 
 # save clusterdata as EvolView-readable data
-evolview = open("%s.txt" %clustercolours,"w")
+evolview = open("%s.txt" %clustercolour,"w")
 evolview.write(" ## leaf background color\n\n")
-colours = config.getColour(max(clustcoll[t]))
+colours = config.getColour(max(cID))
 countclust = 0
 whichclust = []
 # for each gene
 for n,gene in enumerate(gID):
 	# get the cluster and the assigned colour
-	cluster = clustcoll[n]
+	cluster = cID[n]
 	clr = colours[cluster-1]
 	# get the gene name
 	gn = genenames[n] + '|' + protnumbers[n]
@@ -176,5 +169,5 @@ for n,gene in enumerate(gID):
 		whichclust.append(cluster)
 		countclust += 1
 evolview.close()
-print "Found %s (%s) clusters." %(max(clustcoll),countclust)
+print "Found %s (%s) clusters for (%s) genes." %(max(cID),countclust,len(gID))
 
