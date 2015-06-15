@@ -10,6 +10,7 @@ resfolder = "results"
 imgfolder = "images"
 dbfolder = "databases"
 evfolder = "evolview"
+orthfolder = "orthologs"
 
 
 # define motifs
