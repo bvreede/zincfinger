@@ -1,6 +1,7 @@
-import re
+import re,math
 import matplotlib.pyplot as plt
 import numpy as np
+from random import shuffle
 
 # path info
 mainfolder = "/home/barbara/Dropbox/zinc_finger_data/newdata"
