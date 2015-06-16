@@ -1,7 +1,7 @@
 import config,sys
-
-
-
+import numpy as np
+import matplotlib.pyplot as plt
+plt.rcParams['xtick.labelsize']=11
 
 if len(sys.argv) <= 1:
 	sys.exit("USAGE: mlocation.py path/to/inputfile (input needs to be a motif sequence fasta file).\nPlease mind that the motif list and alphabet used to make this sequence file are unchanged for this analysis!")
@@ -13,10 +13,11 @@ infilebrev = infile.split('/')[-1].split('_')[0]
 # set this to 0 if you want to treat all.
 na = 1
 
-# output
+# output range
+output = range(7,18)
 
-
-
+lengths_of_series = []
+lengths_of_proteins = []
 
 # start the dictionary containing the results
 # results are collected per motif and for the total, and consist of a list of four elements:
@@ -119,11 +120,16 @@ def middle(aa):
 # start the analysis!
 for protein in fadict:
 	ssplit = fadict[protein].strip().split('Z')
+	prot = protein.replace('Z','')
+	prl = prot.count('{') + prot.count('}') + prot.count('|') * 2
+	protl = len(prot) - prl
+	lengths_of_proteins.append(protl)
 	for s in ssplit:
 		recount = s.count('{') + s.count('}') + s.count('|') * 2
-		if len(s) - recount < 3:
+		if len(s) - recount < 2:
 			continue
 		else:
+			lengths_of_series.append(len(s) - s.count('{') - s.count('}') - s.count('|') * 2)
 			sli = re2list(s)
 			first(sli[0])
 			last(sli[2])
@@ -142,8 +148,6 @@ for r in resultdict:
 
 
 # now assemble the dataset:
-
-
 bardata = {}
 for n in range(18):
 	cfi,cmi,cen,total = 0,0,0,0
@@ -151,7 +155,7 @@ for n in range(18):
 		if p == 'total':
 			continue
 		CC,CH,HH = p.split('_')
-		if int(HH) == n:
+		if int(CH) == n:
 			c1 = percdict[p][0]
 			cm = percdict[p][1]
 			c2 = percdict[p][2]
@@ -163,13 +167,61 @@ for n in range(18):
 	if total == 0:
 		bardata[n] = [0,0,0,0]
 	else:
-		bardata[n] = [int(cfi/total),int(cmi/total),int(cen/total),int(total)]
-print bardata
+		bardata[n] = [cfi/total,cmi/total,cen/total,total]
 
-for m in config.motiflist:
-	try:
-		res = percdict[m]
-		#print m, res
-	except KeyError:
-		continue
+# get data for plots:
+set1,set2,set3,totals = [],[],[],[]
+for n in output:
+	set1.append(bardata[n][0])
+	set2.append(bardata[n][1])
+	set3.append(bardata[n][2])
+	totals.append(bardata[n][3])
+
+
+#print resultdict
+
+"""
+Bar chart demo with pairs of bars grouped for easy comparison.
+"""
+
+n_groups = len(set1)
+
+fig, ax = plt.subplots()
+
+index = np.arange(n_groups)
+bar_width = 0.35
+
+rects1 = plt.bar(index, set1, bar_width,alpha=0.7, color='c',label='First')
+#rects2 = plt.bar(index + bar_width, set2, bar_width,alpha=opacity, color='g',label='Middle')
+rects3 = plt.bar(index + bar_width+0.05, set3, bar_width,alpha=0.5,color='r',label='Last')
+
+plt.xlabel('C-H distance')
+plt.ylabel('Frequency')
+plt.title('Appearance of motif in series')
+plt.xticks(index + bar_width, (list(output)))
+#plt.legend()
+
+plt.tight_layout()
+
+def autolabel(rects):
+    # attach some text labels
+    for n,rect in enumerate(rects):
+        height = rect.get_height()
+        ax.text(rect.get_x()+rect.get_width()/2., 1.05*height, '%d'%totals[n],
+                ha='center', va='bottom')
+
+#autolabel(rects1)
+#autolabel(rects2)
+
+name = "CH"
+outtotals = open("%s/%s/%s_%stotals.csv" %(config.mainfolder,config.imgfolder,infilebrev,name), "w")
+print name,set1,set2,set3
+
+for n,t in enumerate(totals):
+	outtotals.write("%s,%s,%s,%s,%s\n" %(output[n],t,set1[n],set2[n],set3[n]))
+outtotals.close()
+
+plt.savefig("%s/%s/%s_%s.svg" %(config.mainfolder,config.imgfolder,infilebrev,name))
+
+#print max(lengths_of_series), max(lengths_of_proteins)
 
