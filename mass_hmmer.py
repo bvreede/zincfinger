@@ -2,8 +2,8 @@
 import os
 
 #individual groups
-arth = ['drer','ggal','hsap','mmus','xtro'] #arth
-chor = ['dmel','tcas','isca','dpul','smar','turt'] #chor
+chor = ['drer','ggal','hsap','mmus','xtro'] #chor
+arth = ['dmel','tcas','isca','dpul','smar','turt'] #arth
 eani = ['nvec','mlei','tadh','sman','aque'] #eani
 plan = ['atri','ppat','crei','atha','slyc','osat','smoe','cmer'] #plan
 prot = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam'] #prot
