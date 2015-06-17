@@ -28,19 +28,13 @@ hmmfile = "%s/%s/%s_hmmsearch.txt" %(config.mainfolder,config.resfolder,infilebr
 #NB! filenames should always start with an input ID specifier (separate elements in dashes) and end with output ID specifiers.
 #e.g.: 150525-dmel_seq.fa or 141212-tcas_heatmap.svg
 
-"""
-# options: what do you want the script to do?
-stats = 1 # set to 1 if you want to make stats (how many motifs were found; how many duplicates; etc) and images (heatmap)
-saveseq = 1 # set to 1 if you want to make fasta files of all motifs that were found
-translate_hits = 1 #set to 1 if you want to generate an output fasta file with the translated motifhits
-frequency = 1 #set to 1 if you want to generate the list of all motifs used for frequency-dependent motif sampling (NB only works when translate_hits is also set to 1!
-"""
 
 ### OUTPUT FILES ###
 ### specify only names, and no extensions, so sub-outputfiles can be specified later ###
 # images: bar graph and heatmap
 bargraphfig = "%s/%s/%s_motifshmm-bar" %(config.mainfolder,config.imgfolder,infilebrev)
 heatmapfig = "%s/%s/%s_motifshmm-heat" %(config.mainfolder,config.imgfolder,infilebrev)
+heatmaptxt = "%s/%s/%s_motifshmm-evolview" %(config.mainfolder,config.evfolder,infilebrev)
 # databases: hit results by site
 hitsdb = "%s/%s/%s_hmmhitsdb" %(config.mainfolder,config.dbfolder,infilebrev)
 motseq = "%s/%s/%s-hmmmotseq" %(config.mainfolder,config.dbfolder,infilebrev)
@@ -116,10 +110,6 @@ def makeheatmap(doublematrix,name):
 	heatmap = pl.pcolor(data, cmap=colourformap)
 	cbar = pl.colorbar(heatmap)
 	
-	# following commented code from stackoverflow; probably not necessary, but leaving it just in case
-	#cbar.ax.set_yticklabels(['0','1','2','>3'])
-	#cbar.set_label('#double motifs / total motifs', rotation=270)	
-	
 	# put the major ticks at the middle of each cell
 	ax.set_xticks(np.arange(data.shape[1]) + 0.5, minor=False)
 	ax.set_yticks(np.arange(data.shape[0]) + 0.5, minor=False)
@@ -135,6 +125,29 @@ def makeheatmap(doublematrix,name):
 	pl.clf()
 	pl.close()
 
+def makeevolviewheatmap(doublematrix):
+	# begin writing the newick part of the evolview-heatmap:
+	evnewick = open("%s-newick.txt" %heatmaptxt, "w")
+	evnewick.write("(")
+	# ... but already open the heatmap text file itself:
+	evhm = open("%s.txt" %heatmaptxt, "w")
+	evhm.write(" #heatmap\n !legendTitle\tFrequency of overlap\n !showLegends\t1\n !colorgradient\tyellow,red,purple,blue\
+\n !colorgradientMarkLabel\t0,0.2,0.4,0.6,0.8,1\n # -- heatmap column labels --\n !showHeatMapColumnLabel\t1\n !heatmapColumnLabels\t")
+	# both documents require the motiflist in sequence, with commas between them
+	motifscomma = ','.join(config.motiflist) 
+	evnewick.write("%s);" %motifscomma)
+	evnewick.close()
+	evhm.write("%s\n" %motifscomma)
+	evhm.write(" # -- heatmap --\n !heatmap\tmargin=2,colwidth=18,roundedcorner=2\n # -- show data value\n !showdataValue\tshow=0,fontsize=12,fontitalic=0,textalign=start\n\n")
+	for i,line in enumerate(doublematrix):
+		evhm.write("%s\t" %config.motiflist[i])
+		linew = ""
+		for l in line:
+			linew += str(l)
+			linew += ','
+		evhm.write("%s\n" %linew[:-1])
+	evhm.close()
+
 def makebargraph(values,labels,name):
 	'''
 	Makes a simple bar chart with values on y and labels on x.
@@ -143,6 +156,21 @@ def makebargraph(values,labels,name):
 	ind = np.arange(len(values))
 	pl.bar(ind,values,color="c")
 	pl.xticks(ind + 0.5, labels, rotation=90)
+	pl.savefig("%s-%s.svg" %(bargraphfig,name))
+	pl.clf()
+	pl.close()
+
+def makestackedbargraph(values1,values2,labels,name):
+	'''
+	Makes a stacked bar chart with two sets of values on y and labels on x.
+	'''
+	fig = pl.figure()
+	ind = np.arange(len(values1))
+	p1 = pl.bar(ind,values1,color="navy")
+	p2 = pl.bar(ind,values2,color="darkkhaki",bottom=values1)
+	pl.xticks(ind + 0.5, labels, rotation=90)
+	pl.yticks(np.arange(30000,60000,5000)) #only used to restrict plot values
+	pl.ylim((30000,60000)) #only used to restrict plot values
 	pl.savefig("%s-%s.svg" %(bargraphfig,name))
 	pl.clf()
 	pl.close()
@@ -373,7 +401,15 @@ summary.close()
 sum_na.close()
 
 makeheatmap(doublematrix1,"singlenorm")
+makeevolviewheatmap(doublematrix1)
 makeheatmap(doublematrix2,"doublenorm")
 
 makebargraph(mcounts,config.motiflist,"motifs")
 makebargraph(mcounts_na,config.motiflist,"non-ambiguous_motifs")
+
+
+# stacked bar graph of nonambiguous + ambiguous motifs:
+#how many ambiguous:
+mcounts_am = [p-mcounts_na[n] for n,p in enumerate(mcounts)]
+makestackedbargraph(mcounts_na,mcounts_am,config.motiflist,"motifs-stacked")
+
