@@ -70,30 +70,22 @@ def lengthre(s):
 	determine how many *actual* elements are in a string
 	that contains regular expressions
 	'''
-	n = len(s) - s.count('{') - s.count('}') - s.count('|') * 2)
+	n = len(s) - s.count('{') - s.count('}') - s.count('|') * 2
 	return n
 
-def re2li(s):
+def zindex(li,z):
 	'''
-	Translate a string containing regular expressions to a list
-	where each element of the re occupies a single item.
+	returns a list of the indices of string 'z' in list 'li'
 	'''
-	reli = []
-	flag = 0
-	re_ele = ['{','|','}']
-	for i in s:
-		if i not in re_ele:
-			if flag == 0:
-				reli.append(i)
-		
-	
-	return reli
+	zi = [n for n,i in enumerate(li) if i == z]
+	return zi
+
 
 
 # GET INPUT AND GENERATE (1) list of orth combinations and (2) motif sequence dictionary
 if __name__ == "__main__":
 	# add option to use only limited species here:
-	spp = ['dmel','atha']
+	spp = ['dmel','atha','drer','crei','nvec']
 	orthfolder = "%s/%s" %(config.mainfolder,config.orthfolder)
 	seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
 	dbfolder = "%s/%s" %(config.mainfolder,config.dbfolder)
@@ -126,7 +118,7 @@ if __name__ == "__main__":
 	# Ortholog-structure
 	# Ortholog-addition/subtraction
 	# Ortholog-other
-	orthid,orthsub,orhtstruc,orthadd,orthother = 0,0,0,0,0
+	orthid,orthsub,orthstruc,orthadd,orthother = 0,0,0,0,0
 	# Random-identical
 	# Random-substitution
 	# Random-structure
@@ -166,20 +158,44 @@ if __name__ == "__main__":
 				else:
 					ranid += 1
 					continue
-			l1 = lengthre(s1)
-			l2 = lengthre(s2)
-			
-			# continue
-		# if lengths of sequences and number of Z (and their indices) are the same, substitution explains the difference
-			# add to 'substitution'
-			# if this was ortholog combo, save their names for further processing.
-			# continue
-		# remove Z and calculate levenshtein distance again
-		# if distance is 0, structure explains the difference
-			# add to 'structure', and continue
-		# if distance is equal to difference in length, addition of motifs explains the difference
-			# add to add/subtr, and continue
-		# else:
-			# add to other/combination
+			# if lengths of sequences and Z indices are the same, substitution explains the difference
+			l1 = config.re2li(s1)
+			l2 = config.re2li(s2)
+			z1 = zindex(l1,'Z')
+			z2 = zindex(l2,'Z')
+			if len(l1) == len(l2) and z1 == z2:
+				if n == 0: #ortholog combo
+					orthsub += 1 #add to 'substitution'
+					detcomp.append(x) # if this was ortholog combo, save their names for further processing.
+					continue
+				else:
+					ransub += 1
+					continue
+			# remove Z and calculate levenshtein distance again
+			s1_ = s1.replace('Z','')
+			s2_ = s2.replace('Z','')
+			d_ = simple_wordcomp(s1_,s2_)
+			if d_ == 0: # if distance is 0, structure explains the difference
+				if n == 0: #ortholog combo
+					orthstruc += 1
+					continue
+				else:
+					ranstruc += 1
+					continue
+			# if distance is equal to difference in length, addition of motifs explains the difference
+			if d_ == abs(lengthre(s1_) - lengthre(s2_)):
+				if n == 0:
+					orthadd += 1
+				else:
+					ranadd += 1
+			else:
+				if n == 0:
+					orthother += 1
+				else:
+					ranother += 1
 
 # For ortholog and for random: make a pie chart with the results (or just output them as numbers and manually make a pie chart, whatever)
+print "ORTHOLOGS:\n-identical %s\n-substitution %s\n-structure %s\n-addition %s\n-other %s\n" %(orthid,orthsub,orthstruc,orthadd,orthother)
+print "RANDOM:\n-identical %s\n-substitution %s\n-structure %s\n-addition %s\n-other %s\n" %(ranid,ransub,ranstruc,ranadd,ranother)
+print "TOTAL: %s/%s" %((orthid+orthsub+orthstruc+orthadd+orthother),(ranid+ransub+ranstruc+ranadd+ranother))
+
