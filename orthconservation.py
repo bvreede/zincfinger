@@ -85,7 +85,7 @@ def zindex(li,z):
 # GET INPUT AND GENERATE (1) list of orth combinations and (2) motif sequence dictionary
 if __name__ == "__main__":
 	# add option to use only limited species here:
-	spp = ['dmel','atha','drer','crei','nvec']
+	spp = ['dmel','nvec']
 	orthfolder = "%s/%s" %(config.mainfolder,config.orthfolder)
 	seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
 	dbfolder = "%s/%s" %(config.mainfolder,config.dbfolder)
@@ -128,11 +128,13 @@ if __name__ == "__main__":
 
 	# generate list for further detailed comparisons
 	detcomp = []
-
+	
 	# for each ortholog combination:
-	for x in orthcombos:
+	for y,x in enumerate(orthcombos):
+		print "Ortholog combination %s of %s..." %(y,len(orthcombos))
 		# identify the ortholog combination
 		xli = list(x)
+		
 		m,n = xli
 		if m not in msequencedx or n not in msequencedx:
 			continue
