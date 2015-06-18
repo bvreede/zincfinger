@@ -145,3 +145,29 @@ def sortdata(thresh,nclust,cldict,outfolder):
 					lcollect += item + ','
 				clusterfile.write("%s\n" %lcollect[:-1])
 		clusterfile.close()
+
+def re2li(s):
+	'''
+	Translate a string containing regular expressions to a list
+	where each element of the re occupies a single item.
+	'''
+	reli = []
+	flag = 0
+	re_ele = ['{','|','}']
+	for i in s:
+		if i not in re_ele:
+			if flag == 0:
+				reli.append(i)
+			if flag == 1:
+				i_ += i
+		else:
+			flag = 1
+			if i == '{':
+				i_ = i
+			elif i == '}':
+				i_ += i
+				reli.append(i_)
+				flag = 0
+			else:
+				i_ += i
+	return reli
