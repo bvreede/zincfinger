@@ -30,6 +30,21 @@ motiflist = ['1_12_3', '1_12_6', '1_7_3', '2_10_1', '2_11_3', '2_11_4', '2_12_2'
 #distances before and after each C/H
 plink,alink = 0,0
 
+
+
+#individual groups
+chor = ['drer','ggal','hsap','mmus','xtro'] #chor
+arth = ['dmel','tcas','isca','dpul','smar','turt'] #arth
+eani = ['nvec','mlei','tadh','sman','aque'] #eani
+plan = ['atri','ppat','crei','atha','slyc','osat','smoe','cmer'] #plan
+prot = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam'] #prot
+anim = ['hrob','spur','lgig','bmal','cele','drer','ggal','hsap','mmus','xtro','dmel','tcas','isca','dpul','smar','turt','nvec','mlei','tadh','sman','aque']
+
+#all species
+sppall = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam','dmel','tcas','isca','dpul','smar','turt','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','cele','hrob','lgig','mlei','nvec','sman','spur','tadh','drer','ggal','hsap','mmus','xtro']
+
+
+
 # Define zf-domains (by the C-H distances), and save in various dictionaries:
 	# motiflength: dictionary of motifs and their lengths
 	# motifdict: dictionary of motifs and their regular expression
