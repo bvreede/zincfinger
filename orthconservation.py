@@ -2,6 +2,14 @@ import config,csv,itertools,re,random
 from jellyfish import levenshtein_distance as jld
 
 idr = "150602-SM00355" #the identifier for all input files (motif sequences)
+# add option to use only limited species here:
+spp = ['tcas','nvec','atha','glam','bnat','tthe','gthe','crei','tadh','spur','drer','lgig']
+
+orthfolder = "%s/%s" %(config.mainfolder,config.orthfolder)
+seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
+dbfolder = "%s/%s" %(config.mainfolder,config.dbfolder)
+
+
 
 
 def updatedx(tempdx,sp):
@@ -48,29 +56,32 @@ def longregex_wordcomp(i,j):
 	can generate thousands if not millions of individual comparisons, slowing
 	down the script significantly).
 	'''
-	print i,j
 	li = config.re2li(i)
 	lj = config.re2li(j)
-	print li,lj
 	lboth = li+lj
 	used = [e for e in lboth if len(e) == 1] #which individual elements are used? These should not be duplicated in the alphabet translation of re elements.
 	# make a dictionary to translate regular expression elements
 	tempdict = {}
+	for e in used:
+		tempdict[e] = e
 	k = 0
 	for e in lboth:
 		if len(e) > 1:
 			if e not in tempdict:
+				tdk = '' #temporary key; otherwise the dictionary changes during use
 				for key in tempdict:
 					d = simple_wordcomp(e,key)
 					if d == 0: #for regular expressions that are closely related, the same translation can be used
-						tempdict[e] = tempdict[key]
-						continue
+						tdk = tempdict[key]
+						pass
+				if tdk != '':
+					tempdict[e] = tdk
+					continue
 				# if it gets here, no similar key has been found. So make one!
 				while config.alphabet[k] in used:
 					k += 1
 				tempdict[e] = config.alphabet[k]
 	# now translate each into a new string
-	print tempdict
 	ni,nj = "",""
 	for e in li:
 		if len(e) == 1:
@@ -82,10 +93,8 @@ def longregex_wordcomp(i,j):
 			nj += e
 		else:
 			nj += tempdict[e]
-	print ni,nj
 	# now run the comparison between strings
 	d = jld(ni,nj)
-	print d
 	return d
 
 def randomorth(gene):
@@ -131,11 +140,6 @@ def zindex(li,z):
 
 # GET INPUT AND GENERATE (1) list of orth combinations and (2) motif sequence dictionary
 if __name__ == "__main__":
-	# add option to use only limited species here:
-	spp = ['dmel','nvec']
-	orthfolder = "%s/%s" %(config.mainfolder,config.orthfolder)
-	seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
-	dbfolder = "%s/%s" %(config.mainfolder,config.dbfolder)
 	orthcombos = []
 	msequencedx = {}
 	randommotifs = {}
@@ -172,6 +176,7 @@ if __name__ == "__main__":
 	# Random-addition/subtraction
 	# Random-other
 	ranid,ransub,ranstruc,ranadd,ranother = 0,0,0,0,0
+	notcounted = 0
 
 	# generate list for further detailed comparisons
 	detcomp = []
@@ -183,6 +188,7 @@ if __name__ == "__main__":
 		xli = list(x)
 		m,n = xli
 		if m not in msequencedx or n not in msequencedx:
+			notcounted+=1
 			continue
 		# retrieve motif sequence for orthologs
 		mseq = msequencedx[m]
@@ -251,5 +257,5 @@ if __name__ == "__main__":
 # For ortholog and for random: make a pie chart with the results (or just output them as numbers and manually make a pie chart, whatever)
 print "ORTHOLOGS:\n-identical %s\n-substitution %s\n-structure %s\n-addition %s\n-other %s\n" %(orthid,orthsub,orthstruc,orthadd,orthother)
 print "RANDOM:\n-identical %s\n-substitution %s\n-structure %s\n-addition %s\n-other %s\n" %(ranid,ransub,ranstruc,ranadd,ranother)
-print "TOTAL: %s/%s" %((orthid+orthsub+orthstruc+orthadd+orthother),(ranid+ransub+ranstruc+ranadd+ranother))
+print "TOTAL: %s/%s (%s not counted)" %((orthid+orthsub+orthstruc+orthadd+orthother),(ranid+ransub+ranstruc+ranadd+ranother),notcounted)
 
