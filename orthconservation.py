@@ -41,6 +41,53 @@ def simple_wordcomp(i,j):
 	# return the minimum distance
 	return min(distance)
 
+def longregex_wordcomp(i,j):
+	'''
+	Less precise but faster option for distance calculation between strings
+	with a lot of regular expressions (expansion of many regular expression
+	can generate thousands if not millions of individual comparisons, slowing
+	down the script significantly).
+	'''
+	print i,j
+	li = config.re2li(i)
+	lj = config.re2li(j)
+	print li,lj
+	lboth = li+lj
+	used = [e for e in lboth if len(e) == 1] #which individual elements are used? These should not be duplicated in the alphabet translation of re elements.
+	# make a dictionary to translate regular expression elements
+	tempdict = {}
+	k = 0
+	for e in lboth:
+		if len(e) > 1:
+			if e not in tempdict:
+				for key in tempdict:
+					d = simple_wordcomp(e,key)
+					if d == 0: #for regular expressions that are closely related, the same translation can be used
+						tempdict[e] = tempdict[key]
+						continue
+				# if it gets here, no similar key has been found. So make one!
+				while config.alphabet[k] in used:
+					k += 1
+				tempdict[e] = config.alphabet[k]
+	# now translate each into a new string
+	print tempdict
+	ni,nj = "",""
+	for e in li:
+		if len(e) == 1:
+			ni += e
+		else:
+			ni += tempdict[e]
+	for e in lj:
+		if len(e) == 1:
+			nj += e
+		else:
+			nj += tempdict[e]
+	print ni,nj
+	# now run the comparison between strings
+	d = jld(ni,nj)
+	print d
+	return d
+
 def randomorth(gene):
 	'''
 	Generate a random motif sequence based on identical ZF structure
@@ -134,7 +181,6 @@ if __name__ == "__main__":
 		print "Ortholog combination %s of %s..." %(y,len(orthcombos))
 		# identify the ortholog combination
 		xli = list(x)
-		
 		m,n = xli
 		if m not in msequencedx or n not in msequencedx:
 			continue
@@ -150,8 +196,11 @@ if __name__ == "__main__":
 		# for both sequence combinations:
 		for n,combo in enumerate([[mseq,nseq],[oseq,pseq]]): #enumerate to identify ortholog (0) v random (1) comparison
 			s1,s2 = combo
-			# calculate lowest levenshtein distance
-			d=simple_wordcomp(s1,s2)
+			# calculate lowest levenshtein distance: first determine what program to use!
+			if s1.count('|') * s2.count('|') > 20:
+				d=longregex_wordcomp(s1,s2)
+			else:
+				d=simple_wordcomp(s1,s2)
 			if d == 0: # if distance is 0, the motif sequences are identical
 				if n == 0: #ortholog combo
 					orthid += 1 # add to 'identical'
@@ -176,7 +225,10 @@ if __name__ == "__main__":
 			# remove Z and calculate levenshtein distance again
 			s1_ = s1.replace('Z','')
 			s2_ = s2.replace('Z','')
-			d_ = simple_wordcomp(s1_,s2_)
+			if s1_.count('|') * s2_.count('|') > 20:
+				d_=longregex_wordcomp(s1_,s2_)
+			else:
+				d_=simple_wordcomp(s1_,s2_)
 			if d_ == 0: # if distance is 0, structure explains the difference
 				if n == 0: #ortholog combo
 					orthstruc += 1
