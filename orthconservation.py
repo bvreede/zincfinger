@@ -3,13 +3,14 @@ from jellyfish import levenshtein_distance as jld
 
 idr = "150602-SM00355" #the identifier for all input files (motif sequences)
 # add option to use only limited species here:
-spp = ['tcas','nvec','atha','glam','bnat','tthe','gthe','crei','tadh','spur','drer','lgig']
+spp = config.plan + config.prot + config.eani + ['xtro','tcas']
+#['tcas','nvec','atha','glam','bnat','tthe','gthe','crei','tadh','spur','drer','lgig']
+outname = "spcombo"
 
 orthfolder = "%s/%s" %(config.mainfolder,config.orthfolder)
 seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
 dbfolder = "%s/%s" %(config.mainfolder,config.dbfolder)
-
-
+resfolder = "%s/%s" %(config.mainfolder,config.resfolder)
 
 
 def updatedx(tempdx,sp):
@@ -255,6 +256,12 @@ if __name__ == "__main__":
 					ranother += 1
 
 # For ortholog and for random: make a pie chart with the results (or just output them as numbers and manually make a pie chart, whatever)
+outcsv = open("%s/%s_orthcomp-%s.csv" %(resfolder,idr,outname), "w")
+outcsv.write("Orthologs:\nidentical,%s\nsubstitution,%s\nstructure,%s\naddition,%s\nother,%s\n\n" %(orthid,orthsub,orthstruc,orthadd,orthother))
+outcsv.write("Random:\nidentical,%s\nsubstitution,%s\nstructure,%s\naddition,%s\nother,%s\n\n" %(ranid,ransub,ranstruc,ranadd,ranother))
+outcsv.write("Total:\northologs,%s\nrandom,%s\nnot_assessed,%s" %((orthid+orthsub+orthstruc+orthadd+orthother),(ranid+ransub+ranstruc+ranadd+ranother),notcounted))
+outcsv.close()
+
 print "ORTHOLOGS:\n-identical %s\n-substitution %s\n-structure %s\n-addition %s\n-other %s\n" %(orthid,orthsub,orthstruc,orthadd,orthother)
 print "RANDOM:\n-identical %s\n-substitution %s\n-structure %s\n-addition %s\n-other %s\n" %(ranid,ransub,ranstruc,ranadd,ranother)
 print "TOTAL: %s/%s (%s not counted)" %((orthid+orthsub+orthstruc+orthadd+orthother),(ranid+ransub+ranstruc+ranadd+ranother),notcounted)
