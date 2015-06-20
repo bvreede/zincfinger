@@ -4,9 +4,9 @@ from jellyfish import levenshtein_distance as jld
 idr = "150602-SM00355" #the identifier for all input files (motif sequences)
 # add option to use only limited species here:
 #spp = config.plan + config.prot + config.eani + ['xtro','tcas']
-spp = config.sppall
+spp = config.arth
 #['tcas','nvec','atha','glam','bnat','tthe','gthe','crei','tadh','spur','drer','lgig']
-outname = "allspp"
+outname = "arth"
 
 orthfolder = "%s/%s" %(config.mainfolder,config.orthfolder)
 seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
