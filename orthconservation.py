@@ -6,7 +6,7 @@ idr = "150602-SM00355" #the identifier for all input files (motif sequences)
 #spp = config.plan + config.prot + config.eani + ['xtro','tcas']
 spp = config.arth
 #['tcas','nvec','atha','glam','bnat','tthe','gthe','crei','tadh','spur','drer','lgig']
-outname = "arth2"
+outname = "arth3"
 
 orthfolder = "%s/%s" %(config.mainfolder,config.orthfolder)
 seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
