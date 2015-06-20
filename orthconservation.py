@@ -4,9 +4,9 @@ from jellyfish import levenshtein_distance as jld
 idr = "150602-SM00355" #the identifier for all input files (motif sequences)
 # add option to use only limited species here:
 #spp = config.plan + config.prot + config.eani + ['xtro','tcas']
-spp = config.arth
+spp = config.sppall
 #['tcas','nvec','atha','glam','bnat','tthe','gthe','crei','tadh','spur','drer','lgig']
-outname = "arth3"
+outname = "allspp"
 
 orthfolder = "%s/%s" %(config.mainfolder,config.orthfolder)
 seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
@@ -257,14 +257,25 @@ if __name__ == "__main__":
 				else:
 					ranother += 1
 
-# For ortholog and for random: make a pie chart with the results (or just output them as numbers and manually make a pie chart, whatever)
-outcsv = open("%s/%s_orthcomp-%s.csv" %(resfolder,idr,outname), "w")
-outcsv.write("Orthologs:\nidentical,%s\nsubstitution,%s\nstructure,%s\naddition,%s\nother,%s\n\n" %(orthid,orthsub,orthstruc,orthadd,orthother))
-outcsv.write("Random:\nidentical,%s\nsubstitution,%s\nstructure,%s\naddition,%s\nother,%s\n\n" %(ranid,ransub,ranstruc,ranadd,ranother))
-outcsv.write("Total:\northologs,%s\nrandom,%s\nnot_assessed,%s" %((orthid+orthsub+orthstruc+orthadd+orthother),(ranid+ransub+ranstruc+ranadd+ranother),notcounted))
-outcsv.close()
+# OUTPUT OF RESULTS #
+if __name__ == "__main__":
+	outcsv = open("%s/%s-%s_orthcomp.csv" %(resfolder,idr,outname), "w")
+	outcsv.write("Orthologs:\nidentical,%s\nsubstitution,%s\nstructure,%s\naddition,%s\nother,%s\n\n" %(orthid,orthsub,orthstruc,orthadd,orthother))
+	outcsv.write("Random:\nidentical,%s\nsubstitution,%s\nstructure,%s\naddition,%s\nother,%s\n\n" %(ranid,ransub,ranstruc,ranadd,ranother))
+	outcsv.write("Total:\northologs,%s\nrandom,%s\nnot_assessed,%s" %((orthid+orthsub+orthstruc+orthadd+orthother),(ranid+ransub+ranstruc+ranadd+ranother),notcounted))
+	outcsv.close()
 
-print "ORTHOLOGS:\n-identical %s\n-substitution %s\n-structure %s\n-addition %s\n-other %s\n" %(orthid,orthsub,orthstruc,orthadd,orthother)
-print "RANDOM:\n-identical %s\n-substitution %s\n-structure %s\n-addition %s\n-other %s\n" %(ranid,ransub,ranstruc,ranadd,ranother)
-print "TOTAL: %s/%s (%s not counted)" %((orthid+orthsub+orthstruc+orthadd+orthother),(ranid+ransub+ranstruc+ranadd+ranother),notcounted)
+	print "ORTHOLOGS:\n-identical %s\n-substitution %s\n-structure %s\n-addition %s\n-other %s\n" %(orthid,orthsub,orthstruc,orthadd,orthother)
+	print "RANDOM:\n-identical %s\n-substitution %s\n-structure %s\n-addition %s\n-other %s\n" %(ranid,ransub,ranstruc,ranadd,ranother)
+	print "TOTAL: %s/%s (%s not counted)" %((orthid+orthsub+orthstruc+orthadd+orthother),(ranid+ransub+ranstruc+ranadd+ranother),notcounted)
 
+# PROCESSING DETAILED COMPARISONS TO A NEW FILE TO INPUT ELSEWHERE #
+if __name__ == "__main__":
+	detcompcsv = open("%s/%s-%s_orthcomp-detail.csv" %(resfolder,idr,outname), "w")
+	for d in detcomp:
+		xli = list(d)
+		m,n = xli
+		mseq = msequencedx[m]
+		nseq = msequencedx[n]
+		detcompcsv.write("%s,%s,%s,%s\n" %(m,mseq,n,nseq))
+	detcompcsv.close()
