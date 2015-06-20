@@ -40,10 +40,12 @@ threshold = 1.1547
 clustercrit = "inconsistent"
 
 #output files and folders:
-clusterorder = "%s/%s/%s_clusters" %(config.mainfolder,config.resfolder,infilebrev) #database that contains group data
-clusterevolv = "%s/%s/%s_cluster-newick" %(config.mainfolder,config.evfolder,infilebrev) #evolview input file in newick format
-clustercolour = "%s/%s/%s_cluster-colours" %(config.mainfolder,config.evfolder,infilebrev) #evolview input file labeling clusters
+clusterorder = "%s/%s/%s_clusters-edit" %(config.mainfolder,config.resfolder,infilebrev) #database that contains group data
+clusterevolv = "%s/%s/%s_cluster-newick-edit" %(config.mainfolder,config.evfolder,infilebrev) #evolview input file in newick format
+clustercolour = "%s/%s/%s_cluster-colours-edit" %(config.mainfolder,config.evfolder,infilebrev) #evolview input file labeling clusters
 
+#counter to measure progress
+wordcompcount = 0
 
 #### END OF CUSTOMIZATION! PLEASE DON'T EDIT BELOW #####
 # set up the measurement of levenshtein distance of a combination of strings
@@ -53,13 +55,26 @@ def wordcomp(coord):
 	are regular expressions, first expand the re. and then calculate all distances
 	pairwise. Return the minimal distance.
 	'''
+	global wordcompcount
+	wordcompcount += 1
+	if wordcompcount%100 == 0:
+		print "Comparison %s of %s... (%s%)" %(wordcompcount,len(strings)*len(strings),wordcompcount/(len(strings)*len(strings))*100)
 	i,j = coord
-	if i.count('|') + j.count('|') > 16:
-		d=longregex_wordcomp(i,j)
-		return d
+	if strings[i].count('|') + strings[j].count('|') > 16:
+		d=longregex_wordcomp(strings[i],strings[j])
+	else:
+		d = simple_wordcomp(strings[i],strings[j])
+	return d
+
+def simple_wordcomp(i,j):
+	'''
+	Calculate pairwise distances for all the strings collected. As strings
+	are regular expressions, first expand the re. and then calculate all distances
+	pairwise. Return the minimal distance (with and without spaces).
+	'''
 	# translate strings[i] and strings[j] to all possible expressions
-	sisplit = [part.split('|') for part in re.split(r'\{(.*?)\}',strings[i])]
-	sjsplit = [part.split('|') for part in re.split(r'\{(.*?)\}',strings[j])]
+	sisplit = [part.split('|') for part in re.split(r'\{(.*?)\}',i)]
+	sjsplit = [part.split('|') for part in re.split(r'\{(.*?)\}',j)]
 	si,sj = [],[]
 	for x in itertools.product(*sisplit):
 		si.append(''.join(x))
@@ -94,7 +109,7 @@ def longregex_wordcomp(i,j):
 			if e not in tempdict:
 				tdk = '' #temporary key; otherwise the dictionary changes during use
 				for key in tempdict:
-					d = wordcomp(e,key)
+					d = simple_wordcomp(e,key)
 					if d == 0: #for regular expressions that are closely related, the same translation can be used
 						tdk = tempdict[key]
 						pass
