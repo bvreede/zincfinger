@@ -54,6 +54,9 @@ def wordcomp(coord):
 	pairwise. Return the minimal distance.
 	'''
 	i,j = coord
+	if i.count('|') + j.count('|') > 16:
+		d=longregex_wordcomp(i,j)
+		return d
 	# translate strings[i] and strings[j] to all possible expressions
 	sisplit = [part.split('|') for part in re.split(r'\{(.*?)\}',strings[i])]
 	sjsplit = [part.split('|') for part in re.split(r'\{(.*?)\}',strings[j])]
@@ -69,6 +72,54 @@ def wordcomp(coord):
 			distance.append(jld(sin,sjn))
 	# return the minimum distance
 	return min(distance)
+
+def longregex_wordcomp(i,j):
+	'''
+	Less precise but faster option for distance calculation between strings
+	with a lot of regular expressions (expansion of many regular expression
+	can generate thousands if not millions of individual comparisons, slowing
+	down the script significantly).
+	'''
+	li = config.re2li(i)
+	lj = config.re2li(j)
+	lboth = li+lj
+	used = [e for e in lboth if len(e) == 1] #which individual elements are used? These should not be duplicated in the alphabet translation of re elements.
+	# make a dictionary to translate regular expression elements
+	tempdict = {}
+	for e in used:
+		tempdict[e] = e
+	k = 0
+	for e in lboth:
+		if len(e) > 1:
+			if e not in tempdict:
+				tdk = '' #temporary key; otherwise the dictionary changes during use
+				for key in tempdict:
+					d = wordcomp(e,key)
+					if d == 0: #for regular expressions that are closely related, the same translation can be used
+						tdk = tempdict[key]
+						pass
+				if tdk != '':
+					tempdict[e] = tdk
+					continue
+				# if it gets here, no similar key has been found. So make one!
+				while config.alphabet[k] in used:
+					k += 1
+				tempdict[e] = config.alphabet[k]
+	# now translate each into a new string
+	ni,nj = "",""
+	for e in li:
+		if len(e) == 1:
+			ni += e
+		else:
+			ni += tempdict[e]
+	for e in lj:
+		if len(e) == 1:
+			nj += e
+		else:
+			nj += tempdict[e]
+	# now run the comparison between strings
+	d = jld(ni,nj)
+	return d
 
 def sof_tree2newick(T):
 	'''
