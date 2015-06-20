@@ -57,8 +57,9 @@ def wordcomp(coord):
 	'''
 	global wordcompcount
 	wordcompcount += 1
-	if wordcompcount%100 == 0:
-		print "Comparison %s of %s... (%s%)" %(wordcompcount,len(strings)*len(strings),wordcompcount/(len(strings)*len(strings))*100)
+	if wordcompcount%1 == 0:
+		progress = wordcompcount/(len(strings)*len(strings))*100
+		print "Comparison %s of %s... (%s" %(wordcompcount,len(strings),progress) + "%)"
 	i,j = coord
 	if strings[i].count('|') + strings[j].count('|') > 16:
 		d=longregex_wordcomp(strings[i],strings[j])
