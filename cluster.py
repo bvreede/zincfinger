@@ -58,8 +58,8 @@ def wordcomp(coord):
 	global wordcompcount
 	wordcompcount += 1
 	if wordcompcount%100 == 0:
-		progress = int(float(wordcompcount)/(len(strings)*len(strings))*100)
-		print "Comparison %s of %s... (%s" %(wordcompcount,len(strings)*len(strings),progress) + "%)"
+		progress = int(float(wordcompcount)/(len(strings)*len(strings))*200)
+		print "Comparison %s of %s... (%s" %(wordcompcount,(len(strings)*len(strings))/2,progress) + "%)"
 	i,j = coord
 	if strings[i].count('|') + strings[j].count('|') > 16:
 		d=longregex_wordcomp(strings[i],strings[j])
@@ -236,5 +236,5 @@ for n,gene in enumerate(gID):
 		whichclust.append(cluster)
 		countclust += 1
 evolview.close()
-print "Found %s (%s) clusters for (%s) genes." %(max(cID),countclust,len(gID))
+print "Found %s (%s) clusters for %s genes." %(max(cID),countclust,len(gID))
 
