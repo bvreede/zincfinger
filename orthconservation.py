@@ -3,9 +3,10 @@ from jellyfish import levenshtein_distance as jld
 
 idr = "150602-SM00355" #the identifier for all input files (motif sequences)
 # add option to use only limited species here:
-spp = config.plan + config.prot + config.eani + ['xtro','tcas']
+#spp = config.plan + config.prot + config.eani + ['xtro','tcas']
+spp = config.arth
 #['tcas','nvec','atha','glam','bnat','tthe','gthe','crei','tadh','spur','drer','lgig']
-outname = "spcombo"
+outname = "arth2"
 
 orthfolder = "%s/%s" %(config.mainfolder,config.orthfolder)
 seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
@@ -184,7 +185,8 @@ if __name__ == "__main__":
 	
 	# for each ortholog combination:
 	for y,x in enumerate(orthcombos):
-		print "Ortholog combination %s of %s..." %(y,len(orthcombos))
+		if y%100 == 0: #only when number is divisible by 100
+			print "Ortholog combination %s of %s..." %(y,len(orthcombos))
 		# identify the ortholog combination
 		xli = list(x)
 		m,n = xli
@@ -204,7 +206,7 @@ if __name__ == "__main__":
 		for n,combo in enumerate([[mseq,nseq],[oseq,pseq]]): #enumerate to identify ortholog (0) v random (1) comparison
 			s1,s2 = combo
 			# calculate lowest levenshtein distance: first determine what program to use!
-			if s1.count('|') * s2.count('|') > 20:
+			if s1.count('|') + s2.count('|') > 16:
 				d=longregex_wordcomp(s1,s2)
 			else:
 				d=simple_wordcomp(s1,s2)
@@ -232,7 +234,7 @@ if __name__ == "__main__":
 			# remove Z and calculate levenshtein distance again
 			s1_ = s1.replace('Z','')
 			s2_ = s2.replace('Z','')
-			if s1_.count('|') * s2_.count('|') > 20:
+			if s1_.count('|') + s2_.count('|') > 16:
 				d_=longregex_wordcomp(s1_,s2_)
 			else:
 				d_=simple_wordcomp(s1_,s2_)
