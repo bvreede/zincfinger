@@ -246,6 +246,7 @@ hmmdict = hmmdicter(hmmdb) # translate the hmmer output into a dictionary
 seqdict = {} # dictionary for [start position]: sequence
 motdict = {} # dictionary for [start position]: motif type
 # go through the sequences
+
 for key in fastadict:
 	# get info for the first columns (ID and sequence length)
 	ids = key.split('|')
@@ -257,7 +258,6 @@ for key in fastadict:
 	poslist = [] #for the fasta file: collect all positions to put them in order later on
 		# check each motif individually
 	if key not in hmmdict:
-		#print "No motifs found with pfam screen of", key
 		continue
 	for m in config.motifdict: #go through each motif and find all instances in the sequence. NB: m is a regular expression.
 		thisseqcount = 0 #per motif per seq, to give an index for each aminoacid sequence found
@@ -318,7 +318,7 @@ for key in fastadict:
 		outputdb.write("%s," %outstring[:-1])			
 	outputdb.write("\n")
 
-	# another for clustering: space or no space
+	# another for clustering
 	transl = translation(posmatrix,motdict,seqdict)
 	if len(transl) > 0:
 		outfasta.write(">%s\n%s\n\n" %(key,transl))
@@ -358,7 +358,6 @@ else:
 	sum_na.write("%s\n" %motifcsv[:-1])
 
 doublematrix1,doublematrix2,mcounts,mcounts_na = [],[],[],[]
-#print headers
 stats.write(",")
 summary.write("%s," %infilebrev)
 sum_na.write("%s," %infilebrev)
