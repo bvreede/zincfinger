@@ -24,25 +24,13 @@ moHH = [1,2,3,4,5,6] #distances between HH
 # turn this on for custom motif list
 #motiflist = ['2_7_4','2_8_3','2_9_3','2_10_5','2_11_3','2_11_4','2_12_2','2_12_3','2_12_4','2_12_5','2_12_6','2_13_3','2_13_4','2_14_3','2_14_4','2_15_4','3_8_3','4_12_3','4_12_4','4_15_3']
 
-motiflist = ['1_12_3', '1_12_6', '1_7_3', '2_10_1', '2_11_3', '2_11_4', '2_12_2', '2_12_3', '2_12_4', '2_12_5', '2_12_6', '2_13_2', '2_13_3', '2_13_4', '2_14_3', '2_14_4', '2_15_4', '2_17_4', '2_7_4', '2_8_3', '2_9_3', '3_12_3', '3_12_4', '3_8_3', '4_12_3', '4_12_4', '4_12_6', '4_15_3', '5_14_3', '5_15_3', '5_15_4', '5_16_2', '5_7_6', '6_12_3', '6_14_6', '6_15_3', '6_15_4', '6_15_5', '6_17_4']
+motiflistold = ['1_12_3', '1_12_6', '1_7_3', '2_10_1', '2_11_3', '2_11_4', '2_12_2', '2_12_3', '2_12_4', '2_12_5', '2_12_6', '2_13_2', '2_13_3', '2_13_4', '2_14_3', '2_14_4', '2_15_4', '2_17_4', '2_7_4', '2_8_3', '2_9_3', '3_12_3', '3_12_4', '3_8_3', '4_12_3', '4_12_4', '4_12_6', '4_15_3', '5_14_3', '5_15_3', '5_15_4', '5_16_2', '5_7_6', '6_12_3', '6_14_6', '6_15_3', '6_15_4', '6_15_5', '6_17_4'] #this was the old list. keeping this around, because all translations are based on this list.
+
+motiflist = ['1_7_3', '1_12_3', '1_12_6', '2_7_4', '2_8_3', '2_9_3', '2_10_1', '2_11_3', '2_11_4', '2_12_2', '2_12_3', '2_12_4', '2_12_5', '2_12_6', '2_13_2', '2_13_3', '2_13_4', '2_14_3', '2_14_4', '2_15_4', '2_17_4', '3_12_3', '3_8_3', '3_12_4', '4_12_3', '4_12_4', '4_12_6', '4_15_3', '5_14_3', '5_15_3', '5_15_4', '5_16_2', '5_7_6', '6_12_3', '6_14_6', '6_15_3', '6_15_4', '6_15_5', '6_17_4']
 
 
 #distances before and after each C/H
 plink,alink = 0,0
-
-
-
-#individual groups
-chor = ['drer','ggal','hsap','mmus','xtro'] #chor
-arth = ['dmel','tcas','isca','dpul','smar','turt'] #arth
-eani = ['nvec','mlei','tadh','sman','aque'] #eani
-plan = ['atri','ppat','crei','atha','slyc','osat','smoe','cmer'] #plan
-prot = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam'] #prot
-anim = ['hrob','spur','lgig','bmal','cele','drer','ggal','hsap','mmus','xtro','dmel','tcas','isca','dpul','smar','turt','nvec','mlei','tadh','sman','aque']
-
-#all species
-sppall = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam','dmel','tcas','isca','dpul','smar','turt','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','cele','hrob','lgig','mlei','nvec','sman','spur','tadh','drer','ggal','hsap','mmus','xtro']
-
 
 
 # Define zf-domains (by the C-H distances), and save in various dictionaries:
@@ -68,7 +56,7 @@ alphabet = '''ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*(
 
 #long alphabet
 alphabet = '''~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`'''
-translationdict = {motif: alphabet[a] for a,motif in enumerate(motiflist)} # dictionary of motifs and the corresponding string element
+translationdict = {motif: alphabet[a] for a,motif in enumerate(motiflistold)} # dictionary of motifs and the corresponding string element
 
 
 def fastadicter(fastadb):
@@ -89,7 +77,7 @@ def fastadicter(fastadb):
 	fastadict[header] = sequence
 	return fastadict
 
-plt.rcParams['xtick.labelsize']=28
+#plt.rcParams['xtick.labelsize']=28 #WHAT THE HELL IS THIS DOING HERE?!
 
 def makebarchart(values,labels,name):
 	'''
