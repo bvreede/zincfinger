@@ -3,8 +3,8 @@ import config,csv
 
 
 #give a name to the new file
-newcat = "chor"
-namechange = 0 # set to 0 if no name change is required.
+newcat = "arth"
+namechange = 1 # set to 0 if no name change is required.
 orthsource = 'dmel' # the comparison species for ortholog determination; if namechange is 0, then it won't be used.
 
 if namechange == 1:
@@ -13,8 +13,8 @@ else:
 	nc = ""
 
 #which files need to be included
-spp = ['drer','ggal','hsap','mmus','xtro'] #chor
-#spp = ['dmel','tcas','isca','dpul','smar','turt'] #arth
+#spp = ['drer','ggal','hsap','mmus','xtro'] #chor
+spp = ['dmel','tcas','isca','dpul','smar','turt'] #arth
 #spp = ['nvec','mlei','tadh','sman','aque'] #eani
 #spp = ['atri','ppat','crei','atha','slyc','osat','smoe','cmer'] #plan
 #spp = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam'] #prot
@@ -22,7 +22,7 @@ spp = ['drer','ggal','hsap','mmus','xtro'] #chor
 #spp = ['hrob','spur','lgig','bmal','cele','drer','ggal','hsap','mmus','xtro','dmel','tcas','isca','dpul','smar','turt','nvec','mlei','tadh','sman','aque', 'atri','ppat','crei','atha','slyc','osat','smoe','cmer','pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam'] #all species / alls
 
 
-newfile = "%s/%s/150602-SM00355-%s_seq%s.fasta" %(config.mainfolder,config.seqfolder,newcat,nc)
+newfile = "%s/%s/150602-SM00355-%s%s_seq.fasta" %(config.mainfolder,config.seqfolder,newcat,nc)
 nfile = open(newfile, "w")
 
 filelist = ["%s/%s/150602-SM00355-%s_seq.fasta" %(config.mainfolder,config.seqfolder,sp) for sp in spp]
