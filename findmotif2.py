@@ -185,6 +185,8 @@ def hmmdicter(infile):
 	hmmdict= {}
 	linename = ""
 	for line in infile:
+		if 'ENSDARP00000097577' in line:
+			print line
 		try:
 			lineli = line.split()
 			linehead = lineli[0]
@@ -251,14 +253,14 @@ for key in fastadict:
 	# get info for the first columns (ID and sequence length)
 	ids = key.split('|')
 	seqlen = len(fastadict[key]) #length of the sequence
-	outputdb.write("%s,%s,%s,%s," %(ids[0],ids[1],ids[2],seqlen)) #turn the header name into gene ID/name/prot ID
-		# screen the sequence for motifs
+	# screen the sequence for motifs
 	seqdict.clear() #for the fasta file: collect positions as key and the corresponding sequence at that position as value
 	motdict.clear() #as seqdict, but with the motif name instead of sequence
 	poslist = [] #for the fasta file: collect all positions to put them in order later on
 		# check each motif individually
 	if key not in hmmdict:
 		continue
+	outputdb.write("%s,%s,%s,%s," %(ids[0],ids[1],ids[2],seqlen)) #turn the header name into gene ID/name/prot ID
 	for m in config.motifdict: #go through each motif and find all instances in the sequence. NB: m is a regular expression.
 		thisseqcount = 0 #per motif per seq, to give an index for each aminoacid sequence found
 		mfile = open("%s-%s.fa" %(motseq,m), "a")
@@ -266,9 +268,13 @@ for key in fastadict:
 		for i in domain.finditer(fastadict[key]):
 			mseq = i.group() # the sequence picked up by the RE
 			strt = i.start() + config.plink
+			if 'ENSDARP00000097577' in key:
+				print mseq,strt
 			# test whether this hit was found also by the pfam screen: hmmdict
 			hmmverify = test_hmmentry(strt,key)
 			if hmmverify == 0:
+				if 'ENSDARP00000097577' in key:
+					print "rejected:", mseq,strt
 				continue
 			motifcount[m] += 1 # count the found motif
 			mfile.write(">%s\n%s\n\n" %(key,mseq))
