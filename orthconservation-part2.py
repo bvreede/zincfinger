@@ -8,8 +8,8 @@ infile = sys.argv[1]
 infilebrev = infile.split('/')[-1].split('_')[0]
 
 ### OUTPUT FILES ###
-heatmaptxt = "%s/%s/%s_comservation-heatmap" %(config.mainfolder,config.evfolder,infilebrev)
-
+heatmaptxt = "%s/%s/%s_conservation-heatmap" %(config.mainfolder,config.evfolder,infilebrev)
+bargraphtxt = "%s/%s/%s_conservation-bargraph" %(config.mainfolder,config.evfolder,infilebrev)
 orthin = [line for line in csv.reader(open(infile))]
 
 # make dictionaries where motif combos can be counted.
@@ -49,7 +49,7 @@ def makeevolviewheatmap(doublematrix,name):
 	'''
 	# Open the heatmap text file:
 	evhm = open("%s-%s.txt" %(heatmaptxt,name), "w")
-	evhm.write(" #heatmap\n !legendTitle\tFrequency of overlap\n !showLegends\t1\n !colorgradient\tfloralwhite,orange,red,purple,blue\
+	evhm.write(" #heatmap\n !legendTitle\tFrequency of overlap\n !showLegends\t1\n !colorgradient\tfloralwhite,orange,red,purple,navy\
 \n !colorgradientMarkLabel\t0,0.2,0.4,0.6,0.8,1\n # -- heatmap column labels --\n !showHeatMapColumnLabel\t1\n !heatmapColumnLabels\t")
 	# heatmap requires motiflist in sequence, with commas between them
 	motifscomma = ','.join(config.motiflist) 
@@ -64,7 +64,17 @@ def makeevolviewheatmap(doublematrix,name):
 		evhm.write("%s\n" %linew[:-1])
 	evhm.close()
 
-
+def makeevolviewbars(cat,li,name):
+	'''
+	Takes a list of values and labels and transfers them to a file that
+	can be read directly by evolview.
+	'''
+	# Open the bar graph text file:
+	evbg = open("%s-%s.txt" %(bargraphtxt,name), "w")
+	evbg.write(" !groups\tnumber of individual motifs\n !colors\tdarkkhaki\n !itemHeightPX\t15\n")
+	for a,b in zip(cat,li):
+		evbg.write("%s\t%s\n" %(a,b))
+	evbg.close()
 
 for combo in orthin:
 	o1 = config.re2li(combo[1])
@@ -93,31 +103,52 @@ for combo in orthin:
 			individual[e] += 1
 			individual[f] += 1
 			substitutions[frozenset([e,f])] += 1
+		else:
+			individual[e] += 1
+			individual[f] += 1
 
 #print individual
 for s in substitutions:
 	if substitutions[s] != 0:
 		a,b = list(s)
-		#print s, substitutions[s], individual[a], individual[b]
 
-#MAKE THE HEATMAP FOR AMBIGUOUS APPEARANCE#
-doublematrix1,doublematrix2 = [],[]
+#MAKE THE HEATMAP FOR AMBIGUOUS APPEARANCE + SUBSTITUTIONS#
+doublematrix1,doublematrix2,doublematrix3,motifcounts = [],[],[],[] #for ambiguous, amb. conservation frequency, substitution, motif count bar graphs; respectively
 for m in config.motiflist:
-	line1,line2 = [],[]
+	line1,line2,line3 = [],[],[]
+	sumsubs = 0
 	for n in config.motiflist:
 		a = config.translationdict[m]
 		b = config.translationdict[n]
 		combo = frozenset([a,b])
+		# ambiguous motifs and their conservation
 		line1.append(ambiguous[combo])
 		if ambiguous[combo] > 50:
 			freq = float(orthambi[combo])/ambiguous[combo]
 		else:
 			freq = 0
 		line2.append(freq)
-	doublematrix1.append(line1)
+		# substitution of motifs in orthologs
+		if individual[a] > 0:
+			line3.append(substitutions[combo]/float(individual[a]))
+		else:
+			line3.append(0)
+		sumsubs += substitutions[combo]
+	if individual[a] > 0:
+		totalsub = sumsubs/float(individual[a])
+	else:
+		totalsub = 0
+	line3.append(totalsub)
 	doublematrix2.append(line2)
+	doublematrix3.append(line3)
+	# list for individual motif counts in bar graph
+	motifcounts.append(individual[a])
 makeevolviewheatmap(doublematrix1,"ambiguous")
 makeevolviewheatmap(doublematrix2,"orthambi")
+makeevolviewheatmap(doublematrix3,"substitutions")
+
+makeevolviewbars(config.motiflist,motifcounts,"counts")
+
 
 totalambiguous,totalconserved = 0,0
 for key in ambiguous:
