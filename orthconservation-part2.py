@@ -1,4 +1,4 @@
-import sys,config,csv,itertools
+import sys,config,csv,itertools,random
 
 
 if len(sys.argv) <= 1:
@@ -6,6 +6,11 @@ if len(sys.argv) <= 1:
 
 infile = sys.argv[1]
 infilebrev = infile.split('/')[-1].split('_')[0]
+infilebrev2 = "150602-SM00355-alls"
+
+### OTHER INPUT FILES ###
+motifaaseq = "%s/%s/%s_hmmallmotifs.fa" %(config.mainfolder,config.dbfolder,infilebrev2)
+
 
 ### OUTPUT FILES ###
 heatmaptxt = "%s/%s/%s_conservation-heatmap" %(config.mainfolder,config.evfolder,infilebrev)
@@ -30,6 +35,31 @@ individual = {}
 for m in config.motiflist:
 	n = config.translationdict[m]
 	individual[n] = 0
+
+# make dictionary of amino acid sequences
+motifsaa = open(motifaaseq)
+motifsaadict = config.fastadicter(motifsaa)
+#rewrite the dictionary to have different headers (proteinID|motifclass-number)
+aadict = {}
+for key in motifsaadict:
+	newhead = key.split('|')[2] + '|' + key.split('|')[3]
+	aadict[newhead] = motifsaadict[key]
+
+# make dictionary of motifs as key, with all amino acid sequences in a list as value.
+# this can be used to pick a random motif later.
+motrandomdx = {config.translationdict[m]: [] for m in config.motiflist}
+for key in aadict:
+	motif = key.split('|')[1][0] #the letter indicating motif type
+	sequence = aadict[key]
+	motrandomdx[motif].append(sequence)
+
+# make dictionary for conservation measurements of amino acid sequences
+conservation,conserv_rand = {},{} #dictionary where lists of conservation per side are stored per motif, and same for random comparisons
+for m in config.motiflist:
+	mlen = config.motiflength[m] + config.plink + config.alink + 1
+	mli = [0 for n in range(mlen)] #a 0 for each site, and finally a 0 that will count how many times this motif was found conserved
+	conservation[m] = list(mli)
+	conserv_rand[m] = list(mli)
 
 def re_move(s):
 	'''
@@ -76,10 +106,82 @@ def makeevolviewbars(cat,li,name):
 		evbg.write("%s\t%s\n" %(a,b))
 	evbg.close()
 
+def aacomp_det(aa1,aa2,li):
+	'''
+	Function for the detailed comparison of two aminoacid sequences
+	(called within aacomp).
+	'''
+	#for each element in aa1:
+	for n,el1 in enumerate(aa1):
+		el2 = aa2[n]
+		if el1 != el2: #compare with the corresponding letter in aa2
+			li[n] += 1 #adjust the list with +1 if it is different, and not if it is not different
+	li[-1] += 1 #update the final element in the list with +1
+	return li
+
+def aacomp(gene1,m1,gene2,m2):
+	'''
+	Function that compares the aminoacid sequences of homologous
+	motifs to identify conserved aminoacids.
+	'''
+	#compile gene names
+	g1 = gene1 + '|' + m1 
+	g2 = gene2 + '|' + m2
+	m = m1[0] #the motif identifier
+	#get the random sequence
+	mrandomlist = motrandomdx[m] #returns a list with all sequences of this motif in the database
+	rand_n = random.randint(0,len(mrandomlist)-1) #pick a random number to serve as index
+	s_r = mrandomlist[rand_n]
+
+	#collect sequences to be compared
+	s1 = aadict[g1]
+	s2 = aadict[g2]
+
+	#motif name, and get the global dictionary for motif lists
+	motname = config.translationdict_inv[m]
+	global conservation
+	global conserv_rand
+	
+	#now run comparisons
+	### PART 1: compare gene1 + gene 2
+	li_mot = conservation[motname]
+	limot_updated = aacomp_det(s1,s2,li_mot)
+	conservation[motname] = limot_updated #update global dictionary with limot_updated
+
+	### PART 2: compare either gene 1 or gene 2, and random
+	#pick gene 1 or 2
+	if random.randint(1,2) == 1:
+		s_g = s1
+	else:
+		s_g = s2
+	li_mot_ran = conserv_rand[motname]
+	limot_updated_ran = aacomp_det(s_g,s_r,li_mot_ran)
+	conserv_rand[motname] = limot_updated_ran #update global dictionary with limot_updated
+
+def mordercheck(m,odict):
+	'''
+	Check the index of a motif in the protein (start with 0 and every subsequent
+	hit is +1) with the existing odict, and update odict.
+	'''
+	if m in odict:
+		odict[m] += 1
+	else:
+		odict[m] = 0
+	mindex = odict[m]
+	return mindex,odict
+
+
 for combo in orthin:
+	#print combo
 	o1 = config.re2li(combo[1])
 	o2 = config.re2li(combo[3])
+	o1dict,o2dict = {},{}
 	for e,f in zip(o1,o2):
+		eindex,o1dict = mordercheck(e,o1dict)
+		findex,o2dict = mordercheck(f,o2dict)
+
+
+
 		if e == 'Z':
 			continue
 		# Determine orthology and frequency of ambiguous items
@@ -97,15 +199,48 @@ for combo in orthin:
 			for item in eli:
 				if item in fli:
 					orthambi[item] += 2
+			continue
+
+		sp1,prot1 = combo[0].split('|')
+		sp2,prot2 = combo[2].split('|')
+		# what motif number is this?
+		m1 = e + '-' + str(eindex)
+		m2 = f + '-' + str(findex)
+
+		test1 = prot1 + '|' + m1
+		test2 = prot2 + '|' + m2
+
+		try:
+			aadict[test1]
+			#print "YES", combo[0:2], test1
+		except KeyError:
+			pass
+			#print "NO", combo[0:2], test1
+		try:
+			aadict[test2]
+		except KeyError:
+			pass
+			#print combo[2], test2
+
+
 		# with no ambiguous items: either score a substitution, or compare sequences...
 		# score a substitution here:
-		elif e != f:
+		if e != f:
 			individual[e] += 1
 			individual[f] += 1
 			substitutions[frozenset([e,f])] += 1
+		# motifs are identical, so compare sequences:
 		else:
 			individual[e] += 1
 			individual[f] += 1
+			# CLAUSE TO ADD: only run this comparison for distant species#
+			# fetch species and protein ID
+			sp1,prot1 = combo[0].split('|')
+			sp2,prot2 = combo[2].split('|')
+			# what motif number is this?
+			m1 = e + '-' + str(eindex)
+			m2 = f + '-' + str(findex)
+			#aacomp(prot1,m1,prot2,m2)
 
 #print individual
 for s in substitutions:
@@ -149,10 +284,11 @@ makeevolviewheatmap(doublematrix3,"substitutions")
 
 makeevolviewbars(config.motiflist,motifcounts,"counts")
 
-
 totalambiguous,totalconserved = 0,0
 for key in ambiguous:
 	totalambiguous += ambiguous[key]
 	totalconserved += orthambi[key]
 
 print "ambiguous: %s, of which conserved: %s (%s" %(totalambiguous,totalconserved,int(float(totalconserved)/totalambiguous*100)) + "%)"
+
+#print conservation, conserv_rand
