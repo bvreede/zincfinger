@@ -1,21 +1,30 @@
 import sys,config,csv,itertools,random
-
+import pylab as pl
+import numpy as np
 
 if len(sys.argv) <= 1:
 	sys.exit("USAGE: python orthconservation-part2.py path/to/inputfile (input file is the '-detailed.csv' output of orthconservation.py).\nOutputfolders are indicated in the script; edit the script if you want to alter them.")
 
+
+### INPUT FILES ###
 infile = sys.argv[1]
 infilebrev = infile.split('/')[-1].split('_')[0]
 infilebrev2 = "150602-SM00355-alls"
-
-### OTHER INPUT FILES ###
 motifaaseq = "%s/%s/%s_hmmallmotifs.fa" %(config.mainfolder,config.dbfolder,infilebrev2)
+orthin = [line for line in csv.reader(open(infile))] #this opens the file with ortholog combinations to investigate
+
 
 
 ### OUTPUT FILES ###
 heatmaptxt = "%s/%s/%s_conservation-heatmap" %(config.mainfolder,config.evfolder,infilebrev)
 bargraphtxt = "%s/%s/%s_conservation-bargraph" %(config.mainfolder,config.evfolder,infilebrev)
-orthin = [line for line in csv.reader(open(infile))]
+seqconshm =  "%s/%s/%s_sequencehm" %(config.mainfolder,config.imgfolder,infilebrev)
+
+
+
+### LIST OF SPECIES FOR COMPARISON ###
+group1 = config.anim
+group2 = config.plan + config.prot
 
 # make dictionaries where motif combos can be counted.
 ambiguous = {} #dictionary to count appearance of ambiguous combinations
@@ -171,6 +180,34 @@ def mordercheck(m,odict):
 			odict[k] = 0
 	return odict
 
+def makeheatmap(table,name,xlab,ylab):
+	'''
+	Use 2D data (list of lists) to generate a heatmap of the data.
+	'''
+	data = pl.array(table)
+	colourformap = "YlOrBr"
+	fig,ax = pl.subplots()
+	heatmap = pl.pcolor(data, cmap=colourformap,vmin=0,vmax=1)
+	cbar = pl.colorbar(heatmap)
+	
+	# put the major ticks at the middle of each cell
+	ax.set_xticks(np.arange(data.shape[1]) + 0.5, minor=False)
+	ax.set_yticks(np.arange(data.shape[0]) + 0.5, minor=False)
+	pl.axis('tight') #remove the white bar
+	ax.invert_yaxis() #make sure it starts counting from the top
+		
+	#make the labels
+	ax.set_xticklabels(xlab, minor=False, rotation=90)
+	ax.set_yticklabels(ylab, minor=False)
+		
+	# save the figure
+	pl.savefig("%s-%s.png" %(seqconshm,name), dpi = 300)
+	pl.savefig("%s-%s.svg" %(seqconshm,name), dpi = 300)
+	pl.clf()
+	pl.close("all")
+	
+
+
 
 for combo in orthin:
 	#print combo
@@ -216,6 +253,16 @@ for combo in orthin:
 			# fetch species and protein ID
 			sp1,prot1 = combo[0].split('|')
 			sp2,prot2 = combo[2].split('|')
+			if sp1 in group1:
+				if sp2 not in group2:
+					continue
+					# this is passed only if sp1 in group1 and sp2 in group2
+			elif sp1 in group2:
+				if sp2 not in group1:
+					continue
+					# this is passed only if sp1 in group2 and sp2 in group1
+			else:
+				continue
 			# what motif number is this?
 			m1 = e + '-' + str(o1dict[e])
 			m2 = f + '-' + str(o2dict[f])
@@ -270,4 +317,28 @@ for key in ambiguous:
 
 print "ambiguous: %s, of which conserved: %s (%s" %(totalambiguous,totalconserved,int(float(totalconserved)/totalambiguous*100)) + "%)"
 
-print conservation, conserv_rand
+### MAKE HEATMAP FOR MOTIF CONSERVATION ON SEQUENCE LEVEL ###
+
+countdx = {} #add a dictionary that keeps the counter separate
+for m in config.motiflist:
+	consli = list(conservation[m])
+	consli_r = list(conserv_rand[m])
+	counter = consli[-1]
+	#ressum.write("%s,%s\n" %(m,counter))
+	countdx[m] = counter
+	if counter <10:
+		continue
+	print "Making heatmap for %s with %s comparisons" %(m,counter)
+	consli_new,consli_new_r = [],[]
+	for n in range(len(consli)-1):
+		c = consli[n]/float(counter)
+		consli_new.append(c)
+		c_r = consli_r[n]/float(counter)
+		consli_new_r.append(c_r)
+	conservation[m] = list(consli_new)
+	conserv_rand[m] = list(consli_new_r)
+	table = [consli_new] + [consli_new_r]
+	xlab = []
+	ylab = ["orthologous","random"]
+	makeheatmap(table,m,xlab,ylab)
+
