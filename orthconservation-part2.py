@@ -163,12 +163,13 @@ def mordercheck(m,odict):
 	Check the index of a motif in the protein (start with 0 and every subsequent
 	hit is +1) with the existing odict, and update odict.
 	'''
-	if m in odict:
-		odict[m] += 1
-	else:
-		odict[m] = 0
-	mindex = odict[m]
-	return mindex,odict
+	m = m.replace('{','').replace('}','').replace('|','')
+	for k in m:
+		if k in odict:
+			odict[k] += 1
+		else:
+			odict[k] = 0
+	return odict
 
 
 for combo in orthin:
@@ -177,15 +178,15 @@ for combo in orthin:
 	o2 = config.re2li(combo[3])
 	o1dict,o2dict = {},{}
 	for e,f in zip(o1,o2):
-		eindex,o1dict = mordercheck(e,o1dict)
-		findex,o2dict = mordercheck(f,o2dict)
-
-
-
-		if e == 'Z':
+		if e == 'Z': #this is not a motif. Moving on...
 			continue
+
+		#determine the order of motifs: update o1dict/o2dict and return the index of the current motifs
+		o1dict = mordercheck(e,o1dict)
+		o2dict = mordercheck(f,o2dict)
+
 		# Determine orthology and frequency of ambiguous items
-		elif e.count('{') > 0 or f.count('{') > 0: # ambiguous motif identified.
+		if e.count('{') > 0 or f.count('{') > 0: # ambiguous motif identified.
 			# turn 
 			eli = re_move(e)
 			fli = re_move(f)
@@ -200,28 +201,6 @@ for combo in orthin:
 				if item in fli:
 					orthambi[item] += 2
 			continue
-
-		sp1,prot1 = combo[0].split('|')
-		sp2,prot2 = combo[2].split('|')
-		# what motif number is this?
-		m1 = e + '-' + str(eindex)
-		m2 = f + '-' + str(findex)
-
-		test1 = prot1 + '|' + m1
-		test2 = prot2 + '|' + m2
-
-		try:
-			aadict[test1]
-			#print "YES", combo[0:2], test1
-		except KeyError:
-			pass
-			#print "NO", combo[0:2], test1
-		try:
-			aadict[test2]
-		except KeyError:
-			pass
-			#print combo[2], test2
-
 
 		# with no ambiguous items: either score a substitution, or compare sequences...
 		# score a substitution here:
@@ -238,9 +217,9 @@ for combo in orthin:
 			sp1,prot1 = combo[0].split('|')
 			sp2,prot2 = combo[2].split('|')
 			# what motif number is this?
-			m1 = e + '-' + str(eindex)
-			m2 = f + '-' + str(findex)
-			#aacomp(prot1,m1,prot2,m2)
+			m1 = e + '-' + str(o1dict[e])
+			m2 = f + '-' + str(o2dict[f])
+			aacomp(prot1,m1,prot2,m2)
 
 #print individual
 for s in substitutions:
@@ -291,4 +270,4 @@ for key in ambiguous:
 
 print "ambiguous: %s, of which conserved: %s (%s" %(totalambiguous,totalconserved,int(float(totalconserved)/totalambiguous*100)) + "%)"
 
-#print conservation, conserv_rand
+print conservation, conserv_rand
