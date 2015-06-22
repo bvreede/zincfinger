@@ -24,7 +24,9 @@ if len(sys.argv) <= 1:
 
 infile = sys.argv[1]
 infilebrev = infile.split('/')[-1].split('_')[0]
-hmmfile = "%s/%s/%s_hmmsearch.txt" %(config.mainfolder,config.resfolder,infilebrev)
+hmmfile = "%s/%s/%s_hmmsearch.txt" %(config.mainfolder,config.resfolder,infilebrev) #THIS IS THE DEFAULT! However, because of some weird issues I generated a concatenated file for all species as well. To use this one, check the following:
+#hmmfile = "%s/%s/%s_hmmsearch-concat.txt" %(config.mainfolder,config.resfolder,infilebrev)
+
 #NB! filenames should always start with an input ID specifier (separate elements in dashes) and end with output ID specifiers.
 #e.g.: 150525-dmel_seq.fa or 141212-tcas_heatmap.svg
 
@@ -185,8 +187,6 @@ def hmmdicter(infile):
 	hmmdict= {}
 	linename = ""
 	for line in infile:
-		if 'ENSDARP00000097577' in line:
-			print line
 		try:
 			lineli = line.split()
 			linehead = lineli[0]
@@ -268,13 +268,9 @@ for key in fastadict:
 		for i in domain.finditer(fastadict[key]):
 			mseq = i.group() # the sequence picked up by the RE
 			strt = i.start() + config.plink
-			if 'ENSDARP00000097577' in key:
-				print mseq,strt
 			# test whether this hit was found also by the pfam screen: hmmdict
 			hmmverify = test_hmmentry(strt,key)
 			if hmmverify == 0:
-				if 'ENSDARP00000097577' in key:
-					print "rejected:", mseq,strt
 				continue
 			motifcount[m] += 1 # count the found motif
 			mfile.write(">%s\n%s\n\n" %(key,mseq))
