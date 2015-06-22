@@ -22,12 +22,13 @@ else:
 spp = ['hrob','spur','lgig','bmal','cele','drer','ggal','hsap','mmus','xtro','dmel','tcas','isca','dpul','smar','turt','nvec','mlei','tadh','sman','aque', 'atri','ppat','crei','atha','slyc','osat','smoe','cmer','pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam'] #all species / alls
 
 
-newfile = "%s/%s/150602-SM00355-%s_hmmsearch-concat.txt" %(config.mainfolder,config.resfolder,newcat)
-#newfile = "%s/%s/150602-SM00355-%s%s_seq.fasta" %(config.mainfolder,config.seqfolder,newcat,nc)
+#newfile = "%s/%s/150602-SM00355-%s_hmmsearch-concat.txt" %(config.mainfolder,config.resfolder,newcat) #for concatenation of hmm file
+newfile = "%s/%s/150602-SM00355-%s%s_seq.fasta" %(config.mainfolder,config.seqfolder,newcat,nc)
 nfile = open(newfile, "w")
 
-#filelist = ["%s/%s/150602-SM00355-%s_seq.fasta" %(config.mainfolder,config.seqfolder,sp) for sp in spp]
-filelist = ["%s/%s/150602-SM00355-%s_hmmsearch.txt" %(config.mainfolder,config.resfolder,sp) for sp in spp]
+#filelist = ["%s/%s/150602-SM00355-%s_hmmsearch.txt" %(config.mainfolder,config.resfolder,sp) for sp in spp] #for concatenation of hmm file
+filelist = ["%s/%s/150602-SM00355-%s_seq.fasta" %(config.mainfolder,config.seqfolder,sp) for sp in spp]
+
 
 
 
