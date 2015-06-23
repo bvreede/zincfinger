@@ -19,11 +19,11 @@ arthNC = ['arthNC'] #with names changed to reflect orthology
 
 
 count = 0
-for sp in arthNC:
+for sp in sppall:
 	count += 1
-	#command = "python findmotif2.py /home/barbara/Dropbox/zinc_finger_data/newdata/sequences/150602-SM00355-%s_seq.fasta" %sp
-	command = "/Users/BarbaraMaria/Downloads/hmmer-3.1b2-macosx-intel/binaries/hmmsearch -o ~/Dropbox/zinc_finger_data/newdata/results/150602-SM00355-%s_hmmsearch.txt --incT 3.0 /Users/BarbaraMaria/Dropbox/zinc_finger_data/newdata/sequences/zf-C2H2.hmm /Users/BarbaraMaria/Dropbox/zinc_finger_data/newdata/sequences/150602-SM00355-%s_seq.fasta" %(sp,sp)
+	command = "python findmotif2.py /home/barbara/Dropbox/zinc_finger_data/newdata/sequences/150602-SM00355-%s_seq.fasta" %sp
+	#command = "/Users/BarbaraMaria/Downloads/hmmer-3.1b2-macosx-intel/binaries/hmmsearch -o ~/Dropbox/zinc_finger_data/newdata/results/150602-SM00355-%s_hmmsearch.txt --incT 3.0 /Users/BarbaraMaria/Dropbox/zinc_finger_data/newdata/sequences/zf-C2H2.hmm /Users/BarbaraMaria/Dropbox/zinc_finger_data/newdata/sequences/150602-SM00355-%s_seq.fasta" %(sp,sp)
 	os.system(command)
-	#print "%s: motifs identified for %s." %(count,sp)
-	print "hmm screen done for", sp
+	print "%s: motifs identified for %s." %(count,sp)
+	#print "hmm screen done for", sp
 
