@@ -133,14 +133,14 @@ def makeevolviewheatmap(doublematrix):
 	evnewick.write("(")
 	# ... but already open the heatmap text file itself:
 	evhm = open("%s.txt" %heatmaptxt, "w")
-	evhm.write(" #heatmap\n !legendTitle\tFrequency of overlap\n !showLegends\t1\n !colorgradient\tyellow,red,purple,blue\
+	evhm.write(" #heatmap\n !legendTitle\tFrequency of overlap\n !showLegends\t1\n !colorgradient\tfloralwhite,orange,red,purple,navy\
 \n !colorgradientMarkLabel\t0,0.2,0.4,0.6,0.8,1\n # -- heatmap column labels --\n !showHeatMapColumnLabel\t1\n !heatmapColumnLabels\t")
 	# both documents require the motiflist in sequence, with commas between them
 	motifscomma = ','.join(config.motiflist) 
 	evnewick.write("%s);" %motifscomma)
 	evnewick.close()
 	evhm.write("%s\n" %motifscomma)
-	evhm.write(" # -- heatmap --\n !heatmap\tmargin=2,colwidth=18,roundedcorner=2\n # -- show data value\n !showdataValue\tshow=0,fontsize=12,fontitalic=0,textalign=start\n\n")
+	evhm.write(" # -- heatmap --\n !heatmap\tmargin=1,colwidth=18,roundedcorner=1\n # -- show data value\n !showdataValue\tshow=0,fontsize=12,fontitalic=0,textalign=start\n\n")
 	for i,line in enumerate(doublematrix):
 		evhm.write("%s\t" %config.motiflist[i])
 		linew = ""
@@ -171,8 +171,10 @@ def makestackedbargraph(values1,values2,labels,name):
 	p1 = pl.bar(ind,values1,color="navy")
 	p2 = pl.bar(ind,values2,color="darkkhaki",bottom=values1)
 	pl.xticks(ind + 0.5, labels, rotation=90)
-	pl.yticks(np.arange(30000,60000,5000)) #only used to restrict plot values
-	pl.ylim((30000,60000)) #only used to restrict plot values
+	#pl.yticks(np.arange(30000,60000,5000)) #only used to restrict plot values
+	#pl.ylim((30000,60000)) #only used to restrict plot values
+	pl.yticks(np.arange(0,9000,1000)) #only used to restrict plot values
+	pl.ylim((0,9000)) #only used to restrict plot values
 	pl.savefig("%s-%s.svg" %(bargraphfig,name))
 	pl.clf()
 	pl.close()
