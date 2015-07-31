@@ -43,6 +43,8 @@ anim = ['hrob','spur','lgig','bmal','cele','drer','ggal','hsap','mmus','xtro','d
 #all species
 sppall = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam','dmel','tcas','isca','dpul','smar','turt','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','cele','hrob','lgig','mlei','nvec','sman','spur','tadh','drer','ggal','hsap','mmus','xtro']
 
+#species with >700mya distance
+spp700 = ['xtro','spur','tcas','sman','cele','nvec','mlei','tadh','aque','atha','crei','cmer','pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam',]
 
 
 # Define zf-domains (by the C-H distances), and save in various dictionaries:
