@@ -190,3 +190,14 @@ def re2li(s):
 			else:
 				i_ += i
 	return reli
+
+def re2str(s):
+	'''
+	Translate a string containing regular expressions to a string
+	where all regular expression indicators ({,},|) are removed.
+	'''
+	s = s.replace('{','')
+	s = s.replace('}','')
+	s = s.replace('|','')
+	return s
+
