@@ -2,11 +2,21 @@ import config,csv,itertools,re,random
 from jellyfish import levenshtein_distance as jld
 
 idr = "150602-SM00355" #the identifier for all input files (motif sequences)
-# add option to use only limited species here:
-spp = config.chor
+
+#### WHAT SPECIES TO USE: CHANGE IT HERE!! ###
+#spp = config.chor
 #spp = config.arth
-#['tcas','nvec','atha','glam','bnat','tthe','gthe','crei','tadh','spur','drer','lgig']
-outname = "chor"
+#spp = config.sppall
+spp = config.spp700
+
+### DON'T FORGET TO CHANGE THE OUTPUT NAME ACCORDINGLY!! ###
+#outname = "chor"
+outname = "d700"
+#outname = "arth"
+#outname = "sppall"
+
+###########################################
+
 
 orthfolder = "%s/%s" %(config.mainfolder,config.orthfolder)
 seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
@@ -181,7 +191,7 @@ if __name__ == "__main__":
 	notcounted = 0
 
 	# generate list for further detailed comparisons
-	detcomp = []
+	detcomp,detcompran = [],[]
 	
 	# for each ortholog combination:
 	for y,x in enumerate(orthcombos):
@@ -216,6 +226,7 @@ if __name__ == "__main__":
 					detcomp.append(x) # if this was ortholog combo, save their names for further processing.
 					continue
 				else:
+					detcompran.append(x) # if this was random combo, save their names for further processing.
 					ranid += 1
 					continue
 			# if lengths of sequences and Z indices are the same, substitution explains the difference
@@ -229,6 +240,7 @@ if __name__ == "__main__":
 					detcomp.append(x) # if this was ortholog combo, save their names for further processing.
 					continue
 				else:
+					detcompran.append(x) # if this was ortholog combo, save their names for further processing.
 					ransub += 1
 					continue
 			# remove Z and calculate levenshtein distance again
@@ -272,10 +284,18 @@ if __name__ == "__main__":
 # PROCESSING DETAILED COMPARISONS TO A NEW FILE TO INPUT ELSEWHERE #
 if __name__ == "__main__":
 	detcompcsv = open("%s/%s-%s_orthcomp-detail.csv" %(resfolder,idr,outname), "w")
+	detcomprancsv = open("%s/%s-%s_orthcomp-detail-random.csv" %(resfolder,idr,outname), "w")
 	for d in detcomp:
 		xli = list(d)
 		m,n = xli
 		mseq = msequencedx[m]
 		nseq = msequencedx[n]
 		detcompcsv.write("%s,%s,%s,%s\n" %(m,mseq,n,nseq))
+	for d in detcompran:
+		xli = list(d)
+		m,n = xli
+		mseq = msequencedx[m]
+		nseq = msequencedx[n]
+		detcomprancsv.write("%s,%s,%s,%s\n" %(m,mseq,n,nseq))
 	detcompcsv.close()
+	detcomprancsv.close()
