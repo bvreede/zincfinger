@@ -8,7 +8,7 @@ if len(sys.argv) <= 1:
 
 ### INPUT FILES ###
 infile = sys.argv[1]
-infilebrev = infile.split('/')[-1].split('_')[0]
+infilebrev = infile.split('/')[-1].split('.')[0]
 orthin = [line for line in csv.reader(open(infile))] #this opens the file with ortholog combinations to investigate
 
 ### OUTPUT FILE(S) ###
