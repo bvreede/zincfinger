@@ -26,6 +26,4 @@ Use the script **mlocation.py**
 
 ## Scripts to check:
 evolview_motifcount
-fmcompare
-lireg
 
