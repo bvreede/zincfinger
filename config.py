@@ -4,14 +4,13 @@ import numpy as np
 from random import shuffle
 
 # path info
-mainfolder = "/home/barbara/Dropbox/zinc_finger_data/newdata"
+mainfolder = "/home/barbara/Dropbox/githubtest"
 seqfolder = "sequences"
 resfolder = "results"
 imgfolder = "images"
 dbfolder = "databases"
 evfolder = "evolview"
 orthfolder = "orthologs"
-
 
 # define motifs
 # a complete dataset
