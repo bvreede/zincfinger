@@ -3,7 +3,7 @@
 ## 0. Before you start...
 1. Set up your system. Create a main folder with the following subfolders: "sequences", "results", "images", "databases", "evolview", and "orthologs".
 2. Download your data: protein sequences from Ensembl Biomart, ensuring that the fasta headers consist of (in this order) >geneID|genename|proteinID.
-3. Download HMMer (http://hmmer.janelia.org/) and run it on your downloaded Ensembl data. If you want to run it on multiple items, you can use **mass_hmmer.py** to speed up the process; make sure that the correct list of files/species names is in there!
+3. Download HMMer (http://hmmer.janelia.org/) and the C2H2 Pfam model (http://pfam.xfam.org/family/PF00096/hmm via http://pfam.xfam.org/family/PF00096) and run HMMer on your downloaded Ensembl data. If you want to run it on multiple items, you can use **mass_hmmer.py** to speed up the process; make sure that the correct list of files/species names is in the script.
 4. Customize **config.py** to contain the path to your main folder, and a list of the species you downloaded from ensembl.
 
 ## 1. Find C2H2 motifs in fasta files
