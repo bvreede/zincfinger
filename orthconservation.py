@@ -6,14 +6,14 @@ idr = "150602-SM00355" #the identifier for all input files (motif sequences)
 #### WHAT SPECIES TO USE: CHANGE IT HERE!! ###
 #spp = config.chor
 #spp = config.arth
-#spp = config.sppall
-spp = config.spp700
+spp = config.sppall
+#spp = config.spp700
 
 ### DON'T FORGET TO CHANGE THE OUTPUT NAME ACCORDINGLY!! ###
 #outname = "chor"
-outname = "d700"
+#outname = "d700"
 #outname = "arth"
-#outname = "sppall"
+outname = "sppall"
 
 ###########################################
 
@@ -226,7 +226,7 @@ if __name__ == "__main__":
 					detcomp.append(x) # if this was ortholog combo, save their names for further processing.
 					continue
 				else:
-					detcompran.append(x) # if this was random combo, save their names for further processing.
+					detcompran.append(combo) # if this was a random combo, save their sequences
 					ranid += 1
 					continue
 			# if lengths of sequences and Z indices are the same, substitution explains the difference
@@ -240,7 +240,7 @@ if __name__ == "__main__":
 					detcomp.append(x) # if this was ortholog combo, save their names for further processing.
 					continue
 				else:
-					detcompran.append(x) # if this was ortholog combo, save their names for further processing.
+					detcompran.append(combo) # if this was a random combo, save their sequences
 					ransub += 1
 					continue
 			# remove Z and calculate levenshtein distance again
@@ -292,10 +292,8 @@ if __name__ == "__main__":
 		nseq = msequencedx[n]
 		detcompcsv.write("%s,%s,%s,%s\n" %(m,mseq,n,nseq))
 	for d in detcompran:
-		xli = list(d)
-		m,n = xli
-		mseq = msequencedx[m]
-		nseq = msequencedx[n]
-		detcomprancsv.write("%s,%s,%s,%s\n" %(m,mseq,n,nseq))
+		mseq,nseq = d
+		txt = "random_sequence"
+		detcomprancsv.write("%s,%s,%s,%s\n" %(txt,mseq,txt,nseq))
 	detcompcsv.close()
 	detcomprancsv.close()
