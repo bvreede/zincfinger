@@ -173,8 +173,8 @@ def makestackedbargraph(values1,values2,labels,name):
 	pl.xticks(ind + 0.5, labels, rotation=90)
 	#pl.yticks(np.arange(30000,60000,5000)) #only used to restrict plot values
 	#pl.ylim((30000,60000)) #only used to restrict plot values
-	pl.yticks(np.arange(0,9000,1000)) #only used to restrict plot values
-	pl.ylim((0,9000)) #only used to restrict plot values
+	#pl.yticks(np.arange(0,9000,1000)) #only used to restrict plot values
+	#pl.ylim((0,9000)) #only used to restrict plot values
 	pl.savefig("%s-%s.svg" %(bargraphfig,name))
 	pl.clf()
 	pl.close()
