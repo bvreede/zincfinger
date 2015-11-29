@@ -1,7 +1,7 @@
 # zincfinger
 
 ## 0. Before you start...
-1. Set up your system. Create a main folder with the following subfolders: "sequences", "results", "images", "databases", "evolview", and "orthologs".
+1. Set up your system. Create a main folder with the following subfolders: "sequences", "results", "images", "databases", "evolview", "compara", and "orthologs".
 2. Download your data: protein sequences from Ensembl Biomart, ensuring that the fasta headers consist of (in this order) >geneID|genename|proteinID. Name them with a four character species specification, followed by an underscore (and don't use further underscores in the filename!). _e.g. 150602-SM00355-xtro_seq.fasta_
 3. Download HMMer (http://hmmer.janelia.org/) and the C2H2 Pfam model (http://pfam.xfam.org/family/PF00096/hmm via http://pfam.xfam.org/family/PF00096) and run the binary hmmsearch on your downloaded Ensembl data. Save the result file in mainfolder/results, preferably [fileidentifier]_hmmsearch.txt. _e.g. 150602-SM00355-xtro_hmmsearch.fasta_
 4. Customize **config.py** to contain the path to your main folder, the hmm result file, and a list of the species you downloaded from ensembl.
@@ -34,7 +34,13 @@ _Output:_
 
 ## 2. Identify orthologs between species
 
-Use the script **compara2orths.py**.
+Use the script **compara2orths.py**. This script mines ensembl compara to identify orthologs between the proteins in your database. It saves the identified orthologs to per-species databases in the 'orthologs' folder.
+Before you start, ensure that for each species, only one fasta file exists in the 'sequences' folder (species are identified by a four-character specification; see 0.2).
+
+_Customize:_ 
+NB! When customizing species lists, make sure the list 'chor' in **config.py** contains all the vertebrates in your species list (i.e. those species that ensembl stores in their vertebrate database).
+The script allows download of the compara data to local files; this can be useful if you want to run the script multiple times (mining the database online can take time). In this case, under the heading 'options', set 'saving' to 1. Then, for further runs, set 'saving' and 'parseonline' to 0, and 'parselocal' to 1.
+For normal runs, it is sufficient to have 'parseonline' to 1 and 'parselocal' and 'saving' to 0.
 
 ## 3. Determine conservation between orthologs
 
