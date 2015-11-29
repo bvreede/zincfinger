@@ -1,16 +1,24 @@
 #!/bin/python
+'''
+This script uses the ensembl compara database to find orthologs among the sequences
+in the fasta files of all species specified in config.sppall. It outputs a database
+of orthologs inside the 'orthologs' folder, one database per species.
+NB! Connection to the internet is necessary for this script to run, if 'parseonline'
+or 'saving' (see Options) are set to 1!
+'''
+
 
 import urllib2, os, config, sys, re
 
 
 ### OPTIONS ###
 saving = 0 # Set to 1 if you want to save the compara data locally as a text doc.
-parseonline = 0 # Set to 1 if you want to parse ONLINE compara data
-parselocal = 1 # Set to 1 if you want to parse LOCAL compara data (as a text file)
+parseonline = 1 # Set to 1 if you want to parse ONLINE compara data
+parselocal = 0 # Set to 1 if you want to parse LOCAL compara data (as a text file)
 
 # spp lists
-spp = ['dmel','tcas','isca','dpul','smar','turt','cele','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','hrob','lgig','mlei','nvec','sman','spur','tadh','bnat','ehux','glam','gthe','lmaj','pinf','pfal','tthe','mmus','drer','ggal','hsap','mmus','xtro']
-vertebrates = ['mmus','drer','ggal','hsap','mmus','xtro']
+spp = [i for i in config.sppall if i not in config.chor]
+vertebrates = config.chor #ENSURE THIS LIST CONTAINS ALL ENSEMBL VERTEBRATE SPECIES IN YOUR DB!
 
 ctype = "pan_homology"
 seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
