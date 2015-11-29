@@ -42,6 +42,14 @@ _Customize:_
 - The script allows download of the compara data to local files; this can be useful if you want to run the script multiple times (mining the database online can take time). In this case, under the heading 'options', set 'saving' to 1. Then, for further runs, set 'saving' and 'parseonline' to 0, and 'parselocal' to 1.
 For normal runs, it is sufficient to have 'parseonline' to 1 and 'parselocal' and 'saving' to 0.
 
+_Usage:_ findmotif.py path/to/fastafile
+
+_Output:_
+- In 'orthologs':
+  - csv databases (one for each species) with all orthologs of proteins of this species found in the other species in use.
+- In 'compara' (only if option 'saving' is run):
+  - a local copy of the data in the ensemb compara api.
+
 ## 3. Determine conservation between orthologs
 
 Use the script **orthconservation.py**
