@@ -18,7 +18,7 @@ Date: 10 August 2015
 import config,csv,itertools,re,random
 from jellyfish import levenshtein_distance as jld
 
-idr = "150602-SM00355" #the identifier for all input files (motif sequences)
+
 
 #### WHAT SPECIES TO USE: CHANGE IT HERE!! ###
 #spp = config.chor
@@ -174,11 +174,11 @@ if __name__ == "__main__":
 	randommotifs = {}
 	for sp in spp:
 		# make a list with random motif elements for this species and save it in the dictionary
-		motifdb = open("%s/%s-%s_hmmallmotifs.txt" %(dbfolder,idr,sp))
+		motifdb = open("%s/%s-%s_hmmallmotifs.txt" %(dbfolder,config.idr,sp))
 		motli = [line.strip() for line in motifdb]
 		randommotifs[sp] = motli
 		# open appropriate motif sequence files and import them into a dictionary
-		msequences = open("%s/%s-%s_hmmprotstring.fa" %(seqfolder,idr,sp))
+		msequences = open("%s/%s-%s_hmmprotstring.fa" %(seqfolder,config.idr,sp))
 		tempdx = config.fastadicter(msequences) #dictionary 1: original dictionary from fasta file
 		newdx = updatedx(tempdx,sp) #dictionary 2: updated keys
 		msequencedx.update(newdx) #import dictionary 2 to the main sequencedx.
@@ -288,7 +288,7 @@ if __name__ == "__main__":
 
 # OUTPUT OF RESULTS #
 if __name__ == "__main__":
-	outcsv = open("%s/%s-%s_orthcomp.csv" %(resfolder,idr,outname), "w")
+	outcsv = open("%s/%s-%s_orthcomp.csv" %(resfolder,config.idr,outname), "w")
 	outcsv.write("Orthologs:\nidentical,%s\nsubstitution,%s\nstructure,%s\naddition,%s\nother,%s\n\n" %(orthid,orthsub,orthstruc,orthadd,orthother))
 	outcsv.write("Random:\nidentical,%s\nsubstitution,%s\nstructure,%s\naddition,%s\nother,%s\n\n" %(ranid,ransub,ranstruc,ranadd,ranother))
 	outcsv.write("Total:\northologs,%s\nrandom,%s\nnot_assessed,%s" %((orthid+orthsub+orthstruc+orthadd+orthother),(ranid+ransub+ranstruc+ranadd+ranother),notcounted))
@@ -300,8 +300,8 @@ if __name__ == "__main__":
 
 # PROCESSING DETAILED COMPARISONS TO A NEW FILE TO INPUT ELSEWHERE #
 if __name__ == "__main__":
-	detcompcsv = open("%s/%s-%s_orthcomp-detail.csv" %(resfolder,idr,outname), "w")
-	detcomprancsv = open("%s/%s-%s_orthcomp-detail-random.csv" %(resfolder,idr,outname), "w")
+	detcompcsv = open("%s/%s-%s_orthcomp-detail.csv" %(resfolder,config.idr,outname), "w")
+	detcomprancsv = open("%s/%s-%s_orthcomp-detail-random.csv" %(resfolder,config.idr,outname), "w")
 	for d in detcomp:
 		xli = list(d)
 		m,n = xli
