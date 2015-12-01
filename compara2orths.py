@@ -5,6 +5,10 @@ in the fasta files of all species specified in config.sppall. It outputs a datab
 of orthologs inside the 'orthologs' folder, one database per species.
 NB! Connection to the internet is necessary for this script to run, if 'parseonline'
 or 'saving' (see Options) are set to 1!
+
+Author: Barbara Vreede
+Contact: b.vreede@gmail.com
+Date: 10 October 2015
 '''
 
 
