@@ -11,6 +11,7 @@ imgfolder = "images"
 dbfolder = "databases"
 evfolder = "evolview"
 orthfolder = "orthologs"
+compfolder = "compara"
 
 # define motifs
 # a complete dataset
