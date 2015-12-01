@@ -1,3 +1,26 @@
+'''
+This script takes the selected motif sequences that
+resulted from 'orthconservation.py' and outputs which
+motifs replace which. Further, it looks in detail at
+the amino acid sequences of motifs
+
+ (written for zinc fingers, but
+can be any kind of motif) of ortholog pairs, and compares them. The output
+is the numbers of pairs in each of the following categories:
+(1) ortholog pairs with identical motif sequences;
+(2) those with motif substitutions (but identical structures);
+(3) those with only differences in structure;
+(4) those with only additions/deletions explaining the difference between the pair;
+(5) all others (i.e. combinations of additions/deletions, substutions and structural differences).
+For each pair, a random sequence is generated and subsequently compared
+with one of the proteins of the pair, then categorized in the same way.
+
+Author: Barbara Vreede
+Contact: b.vreede@gmail.com
+Date: 10 August 2015
+'''
+
+
 import sys,config,csv,itertools,random
 import pylab as pl
 import numpy as np
@@ -9,8 +32,6 @@ if len(sys.argv) <= 1:
 ### INPUT FILES ###
 infile = sys.argv[1]
 infilebrev = infile.split('/')[-1].split('_')[0]
-infilebrev2 = "150602-SM00355-alls"
-motifaaseq = "%s/%s/%s_hmmallmotifs.fa" %(config.mainfolder,config.dbfolder,infilebrev2)
 orthin = [line for line in csv.reader(open(infile))] #this opens the file with ortholog combinations to investigate
 
 
@@ -45,14 +66,18 @@ for m in config.motiflist:
 	n = config.translationdict[m]
 	individual[n] = 0
 
-# make dictionary of amino acid sequences
-motifsaa = open(motifaaseq)
-motifsaadict = config.fastadicter(motifsaa)
-#rewrite the dictionary to have different headers (proteinID|motifclass-number)
+# make dictionary of amino acid sequences for all species
+# and rewrite the dictionary to have different headers (proteinID|motifclass-number)
 aadict = {}
-for key in motifsaadict:
-	newhead = key.split('|')[2] + '|' + key.split('|')[3]
-	aadict[newhead] = motifsaadict[key]
+for s in config.sppall:
+	motifaaseq = "%s/%s/%s-%s_hmmallmotifs.fa" %(config.mainfolder,config.dbfolder,config.idr,s)
+	motifsaa = open(motifaaseq)
+	tempdict = {}
+	tempdict = config.fastadicter(motifsaa)
+	for key in tempdict:
+		newhead = key.split('|')[2] + '|' + key.split('|')[3]
+		aadict[newhead] = tempdict[key]
+
 
 # make dictionary of motifs as key, with all amino acid sequences in a list as value.
 # this can be used to pick a random motif later.
