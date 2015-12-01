@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from random import shuffle
 
+# identifier name
+idr = "150602-SM00355" #the identifier for all input files (motif sequences)
+
 # path info
 mainfolder = "/home/barbara/Dropbox/githubtest"
 seqfolder = "sequences"
