@@ -22,8 +22,8 @@ vertebrates = config.chor #ENSURE THIS LIST CONTAINS ALL ENSEMBL VERTEBRATE SPEC
 
 ctype = "pan_homology"
 seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
-comparafolder = "%s/compara" %config.mainfolder
-resfolder = "%s/orthologs" %(config.mainfolder)
+comparafolder = "%s/%s" %(config.mainfolder,config.compfolder)
+resfolder = "%s/%s" %(config.mainfolder,config.orthfolder)
 
 # regular expressions to search for in json results
 proteinre = re.compile('protein_id.*taxon_id')
