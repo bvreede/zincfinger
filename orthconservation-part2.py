@@ -33,7 +33,7 @@ if len(sys.argv) <= 1:
 infile = sys.argv[1]
 infilebrev = infile.split('/')[-1].split('_')[0]
 orthin = [line for line in csv.reader(open(infile))] #this opens the file with ortholog combinations to investigate
-
+# NB! there is another series of input files specified below, used to fill up 'aadict'.
 
 
 ### OUTPUT FILES ###
