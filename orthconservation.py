@@ -1,3 +1,17 @@
+'''
+This script takes the motif sequences (written for zinc fingers, but
+can be any kind of motif) of ortholog pairs, and compares them. The output
+is four numbers: (1) the number of ortholog pairs with identical motif sequences;
+(2) those with motif substitutions (but identical structures); (3) those with only
+differences in structure; (4) those with only additions/deletions explaining
+the difference between the pair; (5) all others (i.e. combinations of additions/deletions,
+substutions and structural differences).
+
+Author: Barbara Vreede
+Contact: b.vreede@gmail.com
+Date: 10 August 2015
+'''
+
 import config,csv,itertools,re,random
 from jellyfish import levenshtein_distance as jld
 
