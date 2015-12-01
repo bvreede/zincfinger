@@ -1,11 +1,14 @@
 '''
 This script takes the motif sequences (written for zinc fingers, but
 can be any kind of motif) of ortholog pairs, and compares them. The output
-is four numbers: (1) the number of ortholog pairs with identical motif sequences;
-(2) those with motif substitutions (but identical structures); (3) those with only
-differences in structure; (4) those with only additions/deletions explaining
-the difference between the pair; (5) all others (i.e. combinations of additions/deletions,
-substutions and structural differences).
+is the numbers of pairs in each of the following categories:
+(1) ortholog pairs with identical motif sequences;
+(2) those with motif substitutions (but identical structures);
+(3) those with only differences in structure;
+(4) those with only additions/deletions explaining the difference between the pair;
+(5) all others (i.e. combinations of additions/deletions, substutions and structural differences).
+For each pair, a random sequence is generated and subsequently compared
+with one of the proteins of the pair, then categorized in the same way.
 
 Author: Barbara Vreede
 Contact: b.vreede@gmail.com
