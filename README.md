@@ -2,8 +2,8 @@
 
 ## 0. Before you start...
 1. Set up your system. Create a main folder with the following subfolders: "sequences", "results", "images", "databases", "evolview", "compara", and "orthologs".
-2. Download your data: protein sequences from Ensembl Biomart, ensuring that the fasta headers consist of (in this order) >geneID|genename|proteinID. Name them with a four character species specification, followed by an underscore (and don't use further underscores in the filename!). _e.g. 150602-SM00355-xtro_seq.fasta_. Ensure the identifier (in this case _150602-SM00355_ is the same with all databases you want to use.
-3. Download HMMer (http://hmmer.janelia.org/) and the C2H2 Pfam model (http://pfam.xfam.org/family/PF00096/hmm via http://pfam.xfam.org/family/PF00096) and run the binary hmmsearch on your downloaded Ensembl data. Save the result file in mainfolder/results, preferably [fileidentifier]_hmmsearch.txt. _e.g. 150602-SM00355-xtro_hmmsearch.fasta_. 
+2. Download your data: protein sequences from Ensembl Biomart, ensuring that the fasta headers consist of (in this order) >geneID|genename|proteinID. Name them with a four character species specification, followed by an underscore (and don't use further underscores in the filename!). _e.g. 150602-SM00355-xtro_seq.fasta_. Ensure the identifier (in this case _150602-SM00355_) is the same with all databases you want to use.
+3. Download HMMer (http://hmmer.janelia.org/) and the C2H2 Pfam model (http://pfam.xfam.org/family/PF00096/hmm via http://pfam.xfam.org/family/PF00096) and run the binary hmmsearch on your downloaded Ensembl data. Save the result file in mainfolder/results, preferably [fileidentifier]_hmmsearch.txt. (e.g. 150602-SM00355-xtro_hmmsearch.fasta). 
 4. Customize **config.py** to contain the path to your main folder, the hmm result file, and a list of the species you downloaded from ensembl.
 
 ## 1. Find C2H2 motifs in fasta files
@@ -62,7 +62,7 @@ _Output:_
 - In addition to separating ortholog pairs into these categories, the script also generates a random motif sequence with each pair (the random sequence is based on one of the members of the pair, but with randomized motifs — for details, see the accompanying paper) and runs the comparison again, now separating this random pair into one of the above categories.
 
 _Customize:_
-- Specify the ***identifier*** ('idr') prior to running the script! This is the text preceding your species identification in the original database (see 0.2). For example, with input file _150602-SM00355-xtro_seq.fasta_ the 'idr' text should be _150602-SM00355_. If you don't do this, the script won't be able to locate your files.
+- Specify the **identifier** ('idr') prior to running the script! This is the text preceding your species identification in the original database (see 0.2). For example, with input file _150602-SM00355-xtro_seq.fasta_ the 'idr' text should be _150602-SM00355_. If you don't do this, the script won't be able to locate your files.
 - You can customize the species selection in this script, which will cause the script to only use ortholog pairs from the species you selected. The best way to do this is to specify your selection in **config.py** and to refer the variable 'spp' to that selection.
 - If you want to compare the results for various species combinations, the script needs to be run separately for every combination.
 - In the "options" section, you can adjust the output name as well. Don't forget to do this with each different species combination!
@@ -77,12 +77,18 @@ _Output:_
   - A .csv file with names and motif sequences of the 'identical' and 'substitution' pairs (named _[identifier]-[speciescombination]_orthcomp-detail.csv_)
   - A .csv file with names and motif sequences of the 'identical' and 'substitution' pairs of the random model (named _[identifier]-[speciescombination]_orthcomp-detail-random.csv_)
 
-Use the script **orthconservation-part2.py**
-Use the script **orthconservation-part3.py**
+### 3.2 Compare individual motifs ###
+- To do this, use the script **orthconservation-part2.py**.
+- This script uses the 'detailed' output files from the previous step to identify motifs that can be directly compared. This happens in two ways:
+  - Motifs that remain unsubstituted between orthologs, are compared amino acid by amino acid.
+  - Motifs that are substituted between orthologs are categorized to determine which motifs get substituted by which.
+
+
+### 3.3 Do something else ###
+- Use the script **orthconservation-part3.py**
 
 ## 4. Determine the order of motif types
-
-Use the script **mlocation.py**
+- Use the script **mlocation.py**
 
 ## Scripts to check:
 evolview_motifcount
