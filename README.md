@@ -34,7 +34,7 @@ _Output:_
 
 ## 2. Identify orthologs between species
 
-- Use the script **compara2orths.py**. This script mines ensembl compara (see http://ensemblgenomes.org/info/data/pan_compara) to identify orthologs between the proteins in your database. It saves the identified orthologs to per-species databases in the 'orthologs' folder.
+Use the script **compara2orths.py**. This script mines ensembl compara (see http://ensemblgenomes.org/info/data/pan_compara) to identify orthologs between the proteins in your database. It saves the identified orthologs to per-species databases in the 'orthologs' folder.
 - Before you start, ensure that for each species, only one fasta file exists in the 'sequences' folder (species are identified by a four-character specification; see 0.2).
 
 _Customize:_ 
@@ -52,7 +52,7 @@ _Output:_
 
 ## 3. Determine conservation between orthologs
 ### 3.1 Separate ortholog pairs into categories.
-- To do this, use the script **orthconservation.py**. This script requires the python package 'jellyfish' to be installed.
+To do this, use the script **orthconservation.py**. This script requires the python package 'jellyfish' to be installed.
 - The script defines five categories of ortholog pairs:
   - those with identical motif structures
   - those with substitutions only
@@ -78,10 +78,19 @@ _Output:_
   - A .csv file with names and motif sequences of the 'identical' and 'substitution' pairs of the random model (named _[identifier]-[speciescombination]_orthcomp-detail-random.csv_)
 
 ### 3.2 Compare individual motifs ###
-- To do this, use the script **orthconservation-part2.py**.
-- This script uses the 'detailed' output files from the previous step to identify motifs that can be directly compared. This happens in two ways:
-  - Motifs that remain unsubstituted between orthologs, are compared amino acid by amino acid.
+To do this, use the script **orthconservation-part2.py**.
+- This script uses the 'detailed' (both 'detail.csv' and 'detail-random.csv') output files from the previous step to identify motifs that can be directly compared. This happens in two ways:
+  - Motifs that remain unsubstituted between orthologs are compared amino acid by amino acid.
   - Motifs that are substituted between orthologs are categorized to determine which motifs get substituted by which.
+
+_Customize:_
+- In the amino acid comparison of unsubstituted motifs, it is possible to only regard ortholog pairs spanning a certain evolutionary distance. This can be specified in the 'list of species for comparison', by defining two groups of species that will only be compared between (i.e. members of group1 with members of group2) but not among (i.e. members of group1 with other members of group1) the groups.
+- 
+_Usage:_ orthconservation-part2.py path/to/inputfile (run separately for each file generated in the previous step!)
+
+_Output:_
+- In 'evolview':
+  - three heatmap source files, labeled 'ambiguous', 'orthambi', and 'substitutions', that can be used as heatmap annotations for X in evolview.
 
 
 ### 3.3 Do something else ###
