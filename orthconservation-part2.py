@@ -2,18 +2,9 @@
 This script takes the selected motif sequences that
 resulted from 'orthconservation.py' and outputs which
 motifs replace which. Further, it looks in detail at
-the amino acid sequences of motifs
-
- (written for zinc fingers, but
-can be any kind of motif) of ortholog pairs, and compares them. The output
-is the numbers of pairs in each of the following categories:
-(1) ortholog pairs with identical motif sequences;
-(2) those with motif substitutions (but identical structures);
-(3) those with only differences in structure;
-(4) those with only additions/deletions explaining the difference between the pair;
-(5) all others (i.e. combinations of additions/deletions, substutions and structural differences).
-For each pair, a random sequence is generated and subsequently compared
-with one of the proteins of the pair, then categorized in the same way.
+the amino acid sequences of motifs that have not been
+substituted between orthologs, to score conservation
+in the amino acid sequence itself.
 
 Author: Barbara Vreede
 Contact: b.vreede@gmail.com
@@ -33,8 +24,7 @@ if len(sys.argv) <= 1:
 infile = sys.argv[1]
 infilebrev = infile.split('/')[-1].split('_')[0]
 orthin = [line for line in csv.reader(open(infile))] #this opens the file with ortholog combinations to investigate
-# NB! there is another series of input files specified below, used to fill up 'aadict'.
-
+motifaali = ["%s/%s/%s-%s_hmmallmotifs.fa" %(config.mainfolder,config.dbfolder,config.idr,s) for s in config.sppall]
 
 ### OUTPUT FILES ###
 heatmaptxt = "%s/%s/%s_conservation-heatmap" %(config.mainfolder,config.evfolder,infilebrev)
@@ -42,10 +32,11 @@ bargraphtxt = "%s/%s/%s_conservation-bargraph" %(config.mainfolder,config.evfold
 seqconshm =  "%s/%s/%s_sequencehm" %(config.mainfolder,config.imgfolder,infilebrev)
 
 
-
 ### LIST OF SPECIES FOR COMPARISON ###
 group1 = config.anim
 group2 = config.plan + config.prot
+
+
 
 # make dictionaries where motif combos can be counted.
 ambiguous = {} #dictionary to count appearance of ambiguous combinations
@@ -58,7 +49,7 @@ for m in config.motiflist:
 
 # copy combination dictionaries
 orthambi = dict(ambiguous) # same as ambiguous but this one to count ambiguous combinations that are orthologous
-substitutions = dict(ambiguous) #same as ambiguous, to count substitutions between orthologs
+substitutions = dict(ambiguous) # same as ambiguous, to count substitutions between orthologs
 
 # make dictionary where motifs individually can be counted
 individual = {}
@@ -69,8 +60,7 @@ for m in config.motiflist:
 # make dictionary of amino acid sequences for all species
 # and rewrite the dictionary to have different headers (proteinID|motifclass-number)
 aadict = {}
-for s in config.sppall:
-	motifaaseq = "%s/%s/%s-%s_hmmallmotifs.fa" %(config.mainfolder,config.dbfolder,config.idr,s)
+for motifaaseq in motifaali:
 	motifsaa = open(motifaaseq)
 	tempdict = {}
 	tempdict = config.fastadicter(motifsaa)
