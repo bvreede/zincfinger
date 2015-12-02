@@ -77,7 +77,7 @@ _Output:_
   - A .csv file with names and motif sequences of the 'identical' and 'substitution' pairs (named _[identifier]-[speciescombination]_orthcomp-detail.csv_)
   - A .csv file with names and motif sequences of the 'identical' and 'substitution' pairs of the random model (named _[identifier]-[speciescombination]_orthcomp-detail-random.csv_)
 
-### 3.2 Compare individual motifs ###
+### 3.2 Compare individual motifs
 To do this, use the script **orthconservation-part2.py**.
 - This script uses the 'detailed' (both 'detail.csv' and 'detail-random.csv') output files from the previous step to identify motifs that can be directly compared. This happens in two ways:
   - Motifs that remain unsubstituted between orthologs are compared amino acid by amino acid.
@@ -90,7 +90,7 @@ _Usage:_ orthconservation-part2.py path/to/inputfile (run separately for each fi
 
 _Output:_
 - In 'evolview':
-  - three heatmap source files, labeled 'ambiguous', 'orthambi', and 'substitutions', that can be used as heatmap annotations for X in evolview.
+  - three heatmap source files, labeled 'ambiguous', 'orthambi', and 'substitutions', that can be used as heatmap annotations for a list of motifs in evolview (
 
 
 ### 3.3 Do something else ###
