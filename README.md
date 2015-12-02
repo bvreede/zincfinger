@@ -83,14 +83,15 @@ To do this, use the script **orthconservation-part2.py**.
   - Motifs that remain unsubstituted between orthologs are compared amino acid by amino acid.
   - Motifs that are substituted between orthologs are categorized to determine which motifs get substituted by which.
 
-_Customize:_
+_Customize:_ 
 - In the amino acid comparison of unsubstituted motifs, it is possible to only regard ortholog pairs spanning a certain evolutionary distance. This can be specified in the 'list of species for comparison', by defining two groups of species that will only be compared between (i.e. members of group1 with members of group2) but not among (i.e. members of group1 with other members of group1) the groups.
-- 
+
 _Usage:_ orthconservation-part2.py path/to/inputfile (run separately for each file generated in the previous step!)
 
 _Output:_
 - In 'evolview':
-  - three heatmap source files, labeled 'ambiguous', 'orthambi', and 'substitutions', that can be used as heatmap annotations for a list of motifs in evolview (
+  - a heatmap source file that can be used as heatmap annotation with the motif "tree" (generated during step 1), showing which motif types are evolutionarily substituted by which.
+  - 
 
 
 ### 3.3 Do something else ###
