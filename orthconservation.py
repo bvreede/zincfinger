@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 '''
 This script takes the motif sequences (written for zinc fingers, but
 can be any kind of motif) of ortholog pairs, and compares them. The output
