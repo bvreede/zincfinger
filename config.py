@@ -36,15 +36,16 @@ alternative = [m for m in motiflist if m not in standard]
 plink,alink = 0,0
 
 #individual groups
-chor = ['drer','ggal','hsap','mmus','xtro'] #chor
-arth = ['dmel','tcas','isca','dpul','smar','turt'] #arth
-eani = ['nvec','mlei','tadh','sman','aque'] #eani
-plan = ['atri','ppat','crei','atha','slyc','osat','smoe','cmer'] #plan
-prot = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam'] #prot
-anim = ['hrob','spur','lgig','bmal','cele','drer','ggal','hsap','mmus','xtro','dmel','tcas','isca','dpul','smar','turt','nvec','mlei','tadh','sman','aque']
+chor = ['drer','ggal','hsap','mmus','xtro'] #chordates/vertebrates
+arth = ['dmel','tcas','isca','dpul','smar','turt'] #arthropods
+eani = ['nvec','mlei','tadh','sman','aque'] #other animals
+plan = ['atri','ppat','crei','atha','slyc','osat','smoe','cmer'] #plants
+prot = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam'] #protists
+anim = ['hrob','spur','lgig','bmal','cele','drer','ggal','hsap','mmus','xtro','dmel','tcas','isca','dpul','smar','turt','nvec','mlei','tadh','sman','aque'] #all animals
 
 #all species
-sppall = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam','dmel','tcas','isca','dpul','smar','turt','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','cele','hrob','lgig','mlei','nvec','sman','spur','tadh','drer','ggal','hsap','mmus','xtro']
+sppall = ['dmel','smar']
+#sppall = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam','dmel','tcas','isca','dpul','smar','turt','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','cele','hrob','lgig','mlei','nvec','sman','spur','tadh','drer','ggal','hsap','mmus','xtro']
 
 #species with >700mya distance
 spp700 = ['xtro','spur','tcas','sman','cele','nvec','mlei','tadh','aque','atha','crei','cmer','pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam',]
