@@ -1,10 +1,10 @@
 # zincfinger
 
 ## 0. Before you start...
-1. Set up your system. Create a main folder with the following subfolders: "sequences", "results", "images", "databases", "evolview", "compara", and "orthologs".
-2. Download your data: protein sequences from Ensembl Biomart, ensuring that the fasta headers consist of (in this order) >geneID|genename|proteinID. Name them with a four character species specification, followed by an underscore (and don't use further underscores in the filename!). _e.g. 150602-SM00355-xtro_seq.fasta_. Ensure the identifier (in this case _150602-SM00355_) is the same with all databases you want to use.
-3. Download HMMer (http://hmmer.janelia.org/) and the C2H2 Pfam model (http://pfam.xfam.org/family/PF00096/hmm via http://pfam.xfam.org/family/PF00096) and run the binary hmmsearch on your downloaded Ensembl data. Save the result file in mainfolder/results, preferably [fileidentifier]_hmmsearch.txt. (e.g. 150602-SM00355-xtro_hmmsearch.fasta). 
-4. Customize **config.py** to contain the path to your main folder, the hmm result file, the identifier from step 2, and a list of the species you downloaded from ensembl.
+1. Set up your system. Create a main folder with the following subfolders: "sequences", "results", "images", "databases", "evolview", "compara", "hmm", and "orthologs".
+2. Download your data: protein sequences from Ensembl Biomart, ensuring that the fasta headers consist of (in this order) >geneID|genename|proteinID. Name them with a four character species specification, followed by an underscore (and don't use further underscores in the filename!). _e.g. 150602-SM00355-xtro_seq.fasta_. Ensure the first part of the identifier (in this case _150602-SM00355_) is the same with all databases you want to use. Save the databases in the 'sequences' folder.
+3. Download HMMer (http://hmmer.janelia.org/) and the C2H2 Pfam model (http://pfam.xfam.org/family/PF00096/hmm via http://pfam.xfam.org/family/PF00096) and run the binary hmmsearch on your downloaded Ensembl data. Save the result file in mainfolder/hmm, preferably [fileidentifier]_hmmsearch.txt. (e.g. 150602-SM00355-xtro_hmmsearch.fasta). 
+4. Customize **config.py** to contain the path to your main folder, the hmm result file, the identifier from step 2, and a list of the species you downloaded from ensembl in 'sppall'. If you downloaded vertebrates, make sure they are added to the 'chor' list.
 
 ## 1. Find C2H2 motifs in fasta files
 
@@ -34,7 +34,7 @@ _Output:_
 
 ## 2. Identify orthologs between species
 
-Use the script **compara2orths.py**. This script mines ensembl compara (see http://ensemblgenomes.org/info/data/pan_compara) to identify orthologs between the proteins in your database. It saves the identified orthologs to per-species databases in the 'orthologs' folder.
+(Only useful if in the previous step you have worked with multiple species...) Use the script **compara2orths.py**. This script mines ensembl compara (see http://ensemblgenomes.org/info/data/pan_compara) to identify orthologs between the proteins in your database. It saves the identified orthologs to per-species databases in the 'orthologs' folder.
 - Before you start, ensure that for each species, only one fasta file exists in the 'sequences' folder (species are identified by a four-character specification; see 0.2).
 
 _Customize:_ 
@@ -91,10 +91,10 @@ _Usage:_ orthconservation-part2.py path/to/inputfile (run separately for each fi
 _Output:_
 - In 'evolview':
   - a heatmap source file that can be used as heatmap annotation with the motif "tree" (generated during step 1), showing which motif types are evolutionarily substituted by which.
-  - 
+  
 
 
-### 3.3 Do something else ###
+### 3.3 Do something else
 - Use the script **orthconservation-part3.py**
 
 ## 4. Determine the order of motif types
