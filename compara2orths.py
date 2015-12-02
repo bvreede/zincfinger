@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/python
 '''
 This script uses the ensembl compara database to find orthologs among the sequences
 in the fasta files of all species specified in config.sppall. It outputs a database
@@ -21,7 +21,7 @@ parseonline = 1 # Set to 1 if you want to parse ONLINE compara data
 parselocal = 0 # Set to 1 if you want to parse LOCAL compara data (as a text file)
 
 # spp lists
-spp = [i for i in config.sppall if i not in config.chor]
+spp = config.sppall
 vertebrates = config.chor #ENSURE THIS LIST CONTAINS ALL ENSEMBL VERTEBRATE SPECIES IN YOUR DB!
 
 ctype = "pan_homology"
