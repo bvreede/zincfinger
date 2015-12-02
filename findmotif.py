@@ -25,8 +25,8 @@ if len(sys.argv) <= 1:
 
 infile = sys.argv[1]
 infilebrev = infile.split('/')[-1].split('_')[0]
-hmmfile = "%s/%s/%s_hmmsearch.txt" %(config.mainfolder,config.resfolder,infilebrev) #THIS IS THE DEFAULT! However, because of some weird issues I generated a concatenated file for all species as well. To use this one, check the following:
-#hmmfile = "%s/%s/%s_hmmsearch-concat.txt" %(config.mainfolder,config.resfolder,infilebrev)
+hmmfile = "%s/%s/%s_hmmsearch.txt" %(config.mainfolder,config.hmmfolder,infilebrev) #THIS IS THE DEFAULT! However, because of some weird issues I generated a concatenated file for all species as well. To use this one, check the following:
+#hmmfile = "%s/%s/%s_hmmsearch-concat.txt" %(config.mainfolder,config.hmmfolder,infilebrev)
 
 #NB! filenames should always start with an input ID specifier (separate elements in dashes) and end with output ID specifiers.
 #e.g.: 150525-dmel_seq.fa or 141212-tcas_heatmap.svg
