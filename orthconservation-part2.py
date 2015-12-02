@@ -3,7 +3,7 @@ This script takes the selected motif sequences that
 resulted from 'orthconservation.py' and outputs which
 motifs replace which. Further, it looks in detail at
 the amino acid sequences of motifs that have not been
-substituted between orthologs, to score conservation
+substituted between orthologs, to score substitutions
 in the amino acid sequence itself.
 
 Author: Barbara Vreede
@@ -289,7 +289,7 @@ for s in substitutions:
 		a,b = list(s)
 
 #MAKE THE HEATMAP FOR AMBIGUOUS APPEARANCE + SUBSTITUTIONS#
-doublematrix1,doublematrix2,doublematrix3,motifcounts = [],[],[],[] #for ambiguous, amb. conservation frequency, substitution, motif count bar graphs; respectively
+doublematrix3,motifcounts = [],[],[],[] #for substitution, motif count bar graphs; respectively
 for m in config.motiflist:
 	line1,line2,line3 = [],[],[]
 	sumsubs = 0
@@ -297,13 +297,6 @@ for m in config.motiflist:
 		a = config.translationdict[m]
 		b = config.translationdict[n]
 		combo = frozenset([a,b])
-		# ambiguous motifs and their conservation
-		line1.append(ambiguous[combo])
-		if ambiguous[combo] > 50:
-			freq = float(orthambi[combo])/ambiguous[combo]
-		else:
-			freq = 0
-		line2.append(freq)
 		# substitution of motifs in orthologs
 		if individual[a] > 0:
 			line3.append(substitutions[combo]/float(individual[a]))
@@ -315,12 +308,9 @@ for m in config.motiflist:
 	else:
 		totalsub = 0
 	line3.append(totalsub)
-	doublematrix2.append(line2)
 	doublematrix3.append(line3)
 	# list for individual motif counts in bar graph
 	motifcounts.append(individual[a])
-makeevolviewheatmap(doublematrix1,"ambiguous")
-makeevolviewheatmap(doublematrix2,"orthambi")
 makeevolviewheatmap(doublematrix3,"substitutions")
 
 makeevolviewbars(config.motiflist,motifcounts,"counts")
