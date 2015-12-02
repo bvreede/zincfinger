@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 '''
 This script takes the selected motif sequences that
 resulted from 'orthconservation.py' and outputs which
@@ -289,7 +291,7 @@ for s in substitutions:
 		a,b = list(s)
 
 #MAKE THE HEATMAP FOR AMBIGUOUS APPEARANCE + SUBSTITUTIONS#
-doublematrix3,motifcounts = [],[],[],[] #for substitution, motif count bar graphs; respectively
+doublematrix3,motifcounts = [],[] #for substitution, motif count bar graphs; respectively
 for m in config.motiflist:
 	line1,line2,line3 = [],[],[]
 	sumsubs = 0
