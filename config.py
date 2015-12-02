@@ -15,6 +15,7 @@ dbfolder = "databases"
 evfolder = "evolview"
 orthfolder = "orthologs"
 compfolder = "compara"
+hmmfolder = "hmm"
 
 # define motifs
 # a complete dataset
@@ -44,7 +45,7 @@ prot = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam'] #protists
 anim = ['hrob','spur','lgig','bmal','cele','drer','ggal','hsap','mmus','xtro','dmel','tcas','isca','dpul','smar','turt','nvec','mlei','tadh','sman','aque'] #all animals
 
 #all species
-sppall = ['dmel','smar']
+sppall = ['xtro','smar','turt']
 #sppall = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam','dmel','tcas','isca','dpul','smar','turt','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','cele','hrob','lgig','mlei','nvec','sman','spur','tadh','drer','ggal','hsap','mmus','xtro']
 
 #species with >700mya distance
