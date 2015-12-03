@@ -91,8 +91,9 @@ _Usage:_ orthconservation-part2.py path/to/inputfile (run separately for each fi
 _Output:_
 - In 'evolview':
   - a heatmap source file that can be used as heatmap annotation with the motif "tree" (generated during step 1), showing which motif types are evolutionarily substituted by which.
-  
-
+  - a bar graph source file that can be used as annotation with the motif "tree" (generated during step 1), which provides the absolute counts for each motif that were assessed during this part of the process (it is a subset, after all).
+- In 'images':
+  - heatmaps per motif where amino acid substitution is scored. Top row is substitution between amino acids of orthologous motifs; bottom row is comparisons between randomly paired motifs of the same kind. _(NB: if this does not appear, check that the species you used are separated into group1 and group2; these comparisons are only made with species combinations where one is part of group1 and the other of group2)_
 
 ### 3.3 Do something else
 - Use the script **orthconservation-part3.py**
