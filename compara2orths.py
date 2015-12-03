@@ -17,8 +17,8 @@ import urllib2, os, config, sys, re
 
 ### OPTIONS ###
 saving = 0 # Set to 1 if you want to save the compara data locally as a text doc.
-parseonline = 1 # Set to 1 if you want to parse ONLINE compara data
-parselocal = 0 # Set to 1 if you want to parse LOCAL compara data (as a text file)
+parseonline = 0 # Set to 1 if you want to parse ONLINE compara data
+parselocal = 1 # Set to 1 if you want to parse LOCAL compara data (as a text file)
 
 # spp lists
 spp = config.sppall
