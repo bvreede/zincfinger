@@ -1,6 +1,16 @@
-import sys,config,csv#,itertools,random
-#import pylab as pl
-#import numpy as np
+#!/usr/bin/python
+
+'''
+This script takes the selected motif sequences that
+resulted from 'orthconservation.py' and outputs how
+frequently each motif is replaced.
+
+Author: Barbara Vreede
+Contact: b.vreede@gmail.com
+Date: 10 August 2015
+'''
+
+import sys,config,csv
 
 if len(sys.argv) <= 1:
 	sys.exit("USAGE: python orthconservation-part3.py path/to/inputfile (input file is the '-detail.csv' output of orthconservation.py).")
