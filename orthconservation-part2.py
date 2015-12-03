@@ -227,7 +227,6 @@ def makeheatmap(table,name,xlab,ylab):
 
 
 for combo in orthin:
-	#print combo
 	o1 = config.re2li(combo[1])
 	o2 = config.re2li(combo[3])
 	o1dict,o2dict = {},{}
@@ -285,7 +284,6 @@ for combo in orthin:
 			m2 = f + '-' + str(o2dict[f])
 			aacomp(prot1,m1,prot2,m2)
 
-#print individual
 for s in substitutions:
 	if substitutions[s] != 0:
 		a,b = list(s)
@@ -295,8 +293,8 @@ doublematrix3,motifcounts = [],[] #for substitution, motif count bar graphs; res
 for m in config.motiflist:
 	line1,line2,line3 = [],[],[]
 	sumsubs = 0
+	a = config.translationdict[m]
 	for n in config.motiflist:
-		a = config.translationdict[m]
 		b = config.translationdict[n]
 		combo = frozenset([a,b])
 		# substitution of motifs in orthologs
