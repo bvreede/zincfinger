@@ -215,7 +215,7 @@ if __name__ == "__main__":
 	# for each ortholog combination:
 	for y,x in enumerate(orthcombos):
 		if y%100 == 0: #only when number is divisible by 100
-			print "Ortholog combination %s of %s..." %(y,len(orthcombos))
+			print "Ortholog combination %s of %s..." %(y+1,len(orthcombos))
 		# identify the ortholog combination
 		xli = list(x)
 		m,n = xli
