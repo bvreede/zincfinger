@@ -240,7 +240,7 @@ for combo in orthin:
 
 		# Determine orthology and frequency of ambiguous items
 		if e.count('{') > 0 or f.count('{') > 0: # ambiguous motif identified.
-			# turn 
+			# turn re into lists
 			eli = re_move(e)
 			fli = re_move(f)
 			# count each instance (in total)
@@ -320,7 +320,7 @@ for key in ambiguous:
 	totalambiguous += ambiguous[key]
 	totalconserved += orthambi[key]
 
-print "ambiguous: %s, of which conserved: %s (%s" %(totalambiguous,totalconserved,int(float(totalconserved)/totalambiguous*100)) + "%)"
+print "motifs as part of an overlapping set: %s, of which conserved in the orthologous site: %s (%s" %(totalambiguous,totalconserved,int(float(totalconserved)/totalambiguous*100)) + "%)"
 
 ### MAKE HEATMAP FOR MOTIF CONSERVATION ON SEQUENCE LEVEL ###
 
