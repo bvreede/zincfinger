@@ -1,3 +1,16 @@
+#!/usr/bin/python
+
+'''
+This script can be used to determine where in a connected series of motifs
+certain motifs are found (i.e.: are they found at the start, middle, or
+end of a series). The input for this needs to be the result of a findmotif.py
+run on a protein sequence.
+
+Author: Barbara Vreede
+Contact: b.vreede@gmail.com
+Date: 10 August 2015
+'''
+
 import config,sys
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,7 +27,23 @@ infilebrev = infile.split('/')[-1].split('_')[0]
 na = 1
 
 # output range
+CCdata = ['CC','C-C distance',range(1,8)] 
+CHdata = ['CH','C-H distance',range(7,18)]
+HHdata = ['HH','H-H distance',range(1,8)]
+
+
 output = range(7,18)
+
+
+
+
+
+
+
+
+
+
+
 
 lengths_of_series = []
 lengths_of_proteins = []
@@ -117,6 +146,8 @@ def middle(aa):
 
 
 
+
+
 # start the analysis!
 for protein in fadict:
 	ssplit = fadict[protein].strip().split('Z')
@@ -147,81 +178,85 @@ for r in resultdict:
 
 
 
-# now assemble the dataset:
-bardata = {}
-for n in range(18):
-	cfi,cmi,cen,total = 0,0,0,0
-	for p in percdict:
-		if p == 'total':
-			continue
-		CC,CH,HH = p.split('_')
-		if int(CH) == n:
-			c1 = percdict[p][0]
-			cm = percdict[p][1]
-			c2 = percdict[p][2]
-			ct = float(percdict[p][3])
-			cfi += c1*ct
-			cmi += cm*ct
-			cen += c2*ct
-			total += ct
-	if total == 0:
-		bardata[n] = [0,0,0,0]
-	else:
-		bardata[n] = [cfi/total,cmi/total,cen/total,total]
+def barchart_loc(aadata):
+	'''
+	Make bar charts with pairs of bars grouped for easy comparison.
+	'''
+	# now assemble the dataset:
+	bardata = {}
+	for n in range(18):
+		cfi,cmi,cen,total = 0,0,0,0
+		for p in percdict:
+			if p == 'total':
+				continue
+			CC,CH,HH = p.split('_')
+			if aadata[0] == 'CC':
+				key = CC
+			elif aadata[0] == 'CH':
+				key = CH
+			elif aadata[0] == 'HH':
+				key = HH
+			else:
+				sys.exit("Calling barchart with the wrong info.")
+			if int(key) == n:
+				c1 = percdict[p][0]
+				cm = percdict[p][1]
+				c2 = percdict[p][2]
+				ct = float(percdict[p][3])
+				cfi += c1*ct
+				cmi += cm*ct
+				cen += c2*ct
+				total += ct
+		if total == 0:
+			bardata[n] = [0,0,0,0]
+		else:
+			bardata[n] = [cfi/total,cmi/total,cen/total,total]
 
-# get data for plots:
-set1,set2,set3,totals = [],[],[],[]
-for n in output:
-	set1.append(bardata[n][0])
-	set2.append(bardata[n][1])
-	set3.append(bardata[n][2])
-	totals.append(bardata[n][3])
+	# get data for plots:
+	set1,set2,set3,totals = [],[],[],[]
+	for n in aadata[2]:
+		set1.append(bardata[n][0])
+		set2.append(bardata[n][1])
+		set3.append(bardata[n][2])
+		totals.append(bardata[n][3])
 
+	n_groups = len(set1)
+	fig, ax = plt.subplots()
+	index = np.arange(n_groups)
+	bar_width = 0.25
 
-#print resultdict
+	rects1 = plt.bar(index, set1, bar_width,alpha=0.7, color='c',label='First')
+	rects2 = plt.bar(index + bar_width+0.04, set2, bar_width,alpha=0.8, color='g',label='Middle')
+	rects3 = plt.bar(index + 2*bar_width+0.08, set3, bar_width,alpha=0.5,color='r',label='Last')
 
-"""
-Bar chart demo with pairs of bars grouped for easy comparison.
-"""
+	plt.xlabel(aadata[1])
+	plt.ylabel('Frequency')
+	plt.title('Appearance of motif in series')
+	plt.xticks(index + bar_width, (list(aadata[2])))
+	plt.legend()
 
-n_groups = len(set1)
+	plt.tight_layout()
 
-fig, ax = plt.subplots()
+	def autolabel(rects):
+	    # attach some text labels
+	    for n,rect in enumerate(rects):
+	        height = rect.get_height()
+	        ax.text(rect.get_x()+rect.get_width()/2., 1.05*height, '%d'%totals[n], ha='center', va='bottom')
 
-index = np.arange(n_groups)
-bar_width = 0.35
+	#autolabel(rects1)
+	#autolabel(rects2)
 
-rects1 = plt.bar(index, set1, bar_width,alpha=0.7, color='c',label='First')
-#rects2 = plt.bar(index + bar_width, set2, bar_width,alpha=opacity, color='g',label='Middle')
-rects3 = plt.bar(index + bar_width+0.05, set3, bar_width,alpha=0.5,color='r',label='Last')
+	name = aadata[0]
+	outtotals = open("%s/%s/%s_%stotals.csv" %(config.mainfolder,config.imgfolder,infilebrev,name), "w")
+	
+	for n,t in enumerate(totals):
+		outtotals.write("%s,%s,%s,%s,%s\n" %(aadata[2][n],t,set1[n],set2[n],set3[n]))
+	outtotals.close()
 
-plt.xlabel('C-H distance')
-plt.ylabel('Frequency')
-plt.title('Appearance of motif in series')
-plt.xticks(index + bar_width, (list(output)))
-#plt.legend()
+	plt.savefig("%s/%s/%s_%s.svg" %(config.mainfolder,config.imgfolder,infilebrev,name))
+	plt.clf()
 
-plt.tight_layout()
-
-def autolabel(rects):
-    # attach some text labels
-    for n,rect in enumerate(rects):
-        height = rect.get_height()
-        ax.text(rect.get_x()+rect.get_width()/2., 1.05*height, '%d'%totals[n],
-                ha='center', va='bottom')
-
-#autolabel(rects1)
-#autolabel(rects2)
-
-name = "CH"
-outtotals = open("%s/%s/%s_%stotals.csv" %(config.mainfolder,config.imgfolder,infilebrev,name), "w")
-print name,set1,set2,set3
-
-for n,t in enumerate(totals):
-	outtotals.write("%s,%s,%s,%s,%s\n" %(output[n],t,set1[n],set2[n],set3[n]))
-outtotals.close()
-
-plt.savefig("%s/%s/%s_%s.svg" %(config.mainfolder,config.imgfolder,infilebrev,name))
-
-#print max(lengths_of_series), max(lengths_of_proteins)
+barchart_loc(CCdata)
+barchart_loc(CHdata)
+barchart_loc(HHdata)
 
