@@ -17,10 +17,12 @@ _Customize:_
 _Usage:_ findmotif.py path/to/fastafile
 
 _Output:_
+- In 'sequences':
+  - fasta file of protein sequences translated to motif sequences ([fileidentifier]_hmmprotstring.fa).
 - In 'databases':
   - fasta files with the sequences of all motifs found ([fileidentifier]_hmmallmotifs.fa)
   - individual fasta files per motif
-  - all motifs translated to their string notation ([fileidentifier]_hmmallmotifs.txt)
+  - all motifs found translated to their string notation ([fileidentifier]_hmmallmotifs.txt), as a total collection of what was found, including ambiguous motifs.
   - a csv database of each protein and locations of detected motifs ([fileidentifier]_hmmhitsdb.csv)
 - In 'evolview':
   - a newick file with all motifs (to upload as a new "tree")
@@ -108,8 +110,11 @@ _Output:_
 - Print on terminal with that same data.
 
 ## 4. Determine the order of motif types
-- Use the script **mlocation.py**
+- Use the script **mlocation.py** to determine whether certain motifs are found in the beginning, middle or end of a connected series.
 
-## Scripts to check:
-evolview_motifcount
+_Usage:_ mlocation.py path/to/inputfile (run separately for each motif sequence — result file of findmotif.py — or, preferably, on a concatenated version of all result files).
 
+_Output:_
+- In 'images':
+  - Three .svg images with bar charts plotting the spacing between key amino acids (C-C, C-H, or H-H) to the location of motifs with these properties: either in the beginning, middle, or end of connected series.
+  - Three corresponding .csv files with the absolute counts of motifs that were used as the base of this chart (the chart shows percentages only).
