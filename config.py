@@ -1,21 +1,26 @@
-import re,math
+import re,math,datetime
 import matplotlib.pyplot as plt
 import numpy as np
 from random import shuffle
 
+
 # identifier name
-idr = "150602-SM00355" #the identifier for all input files (motif sequences)
+day = str(datetime.date.today()).replace('-','')
+idr = "%s-ZF" %day #the identifier for all input files (motif sequences)
 
 # path info
-mainfolder = "/home/barbara/Dropbox/githubtest"
+mainfolder = "/home/barbara/Dropbox/zftest"			# Adjust this with initial setup
+hmmerbin = "hmmer-3.1b2-linux-intel-x86_64/binaries"		# Location of hmmer binaries, adjust this with initial setup
+pfamc2h2 = "hmmer-3.1b2-linux-intel-x86_64/zf-C2H2.hmm"		# Location of pfam hmm model, adjust this with initial setup
+ensemblsource = "original_ensembl_dbs"				# Location of zipped ensembl data, adjust this with initial setup
 seqfolder = "sequences"
 resfolder = "results"
 imgfolder = "images"
 dbfolder = "databases"
-evfolder = "evolview"
 orthfolder = "orthologs"
 compfolder = "compara"
 hmmfolder = "hmm"
+evfolder = "evolview"
 
 # define motifs
 # a complete dataset
@@ -24,17 +29,21 @@ moCH = [7,8,9,10,11,12,13,14,15,16,17] #distances between CH
 moHH = [1,2,3,4,5,6] #distances between HH
 
 # turn this on if you want to search for all possible combinations of the above: (and don't forget to turn the custom list off!)
-#motiflist = ['%s_%s_%s' %(m,n,o) for m in moCC for n in moCH for o in moHH]
+motiflist = ['%s_%s_%s' %(m,n,o) for m in moCC for n in moCH for o in moHH]
 
 # turn this on for custom motif list
 #motiflist = ['2_7_4','2_8_3','2_9_3','2_10_5','2_11_3','2_11_4','2_12_2','2_12_3','2_12_4','2_12_5','2_12_6','2_13_3','2_13_4','2_14_3','2_14_4','2_15_4','3_8_3','4_12_3','4_12_4','4_15_3']
-motiflist = ['1_7_3', '1_12_3', '1_12_6', '2_7_4', '2_8_3', '2_9_3', '2_10_1', '2_11_3', '2_11_4', '2_12_2', '2_12_3', '2_12_4', '2_12_5', '2_12_6', '2_13_2', '2_13_3', '2_13_4', '2_14_3', '2_14_4', '2_15_4', '2_17_4', '3_8_3', '3_12_3', '3_12_4', '4_12_3', '4_12_4', '4_12_6', '4_15_3', '5_7_6', '5_14_3', '5_15_3', '5_15_4', '5_16_2', '6_12_3', '6_14_6', '6_15_3', '6_15_4', '6_15_5', '6_17_4']
+#motiflist = ['1_7_3', '1_12_3', '1_12_6', '2_7_4', '2_8_3', '2_9_3', '2_10_1', '2_11_3', '2_11_4', '2_12_2', '2_12_3', '2_12_4', '2_12_5', '2_12_6', '2_13_2', '2_13_3', '2_13_4', '2_14_3', '2_14_4', '2_15_4', '2_17_4', '3_8_3', '3_12_3', '3_12_4', '4_12_3', '4_12_4', '4_12_6', '4_15_3', '5_7_6', '5_14_3', '5_15_3', '5_15_4', '5_16_2', '6_12_3', '6_14_6', '6_15_3', '6_15_4', '6_15_5', '6_17_4']
 
 standard = ['2_12_3','2_12_4','2_12_5','4_12_3','4_12_4']
 alternative = [m for m in motiflist if m not in standard]
 
 #distances before and after each C/H
 plink,alink = 0,0
+
+
+#all species							# Adjust this with initial setup
+sppall = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam','dmel','tcas','isca','dpul','smar','turt','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','cele','hrob','lgig','mlei','nvec','sman','spur','tadh','drer','ggal','hsap','mmus','xtro']
 
 #individual groups
 chor = ['drer','ggal','hsap','mmus','xtro'] #chordates/vertebrates
@@ -43,10 +52,6 @@ eani = ['nvec','mlei','tadh','sman','aque'] #other animals
 plan = ['atri','ppat','crei','atha','slyc','osat','smoe','cmer'] #plants
 prot = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam'] #protists
 anim = ['hrob','spur','lgig','bmal','cele','drer','ggal','hsap','mmus','xtro','dmel','tcas','isca','dpul','smar','turt','nvec','mlei','tadh','sman','aque'] #all animals
-
-#all species
-sppall = ['xtro','smar','turt']
-#sppall = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam','dmel','tcas','isca','dpul','smar','turt','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','cele','hrob','lgig','mlei','nvec','sman','spur','tadh','drer','ggal','hsap','mmus','xtro']
 
 #species with >700mya distance
 spp700 = ['xtro','spur','tcas','sman','cele','nvec','mlei','tadh','aque','atha','crei','cmer','pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam',]
