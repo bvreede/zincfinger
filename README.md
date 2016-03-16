@@ -1,25 +1,28 @@
 # zincfinger
 
-## 0. Before you start...
 1. Set up your system. Create a main folder with the following subfolders: "sequences", "results", "images", "databases", "evolview", "compara", "hmm", and "orthologs".
-2. Download your data: protein sequences from Ensembl Biomart, ensuring that the fasta headers consist of (in this order) >geneID|genename|proteinID. Name them with a four character species specification, followed by an underscore (and don't use further underscores in the filename!). _e.g. 150602-SM00355-xtro_seq.fasta_. Ensure the first part of the identifier (in this case _150602-SM00355_) is the same with all databases you want to use. Save the databases in the 'sequences' folder.
-3. Download HMMer (http://hmmer.janelia.org/) and the C2H2 Pfam model (http://pfam.xfam.org/family/PF00096/hmm via http://pfam.xfam.org/family/PF00096) and run the binary hmmsearch on your downloaded Ensembl data. Save the result file in mainfolder/hmm, preferably [fileidentifier]_hmmsearch.txt. (e.g. 150602-SM00355-xtro_hmmsearch.fasta). 
-4. Customize **config.py** to contain the path to your main folder, the hmm result file, the identifier from step 2, and a list of the species you downloaded from ensembl in 'sppall'. If you downloaded vertebrates, make sure they are added to the 'chor' list.
+2. 5. and run the binary hmmsearch on your downloaded Ensembl data. Save the result file in mainfolder/hmm, preferably [fileidentifier]_hmmsearch.txt. (e.g. 150602-SM00355-xtro_hmmsearch.fasta). 
+
+
+## 0. Before you start...
+1. Download your data: protein sequences from Ensembl Biomart ([Ensembl](http://www.ensembl.org/biomart/martview/0fea912a097e984e080910d0e481bc04), [Metazoa](http://metazoa.ensembl.org/biomart/martview/41b7027ad573051d5ae6042363b08980), [Plants](http://plants.ensembl.org/biomart/martview/8e64fd02b779de836a8ad9e145548997), [Protists](http://protists.ensembl.org/biomart/martview/85097007194679c2b70acd1ceb4b668b)), ensuring that the fasta headers consist of (in this order) >geneID|genename|proteinID. Download as a zipped file, and make sure that the filename starts with a four character species specification. Optional: use the filter for SMART-domain 'SM00355' on the data prior to download.
+2. Save all data in a single folder.
+3. Download [HMMer](http://hmmer.org/) and the [C2H2 Pfam model](http://pfam.xfam.org/family/PF00096/hmm) (via [Pfam]( http://pfam.xfam.org/family/PF00096)). Save the binary and model in a second folder.
+4. Customize **config.py** to contain the path to your main folder, the folder with downloaded ensembl data, the hmm folder, and a list of the species you downloaded from ensembl in 'sppall'. If you downloaded vertebrates, make sure they are added to the 'chor' list.
 
 ## 1. Find C2H2 motifs in fasta files
-
-Use the script **findmotif.py**. This script will function on a fasta file with protein sequences, where the headers consist of 'geneID|genename|proteinID'. It uses regular expressions to identify possible distinct C2H2 variants in the protein sequence, and cross-matches them with the HMMer results to toss out false positives.
+Use the script **prepdata.py**. This script will clean up the data to contain only a single isoform per gene (the longest), then call the hmmsearch binary, and the script **findmotif.py**. This script will function on a fasta file with protein sequences, where the headers consist of 'geneID|genename|proteinID'. It uses regular expressions to identify possible distinct C2H2 variants in the protein sequence, and cross-matches them with the HMMer results to toss out false positives.
 
 _Customize:_ 
-- Add your HMMer results file to the script (called 'hmmfile'). You can opt to adjust this per species, or create a concatenated file with all HMMer results and call this from the script. The script is currently set to search for a file with the same identifier as the fasta file, and _hmmsearch.txt as suffix (see 0.3).
 - Adjust the **config.py** file to determine the motifs the script will search for (called 'motiflist').
 
-_Usage:_ findmotif.py path/to/fastafile
+_Usage:_ `findmotif.py path/to/fastafile`
 
 _Output:_
 - In 'sequences':
   - fasta file of protein sequences translated to motif sequences ([fileidentifier]_hmmprotstring.fa).
 - In 'databases':
+  - fasta file of selected proteins ([fileidentifier]_seq.fa).
   - fasta files with the sequences of all motifs found ([fileidentifier]_hmmallmotifs.fa)
   - individual fasta files per motif
   - all motifs found translated to their string notation ([fileidentifier]_hmmallmotifs.txt), as a total collection of what was found, including ambiguous motifs.
@@ -44,7 +47,7 @@ _Customize:_
 - The script allows download of the compara data to local files; this can be useful if you want to run the script multiple times (mining the database online will take time). In this case, under the heading 'options', set 'saving' to 1 (NB, 'parselocal' should always be set to 0 if you haven't run the 'saving' option yet). Then, for further runs, set 'saving' and 'parseonline' to 0, and 'parselocal' to 1.
 For normal runs, it is sufficient to have 'parseonline' to 1 and 'parselocal' and 'saving' to 0.
 
-_Usage:_ compara2orths.py
+_Usage:_ `compara2orths.py`
 
 _Output:_
 - In 'orthologs':
