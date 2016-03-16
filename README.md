@@ -6,12 +6,13 @@
 
 ## 0. Before you start...
 1. Download your data: protein sequences from Ensembl Biomart ([Ensembl](http://www.ensembl.org/biomart/martview/0fea912a097e984e080910d0e481bc04), [Metazoa](http://metazoa.ensembl.org/biomart/martview/41b7027ad573051d5ae6042363b08980), [Plants](http://plants.ensembl.org/biomart/martview/8e64fd02b779de836a8ad9e145548997), [Protists](http://protists.ensembl.org/biomart/martview/85097007194679c2b70acd1ceb4b668b)), ensuring that the fasta headers consist of (in this order) >geneID|genename|proteinID. Download as a zipped file, and make sure that the filename starts with a four character species specification. Optional: use the filter for SMART-domain 'SM00355' on the data prior to download.
-2. Save all data in a single folder.
-3. Download [HMMer](http://hmmer.org/) and the [C2H2 Pfam model](http://pfam.xfam.org/family/PF00096/hmm) (via [Pfam]( http://pfam.xfam.org/family/PF00096)). Save the binary and model in a second folder.
-4. Customize **config.py** to contain the path to your main folder, the folder with downloaded ensembl data, the hmm folder, and a list of the species you downloaded from ensembl in 'sppall'. If you downloaded vertebrates, make sure they are added to the 'chor' list.
+2. Save all data in a single folder inside a main folder.
+3. Download [HMMer](http://hmmer.org/) and the [C2H2 Pfam model](http://pfam.xfam.org/family/PF00096/hmm) (via [Pfam]( http://pfam.xfam.org/family/PF00096)). Save the binary and model in a second folder inside the main folder.
+4. Customize **config.py** to contain the path to your main folder, the folder with downloaded ensembl data, the path to the hmm binaries and pfam model, and a list of the species you downloaded from ensembl (in 'sppall'). If you downloaded data from the main Ensembl (i.e. not Metazoa, Plants, or Protists), make sure they are added to the 'chor' list.
+5. Run the script `prepdata.py` to prepare the protein sequences and runn HMMer. This script will clean up the data to contain only a single isoform per gene (the longest).
 
 ## 1. Find C2H2 motifs in fasta files
-Use the script **prepdata.py**. This script will clean up the data to contain only a single isoform per gene (the longest), then call the hmmsearch binary, and the script **findmotif.py**. This script will function on a fasta file with protein sequences, where the headers consist of 'geneID|genename|proteinID'. It uses regular expressions to identify possible distinct C2H2 variants in the protein sequence, and cross-matches them with the HMMer results to toss out false positives.
+Use the script **findmotif.py**. This script will function on a fasta file with protein sequences, where the headers consist of 'geneID|genename|proteinID'. It uses regular expressions to identify possible distinct C2H2 variants in the protein sequence, and cross-matches them with the HMMer results to toss out false positives.
 
 _Customize:_ 
 - Adjust the **config.py** file to determine the motifs the script will search for (called 'motiflist').
