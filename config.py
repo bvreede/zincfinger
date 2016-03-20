@@ -24,16 +24,16 @@ evfolder = "evolview"
 
 # define motifs
 # a complete dataset
-moCC = [1,2,3,4,5,6] #distances between CC
-moCH = [7,8,9,10,11,12,13,14,15,16,17] #distances between CH
-moHH = [1,2,3,4,5,6] #distances between HH
+moCC = range(1,7) #distances between CC
+moCH = range(7,18) #distances between CH
+moHH = range(1,7) #distances between HH
 
 # turn this on if you want to search for all possible combinations of the above: (and don't forget to turn the custom list off!)
-motiflist = ['%s_%s_%s' %(m,n,o) for m in moCC for n in moCH for o in moHH]
+#motiflist = ['%s_%s_%s' %(m,n,o) for m in moCC for n in moCH for o in moHH]
 
 # turn this on for custom motif list
-#motiflist = ['2_7_4','2_8_3','2_9_3','2_10_5','2_11_3','2_11_4','2_12_2','2_12_3','2_12_4','2_12_5','2_12_6','2_13_3','2_13_4','2_14_3','2_14_4','2_15_4','3_8_3','4_12_3','4_12_4','4_15_3']
-#motiflist = ['1_7_3', '1_12_3', '1_12_6', '2_7_4', '2_8_3', '2_9_3', '2_10_1', '2_11_3', '2_11_4', '2_12_2', '2_12_3', '2_12_4', '2_12_5', '2_12_6', '2_13_2', '2_13_3', '2_13_4', '2_14_3', '2_14_4', '2_15_4', '2_17_4', '3_8_3', '3_12_3', '3_12_4', '4_12_3', '4_12_4', '4_12_6', '4_15_3', '5_7_6', '5_14_3', '5_15_3', '5_15_4', '5_16_2', '6_12_3', '6_14_6', '6_15_3', '6_15_4', '6_15_5', '6_17_4']
+motiflist = ['1_7_3', '1_12_3', '1_12_6', '2_7_4', '2_8_3', '2_9_3', '2_10_1', '2_11_3', '2_11_4', '2_12_1', '2_12_2', '2_12_3', '2_12_4', '2_12_5', '2_12_6', '2_13_2', '2_13_3', '2_13_4', '2_14_3', '2_14_4', '2_15_4', '2_15_5', '2_17_4', '4_9_3', '4_12_3', '4_12_4', '4_12_6', '4_15_3', '5_7_6', '5_14_3', '5_15_3', '5_15_4', '5_16_2', '6_12_3', '6_14_6', '6_15_3', '6_15_4', '6_15_5', '6_17_3', '6_17_4']
+
 
 standard = ['2_12_3','2_12_4','2_12_5','4_12_3','4_12_4']
 alternative = [m for m in motiflist if m not in standard]
