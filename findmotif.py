@@ -19,9 +19,18 @@ import numpy as np
 pl.rcParams['xtick.labelsize']=8
 pl.rcParams['ytick.labelsize']=8
 
+errormsg= "USAGE: findmotif.py path/to/inputfile [screen/run]\nInput needs to be a protein fasta file.\n[screen] is an optional argument; if it is used, most outputfiles are not generated and the only purpose of the run is to count how many motifs are found.\nOutputfolders are indicated in the script; edit the script if you want to alter them."
 
 if len(sys.argv) <= 1:
-	sys.exit("USAGE: findmotif.py path/to/inputfile (input needs to be a protein fasta file).\nOutputfolders are indicated in the script; edit the script if you want to alter them.")
+	sys.exit(errormsg)
+
+try:
+	rtype = sys.argv[2]
+	if rtype != 'screen':
+		sys.exit(errormsg)
+except IndexError:
+	rtype = 'run'
+
 
 infile = sys.argv[1]
 infilebrev = infile.split('/')[-1].split('_')[0]
@@ -405,7 +414,7 @@ summary.close()
 sum_na.close()
 
 makeheatmap(doublematrix1,"singlenorm")
-makeevolviewheatmap(doublematrix1)
+#makeevolviewheatmap(doublematrix1)
 makeheatmap(doublematrix2,"doublenorm")
 
 makebargraph(mcounts,config.motiflist,"motifs")
