@@ -16,8 +16,8 @@ Date: 10 October 2014
 import re, sys,config,os.path
 import pylab as pl
 import numpy as np
-pl.rcParams['xtick.labelsize']=8
-pl.rcParams['ytick.labelsize']=8
+#pl.rcParams['xtick.labelsize']=8
+#pl.rcParams['ytick.labelsize']=8
 
 errormsg= "USAGE: findmotif.py path/to/inputfile [screen/run]\nInput needs to be a protein fasta file.\n[screen] is an optional argument; if it is used, most outputfiles are not generated and the only purpose of the run is to count how many motifs are found.\nOutputfolders are indicated in the script; edit the script if you want to alter them."
 
@@ -26,7 +26,7 @@ if len(sys.argv) <= 1:
 
 try:
 	rtype = sys.argv[2]
-	if rtype != 'screen':
+	if rtype != 'screen':	#option that only screens the total number of hits, and doesn't do any further analyses
 		sys.exit(errormsg)
 except IndexError:
 	rtype = 'run'
@@ -34,28 +34,43 @@ except IndexError:
 
 infile = sys.argv[1]
 infilebrev = infile.split('/')[-1].split('_')[0]
-hmmfile = "%s/%s/%s_hmmsearch.txt" %(config.mainfolder,config.hmmfolder,infilebrev) #THIS IS THE DEFAULT! However, because of some weird issues I generated a concatenated file for all species as well. To use this one, check the following:
-#hmmfile = "%s/%s/%s_hmmsearch-concat.txt" %(config.mainfolder,config.hmmfolder,infilebrev)
+hmmfile = "%s/%s/%s_hmmsearch.txt" %(config.mainfolder,config.hmmfolder,infilebrev)
 
 #NB! filenames should always start with an input ID specifier (separate elements in dashes) and end with output ID specifiers.
 #e.g.: 150525-dmel_seq.fa or 141212-tcas_heatmap.svg
 
 
 ### OUTPUT FILES ###
-### specify only names, and no extensions, so sub-outputfiles can be specified later ###
-# images: bar graph and heatmap
-bargraphfig = "%s/%s/%s_motifshmm-bar" %(config.mainfolder,config.imgfolder,infilebrev)
-heatmapfig = "%s/%s/%s_motifshmm-heat" %(config.mainfolder,config.imgfolder,infilebrev)
-heatmaptxt = "%s/%s/%s_motifshmm-evolview" %(config.mainfolder,config.evfolder,infilebrev)
+# images: bar graph
+bargraphfig = "%s/%s/%s_motifcount" %(config.mainfolder,config.imgfolder,infilebrev)
+
 # databases: hit results by site
-hitsdb = "%s/%s/%s_hmmhitsdb" %(config.mainfolder,config.dbfolder,infilebrev)
-motseq = "%s/%s/%s-hmmmotseq" %(config.mainfolder,config.dbfolder,infilebrev)
-allmotifs = "%s/%s/%s_hmmallmotifs" %(config.mainfolder,config.dbfolder,infilebrev) #for frequency and aa sequence of specific motifs
-resultsum = "%s/%s/hitcount_allspp" %(config.mainfolder,config.resfolder)
-resultsum_nonamb = "%s/%s/hitcount_allspp-nonambg" %(config.mainfolder,config.resfolder)
+hitsdb = "%s/%s/%s_hitsdb" %(config.mainfolder,config.dbfolder,infilebrev)
+
+motseq = "%s/%s/%s-motseq" %(config.mainfolder,config.dbfolder,infilebrev)
+allmotifs = "%s/%s/%s_allmotifs" %(config.mainfolder,config.dbfolder,infilebrev) #for frequency and aa sequence of specific motifs
+results = "%s/%s/%s_motifcount" %(config.mainfolder,config.resfolder,infilebrev)
 # fasta files: translated hits, aa sequence of hits
-transdb = "%s/%s/%s_hmmprotstring" %(config.mainfolder,config.seqfolder,infilebrev)
-statsdb = "%s/%s/%s_hmmmotifstats" %(config.mainfolder,config.resfolder,infilebrev)
+transdb = "%s/%s/%s_protstring" %(config.mainfolder,config.seqmfolder,infilebrev)
+statsdb = "%s/%s/%s_motifstats" %(config.mainfolder,config.resfolder,infilebrev)
+
+
+# Read the fasta file, open output files
+
+fastadb = open("%s" %(infile))
+hmmdb = open("%s" %hmmfile)
+
+if rtype == 'screen':
+
+else:
+	outputdb = open("%s.csv" %hitsdb, "w")
+	outfasta = open("%s.fa" %transdb, "w")
+	allmotifsfa = open("%s.fa" %allmotifs, "w")
+	allmotifstxt = open("%s.txt" %allmotifs, "w")
+	for m in config.motiflist:
+		mfile = open("%s-%s.fa" %(motseq,m), "w")
+		mfile.close()
+	outfasta = open("%s.fa" %transdb, "w")
 
 
 #Make dictionaries to count all motifs and combinations of motifs.
@@ -115,51 +130,6 @@ def translation(posmatrix,motdict,seqdict):
 	return transl
 
 
-def makeheatmap(doublematrix,name):
-	data = pl.array(doublematrix)
-	colourformap = "YlOrBr"
-	fig,ax = pl.subplots()
-	heatmap = pl.pcolor(data, cmap=colourformap)
-	cbar = pl.colorbar(heatmap)
-	
-	# put the major ticks at the middle of each cell
-	ax.set_xticks(np.arange(data.shape[1]) + 0.5, minor=False)
-	ax.set_yticks(np.arange(data.shape[0]) + 0.5, minor=False)
-	pl.axis('tight') #remove the white bar
-	ax.invert_yaxis() #make sure it starts counting from the top
-	
-	#make the labels
-	ax.set_xticklabels(config.motiflist, minor=False, rotation=90)
-	ax.set_yticklabels(config.motiflist, minor=False)
-	
-	# save the figure
-	pl.savefig("%s-%s.svg" %(heatmapfig,name), dpi = 300)
-	pl.clf()
-	pl.close()
-
-def makeevolviewheatmap(doublematrix):
-	# begin writing the newick part of the evolview-heatmap:
-	evnewick = open("%s-newick.txt" %heatmaptxt, "w")
-	evnewick.write("(")
-	# ... but already open the heatmap text file itself:
-	evhm = open("%s.txt" %heatmaptxt, "w")
-	evhm.write(" #heatmap\n !legendTitle\tFrequency of overlap\n !showLegends\t1\n !colorgradient\tfloralwhite,orange,red,purple,navy\
-\n !colorgradientMarkLabel\t0,0.2,0.4,0.6,0.8,1\n # -- heatmap column labels --\n !showHeatMapColumnLabel\t1\n !heatmapColumnLabels\t")
-	# both documents require the motiflist in sequence, with commas between them
-	motifscomma = ','.join(config.motiflist) 
-	evnewick.write("%s);" %motifscomma)
-	evnewick.close()
-	evhm.write("%s\n" %motifscomma)
-	evhm.write(" # -- heatmap --\n !heatmap\tmargin=1,colwidth=18,roundedcorner=1\n # -- show data value\n !showdataValue\tshow=0,fontsize=12,fontitalic=0,textalign=start\n\n")
-	for i,line in enumerate(doublematrix):
-		evhm.write("%s\t" %config.motiflist[i])
-		linew = ""
-		for l in line:
-			linew += str(l)
-			linew += ','
-		evhm.write("%s\n" %linew[:-1])
-	evhm.close()
-
 def makebargraph(values,labels,name):
 	'''
 	Makes a simple bar chart with values on y and labels on x.
@@ -168,7 +138,8 @@ def makebargraph(values,labels,name):
 	ind = np.arange(len(values))
 	pl.bar(ind,values,color="c")
 	pl.xticks(ind + 0.5, labels, rotation=90)
-	pl.savefig("%s-%s.svg" %(bargraphfig,name))
+	pl.show()
+	#pl.savefig("%s-%s.svg" %(bargraphfig,name))
 	pl.clf()
 	pl.close()
 
@@ -231,25 +202,12 @@ def test_hmmentry(strt,key):
 	return verify
 
 
-# Read the fasta file, open output files
-fastadb = open("%s" %(infile))
-hmmdb = open("%s" %hmmfile)
-outputdb = open("%s.csv" %hitsdb, "w")
-outfasta = open("%s.fa" %transdb, "w")
-allmotifsfa = open("%s.fa" %allmotifs, "w")
-allmotifstxt = open("%s.txt" %allmotifs, "w")
-for m in config.motiflist:
-	mfile = open("%s-%s.fa" %(motseq,m), "w")
-	mfile.close()
-outfasta = open("%s.fa" %transdb, "w")
-
-
-
 # Make the headers for the outputdb
-outputdb.write("Gene_stable_ID,Gene_name,Protein_stable_ID,Sequence_length,")
-for m in config.motiflist:
-	outputdb.write("%s," %m)
-outputdb.write("\n")
+if rtype != 'screen':
+	outputdb.write("Gene_stable_ID,Gene_name,Protein_stable_ID,Sequence_length,")
+	for m in config.motiflist:
+		outputdb.write("%s," %m)
+	outputdb.write("\n")
 
 
 fastadict = config.fastadicter(fastadb) # translate the fasta file into a dictionary
@@ -336,9 +294,11 @@ for key in fastadict:
 	transl = translation(posmatrix,motdict,seqdict)
 	if len(transl) > 0:
 		outfasta.write(">%s\n%s\n\n" %(key,transl))
-outfasta.close()
-allmotifstxt.close()
-outputdb.close()
+
+if rtype != 'screen':
+	outfasta.close()
+	allmotifstxt.close()
+	outputdb.close()
 
 
 '''
@@ -347,82 +307,40 @@ in rows: for each motif, count the times it coincides with another motif, and di
 for that motif.
 Make a heatmap with the stats.
 '''
-#open files and array
-stats = open("%s.csv" %statsdb, "w")
-#summary that counts all motifs found per file
-if os.path.isfile("%s.csv" %resultsum):
-	summary = open("%s.csv" %resultsum, "a")
+if rtype != 'screen':
+	#open statsdb collecting overlap
+	overlapstats = open("%s.csv" %statsdb, "w")
+	mcounts,mcounts_na = [],[]
 else:
-	summary = open("%s.csv" %resultsum, "w")
-	summary.write("File,")
-	motifcsv = ""
-	for m in config.motiflist:
-		motifcsv += "%s," %m
-	summary.write("%s\n" %motifcsv[:-1])
+	# open results file for this species/inputfile
+	sumout = open("%s.txt" %results, "w")
 
-#summary that counts all nonambiguous motifs found per file
-if os.path.isfile("%s.csv" %resultsum_nonamb):
-	sum_na = open("%s.csv" %resultsum_nonamb, "a")
+for m in config.motiflist:
+	if rtype == 'screen':
+		sumout.write("%s_total: %s\n" %(m,motifcount[m])) 	# for total counts in results text
+		sumout.write("%s_na: %s\n" %(m,nonambcount[m]))		# for non-ambiguous counts in results text
+	else:
+		overlapstats.write(",%s" %m)				# headers for stats on overlapping motifs
+		mcounts.append(motifcount[m])				# for total counts in bar graph
+		mcounts_na.append(nonambcount[m])			# for non-ambiguous counts in bar graph
+if rtype != 'screen':
+	overlapstats.write("\n")
+	#per motif count combinations
+	for m in config.motiflist:
+		overlapstats.write("%s" %m)
+		for n in config.motiflist:
+			overlapstats.write(",%s" %combodict[frozenset([m,n])])
+		overlapstats.write("\n")
+	#close output files
+	overlapstats.close()
 else:
-	sum_na = open("%s.csv" %resultsum_nonamb, "w")
-	sum_na.write("File,")
-	motifcsv = ""
-	for m in config.motiflist:
-		motifcsv += "%s," %m
-	sum_na.write("%s\n" %motifcsv[:-1])
-
-doublematrix1,doublematrix2,mcounts,mcounts_na = [],[],[],[]
-stats.write(",")
-summary.write("%s," %infilebrev)
-sum_na.write("%s," %infilebrev)
-
-mcountscsv,nonambcsv = "",""
-for m in config.motiflist:
-	stats.write("%s," %m)
-	# for total counts
-	mcounts.append(motifcount[m])
-	mcountscsv += "%s," %motifcount[m]
-	# for non-ambiguous counts
-	mcounts_na.append(nonambcount[m])
-	nonambcsv += "%s," %nonambcount[m]
-summary.write("%s\n" %mcountscsv[:-1])
-sum_na.write("%s\n" %nonambcsv[:-1])
-stats.write("total_combo,total\n")
-#per motif count combinations
-for m in config.motiflist:
-	stats.write("%s," %m)
-	doublelist1,doublelist2 = [],[]
-	for n in config.motiflist:
-		# for single normalized array:
-		if motifcount[m] == 0:
-			norm_combo1 = 0
-		else:
-			norm_combo1 = combodict[frozenset([m,n])]/float(motifcount[m])
-		# for double normalized array:
-		if motifcount[m] + motifcount[n] == 0:
-			norm_combo2 = 0
-		else:
-			norm_combo2 = 2*combodict[frozenset([m,n])]/float(motifcount[m] + motifcount[n])
-		stats.write("%s," %norm_combo1)
-		doublelist1.append(norm_combo1)
-		doublelist2.append(norm_combo2)
-	doublematrix1.append(doublelist1)
-	doublematrix2.append(doublelist2)
-	stats.write("%s,%s\n" %(motifdoublecount[m],motifcount[m]))
-stats.close()
-summary.close()
-sum_na.close()
-
-makeheatmap(doublematrix1,"singlenorm")
-#makeevolviewheatmap(doublematrix1)
-makeheatmap(doublematrix2,"doublenorm")
-
-makebargraph(mcounts,config.motiflist,"motifs")
-makebargraph(mcounts_na,config.motiflist,"non-ambiguous_motifs")
+	sumout.close()
 
 
 # stacked bar graph of nonambiguous + ambiguous motifs:
-#how many ambiguous:
-mcounts_am = [p-mcounts_na[n] for n,p in enumerate(mcounts)]
-makestackedbargraph(mcounts_na,mcounts_am,config.motiflist,"motifs-stacked")
+#makebargraph(mcounts,config.motiflist,"motifs")
+#makebargraph(mcounts_na,config.motiflist,"non-ambiguous_motifs")
+if rtype != 'screen':
+	mcounts_am = [p-mcounts_na[n] for n,p in enumerate(mcounts)]
+	makestackedbargraph(mcounts_na,mcounts_am,config.motiflist,"motifs-stacked")
 
