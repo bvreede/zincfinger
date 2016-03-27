@@ -83,14 +83,17 @@ def make_motif_dict(motiflist):
 		motiflength[m] = dl
 	return motiflength,motifdict
 
-motiflength,motifdict = make_motif_dict(motiflist2)
+motiflength1,motifdict1 = make_motif_dict(motiflist1)
+motiflength2,motifdict2 = make_motif_dict(motiflist2)
 
 #short alphabet
 alphabet = '''ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_+=[];\<,>.?/'''
 
 #long alphabet
 alphabet = '''~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`ABCDEFGHIJKLMNPQRSTUVWXYabcdefghijklmnopqrstuvwxy1234567890!@%^&*()_-+={}[]:;"'|\<,>.?/~`'''
-translationdict = {motif: alphabet[a] for a,motif in enumerate(motiflist2)} # dictionary of motifs and the corresponding string element
+translationdict1 = {motif: alphabet[a] for a,motif in enumerate(motiflist1)} # dictionary of motifs and the corresponding string element
+translationdict2 = {motif: alphabet[a] for a,motif in enumerate(motiflist2)} # dictionary of motifs and the corresponding string element
+
 
 translationdict_inv = {a: motif for motif,a in translationdict.items()}
 
