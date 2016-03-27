@@ -31,6 +31,12 @@ try:
 except IndexError:
 	rtype = 'run'
 
+#what kind of motiflist to use:
+if rtype == 'screen':
+	motiflist = config.motiflist1
+else:
+	motiflist = config.motiflist2
+
 
 infile = sys.argv[1]
 infilebrev = infile.split('/')[-1].split('_')[0]
@@ -60,24 +66,22 @@ statsdb = "%s/%s/%s_motifstats" %(config.mainfolder,config.resfolder,infilebrev)
 fastadb = open("%s" %(infile))
 hmmdb = open("%s" %hmmfile)
 
-if rtype == 'screen':
-
-else:
+if rtype != 'screen':
 	outputdb = open("%s.csv" %hitsdb, "w")
 	outfasta = open("%s.fa" %transdb, "w")
 	allmotifsfa = open("%s.fa" %allmotifs, "w")
 	allmotifstxt = open("%s.txt" %allmotifs, "w")
-	for m in config.motiflist:
+	for m in motiflist:
 		mfile = open("%s-%s.fa" %(motseq,m), "w")
 		mfile.close()
 	outfasta = open("%s.fa" %transdb, "w")
 
 
 #Make dictionaries to count all motifs and combinations of motifs.
-motifcount = {m: 0 for m in config.motiflist}
-motifdoublecount = {m: 0 for m in config.motiflist}
-nonambcount = {m: 0 for m in config.motiflist}
-combodict = {a: 0 for a in set([frozenset([m,n]) for m in config.motiflist for n in config.motiflist])}
+motifcount = {m: 0 for m in motiflist}
+motifdoublecount = {m: 0 for m in motiflist}
+nonambcount = {m: 0 for m in motiflist}
+combodict = {a: 0 for a in set([frozenset([m,n]) for m in motiflist for n in motiflist])}
 
 
 def translation(posmatrix,motdict,seqdict):
@@ -118,7 +122,8 @@ def translation(posmatrix,motdict,seqdict):
 			for a in allmots:
 				combodict[a] += 1
 			transl += '{' + regex[:-1] + '}'
-			allmotifstxt.write('{' + regex[:-1] + '}\n') #add the regex to the 'allmotifs' document for frequency-dependent sampling
+			if rtype != 'screen':
+				allmotifstxt.write('{' + regex[:-1] + '}\n') #add the regex to the 'allmotifs' document for frequency-dependent sampling
 			for m in mots[n]:
 				motifdoublecount[m] += 1
 				if mots[n].count(m) > 1:
@@ -126,7 +131,8 @@ def translation(posmatrix,motdict,seqdict):
 		else:
 			nonambcount[mots[n][0]] += 1 # counter only for nonambiguous motifs
 			transl += config.translationdict[mots[n][0]]
-			allmotifstxt.write("%s\n" %config.translationdict[mots[n][0]]) #add the (translated) motif to the 'allmotifs' document for frequency-dependent sampling
+			if rtype != 'screen':
+				allmotifstxt.write("%s\n" %config.translationdict[mots[n][0]]) #add the (translated) motif to the 'allmotifs' document for frequency-dependent sampling
 	return transl
 
 
@@ -205,7 +211,7 @@ def test_hmmentry(strt,key):
 # Make the headers for the outputdb
 if rtype != 'screen':
 	outputdb.write("Gene_stable_ID,Gene_name,Protein_stable_ID,Sequence_length,")
-	for m in config.motiflist:
+	for m in motiflist:
 		outputdb.write("%s," %m)
 	outputdb.write("\n")
 
@@ -230,10 +236,12 @@ for key in fastadict:
 		# check each motif individually
 	if key not in hmmdict:
 		continue
-	outputdb.write("%s,%s,%s,%s," %(ids[0],ids[1],ids[2],seqlen)) #turn the header name into gene ID/name/prot ID
+	if rtype != 'screen':
+		outputdb.write("%s,%s,%s,%s," %(ids[0],ids[1],ids[2],seqlen)) #turn the header name into gene ID/name/prot ID
 	for m in config.motifdict: #go through each motif and find all instances in the sequence. NB: m is a regular expression.
 		thisseqcount = 0 #per motif per seq, to give an index for each aminoacid sequence found
-		mfile = open("%s-%s.fa" %(motseq,m), "a")
+		if rtype != 'screen':
+			mfile = open("%s-%s.fa" %(motseq,m), "a")
 		domain = config.motifdict[m]
 		for i in domain.finditer(fastadict[key]):
 			mseq = i.group() # the sequence picked up by the RE
@@ -243,8 +251,9 @@ for key in fastadict:
 			if hmmverify == 0:
 				continue
 			motifcount[m] += 1 # count the found motif
-			mfile.write(">%s\n%s\n\n" %(key,mseq))
-			allmotifsfa.write(">%s|%s-%s\n%s\n\n" %(key,config.translationdict[m],thisseqcount,mseq))
+			if rtype != 'screen':
+				mfile.write(">%s\n%s\n\n" %(key,mseq))
+				allmotifsfa.write(">%s|%s-%s\n%s\n\n" %(key,config.translationdict[m],thisseqcount,mseq))
 			thisseqcount += 1
 			if strt in seqdict:
 				ns = seqdict[strt] + "/" + mseq
@@ -255,7 +264,8 @@ for key in fastadict:
 				seqdict[strt] = mseq
 				motdict[strt] = m
 				poslist.append(strt)
-		mfile.close()
+		if rtype != 'screen':
+			mfile.close()
 
 	# screen to filter the domains that are conflicting.
 	poslist = list(set(poslist))
@@ -276,7 +286,7 @@ for key in fastadict:
 		pos4matrix = []
 
 	# two different lists: one accurate, for visualization
-	for ml in config.motiflist: # the list of motifs as stated above (all motifs to look for)
+	for ml in motiflist: # the list of motifs as stated above (all motifs to look for)
 		outstring = ""
 		for pos in motdict:
 			posmots = motdict[pos].split('/')
@@ -287,12 +297,14 @@ for key in fastadict:
 			else:
 				if motdict[pos] == ml:
 					outstring += str(pos) + '|'
-		outputdb.write("%s," %outstring[:-1])			
-	outputdb.write("\n")
+		if rtype != 'screen':
+			outputdb.write("%s," %outstring[:-1])
+	if rtype != 'screen':
+		outputdb.write("\n")
 
 	# another for clustering
 	transl = translation(posmatrix,motdict,seqdict)
-	if len(transl) > 0:
+	if len(transl) > 0 and rtype != 'screen':
 		outfasta.write(">%s\n%s\n\n" %(key,transl))
 
 if rtype != 'screen':
@@ -315,7 +327,7 @@ else:
 	# open results file for this species/inputfile
 	sumout = open("%s.txt" %results, "w")
 
-for m in config.motiflist:
+for m in motiflist:
 	if rtype == 'screen':
 		sumout.write("%s_total: %s\n" %(m,motifcount[m])) 	# for total counts in results text
 		sumout.write("%s_na: %s\n" %(m,nonambcount[m]))		# for non-ambiguous counts in results text
@@ -326,9 +338,9 @@ for m in config.motiflist:
 if rtype != 'screen':
 	overlapstats.write("\n")
 	#per motif count combinations
-	for m in config.motiflist:
+	for m in motiflist:
 		overlapstats.write("%s" %m)
-		for n in config.motiflist:
+		for n in motiflist:
 			overlapstats.write(",%s" %combodict[frozenset([m,n])])
 		overlapstats.write("\n")
 	#close output files
@@ -338,9 +350,9 @@ else:
 
 
 # stacked bar graph of nonambiguous + ambiguous motifs:
-#makebargraph(mcounts,config.motiflist,"motifs")
-#makebargraph(mcounts_na,config.motiflist,"non-ambiguous_motifs")
+#makebargraph(mcounts,motiflist,"motifs")
+#makebargraph(mcounts_na,motiflist,"non-ambiguous_motifs")
 if rtype != 'screen':
 	mcounts_am = [p-mcounts_na[n] for n,p in enumerate(mcounts)]
-	makestackedbargraph(mcounts_na,mcounts_am,config.motiflist,"motifs-stacked")
+	makestackedbargraph(mcounts_na,mcounts_am,motiflist,"motifs-stacked")
 
