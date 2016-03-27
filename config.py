@@ -12,7 +12,7 @@ idr = "%s-ZF" %day #the identifier for all input files (motif sequences)
 mainfolder = "/home/barbara/Dropbox/zftest"			# Adjust this with initial setup
 hmmerbin = "hmmer-3.1b2-linux-intel-x86_64/binaries"		# Location of hmmer binaries, adjust this with initial setup
 pfamc2h2 = "hmmer-3.1b2-linux-intel-x86_64/zf-C2H2.hmm"		# Location of pfam hmm model, adjust this with initial setup
-ensemblsource = "original_ensembl_dbs"				# Location of zipped ensembl data, adjust this with initial setup
+ensemblsource = "oed"					# Location of zipped ensembl data, adjust this with initial setup
 seqfolder = "sequences"
 seqpfolder = "sequences/protein"
 seqmfolder = "sequences/motifs"
@@ -33,7 +33,7 @@ moHH = range(1,7) #distances between HH
 motiflist1 = ['%s_%s_%s' %(m,n,o) for m in moCC for n in moCH for o in moHH]
 
 
-# custom motif list
+# custom motif list, taken from folder_action result file
 motiflist2=[]
 semot ="%s/%s/selected_motifs.txt" %(mainfolder,resfolder)
 if os.path.isfile(semot):
