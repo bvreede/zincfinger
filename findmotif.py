@@ -31,11 +31,17 @@ try:
 except IndexError:
 	rtype = 'run'
 
-#what kind of motiflist to use:
+#what kind of motiflist/motiflength/motifdict/translationdict to use:
 if rtype == 'screen':
 	motiflist = config.motiflist1
+	motiflength = config.motiflength1
+	motifdict = config.motifdict1
+	translationdict = config.translationdict1
 else:
 	motiflist = config.motiflist2
+	motiflength = config.motiflength2
+	motifdict = config.motifdict2
+	translationdict = config.translationdict2
 
 
 infile = sys.argv[1]
@@ -110,14 +116,14 @@ def translation(posmatrix,motdict,seqdict):
 	for n,start in enumerate(starts):
 		#add a spacer if the motifs are not connected
 		if n != 0:
-			ends = [s + config.motiflength[mots[n-1][k]] for k,s in enumerate(starts[n-1])]
+			ends = [s + motiflength[mots[n-1][k]] for k,s in enumerate(starts[n-1])]
 			if min(start) - max(ends) > 9: # 9 is the cut off for domains in a loop
 				transl += 'Z'			
 		#translate the domains to either a single letter or a regex if there are more
 		if len(mots[n]) > 1:
 			regex = ''
 			for m in mots[n]:
-				regex += config.translationdict[m] + '|'
+				regex += translationdict[m] + '|'
 			allmots = set([frozenset([q,r]) for q in mots[n] for r in mots[n] if len(frozenset([q,r]))>1])
 			for a in allmots:
 				combodict[a] += 1
@@ -130,9 +136,9 @@ def translation(posmatrix,motdict,seqdict):
 					combodict[frozenset([m])] += (1./mots[n].count(m)) #divide by total count, otherwise it will count +2 or more if it passes this point twice
 		else:
 			nonambcount[mots[n][0]] += 1 # counter only for nonambiguous motifs
-			transl += config.translationdict[mots[n][0]]
+			transl += translationdict[mots[n][0]]
 			if rtype != 'screen':
-				allmotifstxt.write("%s\n" %config.translationdict[mots[n][0]]) #add the (translated) motif to the 'allmotifs' document for frequency-dependent sampling
+				allmotifstxt.write("%s\n" %translationdict[mots[n][0]]) #add the (translated) motif to the 'allmotifs' document for frequency-dependent sampling
 	return transl
 
 
@@ -238,11 +244,11 @@ for key in fastadict:
 		continue
 	if rtype != 'screen':
 		outputdb.write("%s,%s,%s,%s," %(ids[0],ids[1],ids[2],seqlen)) #turn the header name into gene ID/name/prot ID
-	for m in config.motifdict: #go through each motif and find all instances in the sequence. NB: m is a regular expression.
+	for m in motifdict: #go through each motif and find all instances in the sequence. NB: m is a regular expression.
 		thisseqcount = 0 #per motif per seq, to give an index for each aminoacid sequence found
 		if rtype != 'screen':
 			mfile = open("%s-%s.fa" %(motseq,m), "a")
-		domain = config.motifdict[m]
+		domain = motifdict[m]
 		for i in domain.finditer(fastadict[key]):
 			mseq = i.group() # the sequence picked up by the RE
 			strt = i.start() + config.plink
@@ -253,7 +259,7 @@ for key in fastadict:
 			motifcount[m] += 1 # count the found motif
 			if rtype != 'screen':
 				mfile.write(">%s\n%s\n\n" %(key,mseq))
-				allmotifsfa.write(">%s|%s-%s\n%s\n\n" %(key,config.translationdict[m],thisseqcount,mseq))
+				allmotifsfa.write(">%s|%s-%s\n%s\n\n" %(key,translationdict[m],thisseqcount,mseq))
 			thisseqcount += 1
 			if strt in seqdict:
 				ns = seqdict[strt] + "/" + mseq
