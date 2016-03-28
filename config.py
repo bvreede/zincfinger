@@ -95,7 +95,8 @@ translationdict1 = {motif: alphabet[a] for a,motif in enumerate(motiflist1)} # d
 translationdict2 = {motif: alphabet[a] for a,motif in enumerate(motiflist2)} # dictionary of motifs and the corresponding string element
 
 
-translationdict_inv = {a: motif for motif,a in translationdict.items()}
+translationdict_inv1 = {a: motif for motif,a in translationdict1.items()}
+translationdict_inv2 = {a: motif for motif,a in translationdict2.items()}
 
 
 def fastadicter(fastadb):
