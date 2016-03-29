@@ -25,7 +25,7 @@ spp = config.sppall
 vertebrates = config.chor #ENSURE THIS LIST CONTAINS ALL ENSEMBL VERTEBRATE SPECIES IN YOUR DB!
 
 ctype = "pan_homology"
-seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
+seqfolder = "%s/%s" %(config.mainfolder,config.seqpfolder)
 comparafolder = "%s/%s" %(config.mainfolder,config.compfolder)
 resfolder = "%s/%s" %(config.mainfolder,config.orthfolder)
 
@@ -80,9 +80,13 @@ def comparahtml(gene,sp):
 		url = "http://rest.ensembl.org/homology/id/%s?compara=%s&content-type=application/json" %(gene,ctype) #vertebrate url
 	else:
 		url = "http://rest.ensemblgenomes.org/homology/id/%s?compara=%s&content-type=application/json" %(gene,ctype) #metazoa, plants, protists url
-	response = urllib2.urlopen(url)
-	html = response.read()
-	return html
+	try:
+		response = urllib2.urlopen(url)
+		html = response.read()
+		return html
+	except urllib2.URLError:
+		print "Error: could not reach", url
+		return ""
 
 def savecompara(html,sp,gene):
 	'''
