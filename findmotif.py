@@ -16,8 +16,11 @@ Date: 10 October 2014
 import re, sys,config,os.path
 import pylab as pl
 import numpy as np
-#pl.rcParams['xtick.labelsize']=8
-#pl.rcParams['ytick.labelsize']=8
+import seaborn as sns
+pl.rcParams['xtick.labelsize']=8
+pl.rcParams['ytick.labelsize']=8
+
+
 
 errormsg= "USAGE: findmotif.py path/to/inputfile [screen/run]\nInput needs to be a protein fasta file.\n[screen] is an optional argument; if it is used, most outputfiles are not generated and the only purpose of the run is to count how many motifs are found.\nOutputfolders are indicated in the script; edit the script if you want to alter them."
 
@@ -44,6 +47,11 @@ else:
 	translationdict = config.translationdict2
 
 
+#set figure aesthetics
+sns.set_style("white")
+sns.set_context("poster")
+
+
 infile = sys.argv[1]
 infilebrev = infile.split('/')[-1].split('_')[0]
 hmmfile = "%s/%s/%s_hmmsearch.txt" %(config.mainfolder,config.hmmfolder,infilebrev)
@@ -53,8 +61,9 @@ hmmfile = "%s/%s/%s_hmmsearch.txt" %(config.mainfolder,config.hmmfolder,infilebr
 
 
 ### OUTPUT FILES ###
-# images: bar graph
+# images: bar graph and heatmap
 bargraphfig = "%s/%s/%s_motifcount" %(config.mainfolder,config.imgfolder,infilebrev)
+heatmapfig = "%s/%s/%s_motifoverlap" %(config.mainfolder,config.imgfolder,infilebrev)
 
 # databases: hit results by site
 hitsdb = "%s/%s/%s_hitsdb" %(config.mainfolder,config.dbfolder,infilebrev)
@@ -142,19 +151,6 @@ def translation(posmatrix,motdict,seqdict):
 	return transl
 
 
-def makebargraph(values,labels,name):
-	'''
-	Makes a simple bar chart with values on y and labels on x.
-	'''
-	fig = pl.figure()
-	ind = np.arange(len(values))
-	pl.bar(ind,values,color="c")
-	pl.xticks(ind + 0.5, labels, rotation=90)
-	pl.show()
-	#pl.savefig("%s-%s.svg" %(bargraphfig,name))
-	pl.clf()
-	pl.close()
-
 def makestackedbargraph(values1,values2,labels,name):
 	'''
 	Makes a stacked bar chart with two sets of values on y and labels on x.
@@ -166,9 +162,18 @@ def makestackedbargraph(values1,values2,labels,name):
 	pl.xticks(ind + 0.5, labels, rotation=90)
 	#pl.yticks(np.arange(30000,60000,5000)) #only used to restrict plot values
 	#pl.ylim((30000,60000)) #only used to restrict plot values
-	#pl.yticks(np.arange(0,9000,1000)) #only used to restrict plot values
-	#pl.ylim((0,9000)) #only used to restrict plot values
+	pl.yticks(np.arange(0,7000,1000)) #only used to restrict plot values
+	pl.ylim((0,7000)) #only used to restrict plot values
 	pl.savefig("%s-%s.svg" %(bargraphfig,name))
+	pl.clf()
+	pl.close()
+
+def makeheatmap(matrix,labelsx,labelsy,name):
+	'''
+	Makes a heatmap of a matrix, using Seaborn.
+	'''
+	sns.heatmap(matrix, xticklabels=labelsx,yticklabels=labelsy,linewidths=.5)#,cmap="YlOrBr")
+	pl.savefig("%s-%s.svg" %(heatmapfig,name))
 	pl.clf()
 	pl.close()
 
@@ -344,15 +349,26 @@ for m in motiflist:
 if rtype != 'screen':
 	overlapstats.write("\n")
 	#per motif count combinations
+	doublematrix = []
 	for m in motiflist:
 		overlapstats.write("%s" %m)
+		doublelist = [] #rows for heatmap matrix
 		for n in motiflist:
 			overlapstats.write(",%s" %combodict[frozenset([m,n])])
+			if motifcount[m] == 0:
+				norm_combo = 0.0 #prevent dividing by 0
+			else:
+				norm_combo = combodict[frozenset([m,n])]/float(motifcount[m])
+			doublelist.append(norm_combo)
 		overlapstats.write("\n")
+		doublematrix.append(doublelist)
 	#close output files
 	overlapstats.close()
 else:
 	sumout.close()
+
+
+
 
 
 # stacked bar graph of nonambiguous + ambiguous motifs:
@@ -360,5 +376,6 @@ else:
 #makebargraph(mcounts_na,motiflist,"non-ambiguous_motifs")
 if rtype != 'screen':
 	mcounts_am = [p-mcounts_na[n] for n,p in enumerate(mcounts)]
+	makeheatmap(doublematrix,motiflist,motiflist,"singlenorm")
 	makestackedbargraph(mcounts_na,mcounts_am,motiflist,"motifs-stacked")
 
