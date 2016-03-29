@@ -12,7 +12,7 @@ idr = "%s-ZF" %day #the identifier for all input files (motif sequences)
 mainfolder = "/home/barbara/Dropbox/zftest"			# Adjust this with initial setup
 hmmerbin = "hmmer-3.1b2-linux-intel-x86_64/binaries"		# Location of hmmer binaries, adjust this with initial setup
 pfamc2h2 = "hmmer-3.1b2-linux-intel-x86_64/zf-C2H2.hmm"		# Location of pfam hmm model, adjust this with initial setup
-ensemblsource = "oed"					# Location of zipped ensembl data, adjust this with initial setup
+ensemblsource = "original_ensembl_dbs"				# Location of zipped ensembl data, adjust this with initial setup
 seqfolder = "sequences"
 seqpfolder = "sequences/protein"
 seqmfolder = "sequences/motifs"
@@ -45,7 +45,7 @@ if os.path.isfile(semot):
 #motiflist2 = ['1_7_3', '1_12_3', '1_12_6', '2_7_4', '2_8_3', '2_9_3', '2_10_1', '2_11_3', '2_11_4', '2_12_1', '2_12_2', '2_12_3', '2_12_4', '2_12_5', '2_12_6', '2_13_2', '2_13_3', '2_13_4', '2_14_3', '2_14_4', '2_15_4', '2_15_5', '2_17_4', '4_9_3', '4_12_3', '4_12_4', '4_12_6', '4_15_3', '5_7_6', '5_14_3', '5_15_3', '5_15_4', '5_16_2', '6_12_3', '6_14_6', '6_15_3', '6_15_4', '6_15_5', '6_17_3', '6_17_4']
 
 
-standard = ['2_12_3','2_12_4','2_12_5','4_12_3','4_12_4']
+standard = ['2_12_3','2_12_4','2_12_5','4_12_3','4_12_4','4_12_5']
 alternative = [m for m in motiflist2 if m not in standard]
 
 #distances before and after each C/H
@@ -53,7 +53,10 @@ plink,alink = 0,0
 
 
 #all species							# Adjust this with initial setup
-sppall = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam','dmel','tcas','isca','dpul','smar','turt','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','cele','hrob','lgig','mlei','nvec','sman','spur','tadh','drer','ggal','hsap','mmus','xtro']
+#sppall = ['pfal','bnat','tthe','gthe','lmaj','ehux','pinf','glam','dmel','tcas','isca','dpul','smar','turt','atri','atha','crei','cmer','osat','ppat','smoe','slyc','aque','bmal','cele','hrob','lgig','mlei','nvec','sman','spur','tadh','drer','ggal','hsap','mmus','xtro']
+sppall=['tthe', 'pfal', 'pinf', 'gthe', 'ehux', 'bnat', 'glam', 'lmaj', 'cmer', 'crei', 'ppat', 'smoe', 'atri', 'osat', 'atha','slyc', 'mlei', 'aque', 'tadh', 'nvec', 'spur', 'drer', 'xtro', 'ggal', 'mmus', 'hsap', 'sman', 'lgig', 'hrob', 'bmal', 'cele', 'isca','turt', 'smar', 'tcas', 'dmel', 'dpul']
+
+
 
 #individual groups
 chor = ['drer','ggal','hsap','mmus','xtro'] #chordates/vertebrates
