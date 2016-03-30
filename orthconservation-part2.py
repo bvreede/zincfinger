@@ -22,15 +22,21 @@ if len(sys.argv) <= 1:
 	sys.exit("USAGE: python orthconservation-part2.py path/to/inputfile (input file is the '-detailed.csv' output of orthconservation.py).\nOutputfolders are indicated in the script; edit the script if you want to alter them.")
 
 
+## Run the script on all -detailed inputfiles in the resultfolder, and choose the appropriate random input as well
+## make stacked bargraphs, splitting the alternative and standard motifs
+## give random-model a different colour if possible
+
+
+
 ### INPUT FILES ###
 infile = sys.argv[1]
 infilebrev = infile.split('/')[-1].split('_')[0]
 orthin = [line for line in csv.reader(open(infile))] #this opens the file with ortholog combinations to investigate
-motifaali = ["%s/%s/%s-%s_hmmallmotifs.fa" %(config.mainfolder,config.dbfolder,config.idr,s) for s in config.sppall]
+motifaaseq = "%s/%s/%s-alli_allmotifs.fa" %(config.mainfolder,config.dbfolder,config.idr)
 
 ### OUTPUT FILES ###
-heatmaptxt = "%s/%s/%s_conservation-heatmap" %(config.mainfolder,config.evfolder,infilebrev)
-bargraphtxt = "%s/%s/%s_conservation-bargraph" %(config.mainfolder,config.evfolder,infilebrev)
+#heatmaptxt = "%s/%s/%s_conservation-heatmap" %(config.mainfolder,config.evfolder,infilebrev)
+#bargraphtxt = "%s/%s/%s_conservation-bargraph" %(config.mainfolder,config.evfolder,infilebrev)
 seqconshm =  "%s/%s/%s_sequencehm" %(config.mainfolder,config.imgfolder,infilebrev)
 
 
@@ -42,10 +48,10 @@ group2 = config.plan + config.prot
 
 # make dictionaries where motif combos can be counted.
 ambiguous = {} #dictionary to count appearance of ambiguous combinations
-for m in config.motiflist:
-	m_ = config.translationdict[m]
-	for n in config.motiflist:
-		n_ = config.translationdict[n]
+for m in config.motiflist2:
+	m_ = config.translationdict2[m]
+	for n in config.motiflist2:
+		n_ = config.translationdict2[n]
 		mn = frozenset([m_,n_])
 		ambiguous[mn] = 0
 
@@ -55,25 +61,23 @@ substitutions = dict(ambiguous) # same as ambiguous, to count substitutions betw
 
 # make dictionary where motifs individually can be counted
 individual = {}
-for m in config.motiflist:
-	n = config.translationdict[m]
+for m in config.motiflist2:
+	n = config.translationdict2[m]
 	individual[n] = 0
 
 # make dictionary of amino acid sequences for all species
 # and rewrite the dictionary to have different headers (proteinID|motifclass-number)
 aadict = {}
-for motifaaseq in motifaali:
-	motifsaa = open(motifaaseq)
-	tempdict = {}
-	tempdict = config.fastadicter(motifsaa)
-	for key in tempdict:
-		newhead = key.split('|')[2] + '|' + key.split('|')[3]
-		aadict[newhead] = tempdict[key]
+motifsaa = open(motifaaseq)
+tempdict = config.fastadicter(motifsaa)
+for key in tempdict:
+	newhead = key.split('|')[2] + '|' + key.split('|')[3]
+	aadict[newhead] = tempdict[key]
 
 
 # make dictionary of motifs as key, with all amino acid sequences in a list as value.
 # this can be used to pick a random motif later.
-motrandomdx = {config.translationdict[m]: [] for m in config.motiflist}
+motrandomdx = {config.translationdict2[m]: [] for m in config.motiflist2}
 for key in aadict:
 	motif = key.split('|')[1][0] #the letter indicating motif type
 	sequence = aadict[key]
@@ -81,8 +85,8 @@ for key in aadict:
 
 # make dictionary for conservation measurements of amino acid sequences
 conservation,conserv_rand = {},{} #dictionary where lists of conservation per side are stored per motif, and same for random comparisons
-for m in config.motiflist:
-	mlen = config.motiflength[m] + config.plink + config.alink + 1
+for m in config.motiflist2:
+	mlen = config.motiflength2[m] + config.plink + config.alink + 1
 	mli = [0 for n in range(mlen)] #a 0 for each site, and finally a 0 that will count how many times this motif was found conserved
 	conservation[m] = list(mli)
 	conserv_rand[m] = list(mli)
@@ -108,11 +112,11 @@ def makeevolviewheatmap(doublematrix,name):
 	evhm.write(" #heatmap\n !legendTitle\tFrequency of overlap\n !showLegends\t1\n !colorgradient\tfloralwhite,orange,red,purple,navy\
 \n !colorgradientMarkLabel\t0,0.2,0.4,0.6,0.8,1\n # -- heatmap column labels --\n !showHeatMapColumnLabel\t1\n !heatmapColumnLabels\t")
 	# heatmap requires motiflist in sequence, with commas between them
-	motifscomma = ','.join(config.motiflist) 
+	motifscomma = ','.join(config.motiflist2) 
 	evhm.write("%s\n" %motifscomma)
 	evhm.write(" # -- heatmap --\n !heatmap\tmargin=1,colwidth=18,roundedcorner=1\n # -- show data value\n !showdataValue\tshow=0,fontsize=12,fontitalic=0,textalign=start\n\n")
 	for i,line in enumerate(doublematrix):
-		evhm.write("%s\t" %config.motiflist[i])
+		evhm.write("%s\t" %config.motiflist2[i])
 		linew = ""
 		for l in line:
 			linew += str(l)
@@ -164,7 +168,7 @@ def aacomp(gene1,m1,gene2,m2):
 	s2 = aadict[g2]
 
 	#motif name, and get the global dictionary for motif lists
-	motname = config.translationdict_inv[m]
+	motname = config.translationdict_inv2[m]
 	global conservation
 	global conserv_rand
 	
@@ -290,12 +294,12 @@ for s in substitutions:
 
 #MAKE THE HEATMAP FOR AMBIGUOUS APPEARANCE + SUBSTITUTIONS#
 doublematrix3,motifcounts = [],[] #for substitution, motif count bar graphs; respectively
-for m in config.motiflist:
+for m in config.motiflist2:
 	line1,line2,line3 = [],[],[]
 	sumsubs = 0
-	a = config.translationdict[m]
-	for n in config.motiflist:
-		b = config.translationdict[n]
+	a = config.translationdict2[m]
+	for n in config.motiflist2:
+		b = config.translationdict2[n]
 		combo = frozenset([a,b])
 		# substitution of motifs in orthologs
 		if individual[a] > 0:
@@ -311,9 +315,9 @@ for m in config.motiflist:
 	doublematrix3.append(line3)
 	# list for individual motif counts in bar graph
 	motifcounts.append(individual[a])
-makeevolviewheatmap(doublematrix3,"substitutions")
+#makeevolviewheatmap(doublematrix3,"substitutions")
 
-makeevolviewbars(config.motiflist,motifcounts,"counts")
+#makeevolviewbars(config.motiflist,motifcounts,"counts")
 
 totalambiguous,totalconserved = 0,0
 for key in ambiguous:
@@ -325,7 +329,7 @@ print "motifs as part of an overlapping set: %s, of which conserved in the ortho
 ### MAKE HEATMAP FOR MOTIF CONSERVATION ON SEQUENCE LEVEL ###
 
 countdx = {} #add a dictionary that keeps the counter separate
-for m in config.motiflist:
+for m in config.motiflist2:
 	consli = list(conservation[m])
 	consli_r = list(conserv_rand[m])
 	counter = consli[-1]
