@@ -68,12 +68,11 @@ _Output:_
 - In addition to separating ortholog pairs into these categories, the script also generates a random motif sequence with each pair (the random sequence is based on one of the members of the pair, but with randomized motifs — for details, see the accompanying paper) and runs the comparison again, now separating this random pair into one of the above categories.
 
 _Customize:_
-- Specify the **identifier** ('idr') prior to running the script! This is the text preceding your species identification in the original database (see 0.2). For example, with input file _150602-SM00355-xtro_seq.fasta_ the 'idr' text should be _150602-SM00355_. If you don't do this, the script won't be able to locate your files.
 - You can customize the species selection in this script, which will cause the script to only use ortholog pairs from the species you selected. The best way to do this is to specify your selection in **config.py** and to refer the variable 'spp' to that selection.
 - If you want to compare the results for various species combinations, the script needs to be run separately for every combination.
 - In the "options" section, you can adjust the output name as well. Don't forget to do this with each different species combination!
 
-_Usage:_ orthconservation.py
+_Usage:_ `orthconservation.py`
 
 _Output:_
 - The results will be printed in the terminal, as well as saved in an output file.
@@ -82,6 +81,8 @@ _Output:_
   - A .csv file with the results as printed in the terminal (named _[identifier]-[speciescombination]_orthcomp.csv_)
   - A .csv file with names and motif sequences of the 'identical' and 'substitution' pairs (named _[identifier]-[speciescombination]_orthcomp-detail.csv_)
   - A .csv file with names and motif sequences of the 'identical' and 'substitution' pairs of the random model (named _[identifier]-[speciescombination]_orthcomp-detail-random.csv_)
+- In the folder 'images':
+  - Two .png files of piecharts, one for the ortholog data and one for the random model. 
 
 ### 3.2 Compare individual motifs
 - To do this, use the script **orthconservation-part2.py**.
