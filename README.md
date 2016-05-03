@@ -57,6 +57,8 @@ _Output:_
   - a local copy of the data in the ensemb compara api.
 
 ## 3. Determine conservation between orthologs
+NB: all the following scripts can be run as a unit with `orthconservation-all.py`.
+
 ### 3.1 Separate ortholog pairs into categories.
 - To do this, use the script **orthconservation.py**. This script requires the python package 'jellyfish' to be installed.
 - The script defines five categories of ortholog pairs:
