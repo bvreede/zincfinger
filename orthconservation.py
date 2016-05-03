@@ -19,42 +19,44 @@ Date: 10 August 2015
 
 import config,csv,itertools,re,random,os
 from jellyfish import levenshtein_distance as jld
-
+import pylab as pl
+from matplotlib import cm
+from numpy import arange
 
 
 #### WHAT SPECIES TO USE: CHANGE IT HERE!! ###
 #spp = config.chor
-#spp = config.arth
-spp = config.sppall
+spp = config.arth
+#spp = config.sppall
 #spp = config.spp700
 
 ### DON'T FORGET TO CHANGE THE OUTPUT NAME ACCORDINGLY!! ###
 #outname = "chor"
 #outname = "d700"
-#outname = "arth"
-outname = "sppall"
+outname = "arth"
+#outname = "sppall"
 
 ###########################################
 
 
 orthfolder = "%s/%s" %(config.mainfolder,config.orthfolder)
-seqfolder = "%s/%s" %(config.mainfolder,config.seqfolder)
+seqmfolder = "%s/%s" %(config.mainfolder,config.seqmfolder)
+seqpfolder = "%s/%s" %(config.mainfolder,config.seqpfolder)
 dbfolder = "%s/%s" %(config.mainfolder,config.dbfolder)
 resfolder = "%s/%s" %(config.mainfolder,config.resfolder)
 
-#determine the file identifier
-idrli = []
-for f in os.listdir(dbfolder):
-	if "allmotifs.txt" in f:
-		idroption = f.split('_')[0]
-		idrli.append(idroption)
-if len(idrli) == 1:
-	idr = idrli[0]
-else:
-	idr = raw_input("The following file specifiers are available for analysis: %s. Please type the specifier you want to use." %str(idrli))
-	while idr not in idrli:
-		idr = raw_input("Please type the complete specifier as indicated in this list: %s." %str(idrli))
-		
+idr = config.idr
+
+#if necessary: run findmotif.py with the orthology option on all input species fasta files
+for sp in spp:
+	if os.path.exists("%s/%s-%s_allmotifs.txt" %(dbfolder,idr,sp)):
+		continue
+	else:
+		for f in os.listdir("%s/%s" %(config.mainfolder,config.seqpfolder)):
+			print "running 'findmotif' on", f
+			os.system("findmotif.py %s/%s orthinfo" %(seqpfolder,f))
+		break
+
 
 def updatedx(tempdx,sp):
 	'''
@@ -181,6 +183,20 @@ def zindex(li,z):
 	return zi
 
 
+def piechart(data,labels,name):
+	'''
+	makes a piechart with the data
+	'''
+	#define the color scheme
+	cs=cm.RdBu(arange(4)/3.)
+	cs = [cs[0],cs[1],cs[3],cs[2]]
+	#make the pie
+	pl.figure(1,figsize=(10,9.8))
+	pl.pie(data,startangle=90, colors=cs)
+	#make the legend
+	pl.legend(labels,loc=(-0.05,0.9))
+	pl.savefig("%s/%s/%s-conservationpie-%s.png" %(config.mainfolder,config.imgfolder,idr,name))
+
 
 # GET INPUT AND GENERATE (1) list of orth combinations and (2) motif sequence dictionary
 if __name__ == "__main__":
@@ -193,7 +209,7 @@ if __name__ == "__main__":
 		motli = [line.strip() for line in motifdb]
 		randommotifs[sp] = motli
 		# open appropriate motif sequence files and import them into a dictionary
-		msequences = open("%s/%s-%s_hmmprotstring.fa" %(seqfolder,idr,sp))
+		msequences = open("%s/%s-%s_protstring.fa" %(seqmfolder,idr,sp))
 		tempdx = config.fastadicter(msequences) #dictionary 1: original dictionary from fasta file
 		newdx = updatedx(tempdx,sp) #dictionary 2: updated keys
 		msequencedx.update(newdx) #import dictionary 2 to the main sequencedx.
@@ -312,6 +328,11 @@ if __name__ == "__main__":
 	print "ORTHOLOGS:\n-identical %s\n-substitution %s\n-structure %s\n-addition %s\n-other %s\n" %(orthid,orthsub,orthstruc,orthadd,orthother)
 	print "RANDOM:\n-identical %s\n-substitution %s\n-structure %s\n-addition %s\n-other %s\n" %(ranid,ransub,ranstruc,ranadd,ranother)
 	print "TOTAL: %s/%s (%s not counted)" %((orthid+orthsub+orthstruc+orthadd+orthother),(ranid+ransub+ranstruc+ranadd+ranother),notcounted)
+	labels = ["identical","substitution",'addition','addition+substitution']
+	data4pie = [orthid,orthsub,orthadd,orthother+orthstruc]
+	data4pie_ran = [ranid,ransub,ranadd,ranother+ranstruc]
+	piechart(data4pie,labels,outname+"-orth")
+	piechart(data4pie_ran,labels,outname+"-ran")
 
 # PROCESSING DETAILED COMPARISONS TO A NEW FILE TO INPUT ELSEWHERE #
 if __name__ == "__main__":
