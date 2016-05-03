@@ -17,26 +17,30 @@ Contact: b.vreede@gmail.com
 Date: 10 August 2015
 '''
 
-import config,csv,itertools,re,random,os
+import config,csv,itertools,re,random,os,sys
 from jellyfish import levenshtein_distance as jld
 import pylab as pl
 from matplotlib import cm
 from numpy import arange
 
+choosablespp = ['sppall','d700','arth']
 
-#### WHAT SPECIES TO USE: CHANGE IT HERE!! ###
-#spp = config.chor
-spp = config.arth
-#spp = config.sppall
-#spp = config.spp700
+#define the species groups that the comparison will use.
+if len(sys.argv) <= 1:
+	sppchoice = "sppall"
+elif sys.argv[1] in choosablespp:
+	sppchoice = sys.argv[1]
+else:
+	sys.exit("USAGE: python orthconservation.py [species selection]\nSpecies selection is either 'sppall' (all species),'arth' (only arthropodes), or 'd700' (species with at least 700mya evolutionary distance); other species combinations need to be added to the script.")
 
-### DON'T FORGET TO CHANGE THE OUTPUT NAME ACCORDINGLY!! ###
-#outname = "chor"
-#outname = "d700"
-outname = "arth"
-#outname = "sppall"
+if sppchoice == 'arth':
+	spp = config.arth
+elif sppchoice == 'd700':
+	spp = config.spp700
+elif sppchoice == 'sppall':
+	spp = config.sppall
 
-###########################################
+outname = sppchoice
 
 
 orthfolder = "%s/%s" %(config.mainfolder,config.orthfolder)
