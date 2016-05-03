@@ -19,10 +19,9 @@ import pylab as pl
 import numpy as np
 
 if len(sys.argv) <= 1:
-	sys.exit("USAGE: python orthconservation-part2.py path/to/inputfile (input file is the '-detailed.csv' output of orthconservation.py).\nOutputfolders are indicated in the script; edit the script if you want to alter them.")
+	sys.exit("USAGE: python orthconservation-part2.py path/to/inputfile (input file is the '-detail.csv' output of orthconservation.py).\nOutputfolders are indicated in the script; edit the script if you want to alter them.")
 
 
-## Run the script on all -detailed inputfiles in the resultfolder, and choose the appropriate random input as well
 ## make stacked bargraphs, splitting the alternative and standard motifs
 ## give random-model a different colour if possible
 
