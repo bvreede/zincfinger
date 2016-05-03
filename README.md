@@ -70,11 +70,10 @@ NB: all the following scripts can be run as a unit with `orthconservation-all.py
 - In addition to separating ortholog pairs into these categories, the script also generates a random motif sequence with each pair (the random sequence is based on one of the members of the pair, but with randomized motifs — for details, see the accompanying paper) and runs the comparison again, now separating this random pair into one of the above categories.
 
 _Customize:_
-- You can customize the species selection in this script, which will cause the script to only use ortholog pairs from the species you selected. The best way to do this is to specify your selection in **config.py** and to refer the variable 'spp' to that selection.
+- You can customize the species selection in this script, which will cause the script to only use ortholog pairs from the species you selected. Currently, three selections are specified: 'arth', for all arthropod species; 'd700', for species with a minimum evolutionary distance of 700my, and 'sppall', for all species available. When you run the script, you will need to specify one of these groups. The default is 'sppall'.
 - If you want to compare the results for various species combinations, the script needs to be run separately for every combination.
-- In the "options" section, you can adjust the output name as well. Don't forget to do this with each different species combination!
 
-_Usage:_ `orthconservation.py`
+_Usage:_ `orthconservation.py [species selection]`
 
 _Output:_
 - The results will be printed in the terminal, as well as saved in an output file.
