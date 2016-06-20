@@ -40,10 +40,13 @@ seqconshm =  "%s/%s/%s_sequencehm" %(config.mainfolder,config.imgfolder,infilebr
 
 
 ### LIST OF SPECIES FOR COMPARISON ###
+# amino acid sequence comparisons are only made between one member of group1 and one of group2
 group1 = config.anim
 group2 = config.plan + config.prot
 
 
+#make dictionary to store conservation/non-conservation per motif
+consdict = {m:[0,0] for m in config.motiflist2} #first digit for conserved, second for not-conserved
 
 # make dictionaries where motif combos can be counted.
 ambiguous = {} #dictionary to count appearance of ambiguous combinations
@@ -83,12 +86,13 @@ for key in aadict:
 	motrandomdx[motif].append(sequence)
 
 # make dictionary for conservation measurements of amino acid sequences
-conservation,conserv_rand = {},{} #dictionary where lists of conservation per side are stored per motif, and same for random comparisons
+conservation,conserv_rand = {},{} #dictionary where lists of conservation per site are stored per motif, and same for random comparisons
 for m in config.motiflist2:
 	mlen = config.motiflength2[m] + config.plink + config.alink + 1
 	mli = [0 for n in range(mlen)] #a 0 for each site, and finally a 0 that will count how many times this motif was found conserved
 	conservation[m] = list(mli)
 	conserv_rand[m] = list(mli)
+
 
 def re_move(s):
 	'''
@@ -101,39 +105,6 @@ def re_move(s):
 	sli_pairs = [frozenset(list(pair)) for pair in itertools.combinations(sli,2)]
 	return sli_pairs
 
-def makeevolviewheatmap(doublematrix,name):
-	'''
-	Takes a list of lists (heatmap data) and uses motifs as labels
-	and returns a text file that can be read by evolview.
-	'''
-	# Open the heatmap text file:
-	evhm = open("%s-%s.txt" %(heatmaptxt,name), "w")
-	evhm.write(" #heatmap\n !legendTitle\tFrequency of overlap\n !showLegends\t1\n !colorgradient\tfloralwhite,orange,red,purple,navy\
-\n !colorgradientMarkLabel\t0,0.2,0.4,0.6,0.8,1\n # -- heatmap column labels --\n !showHeatMapColumnLabel\t1\n !heatmapColumnLabels\t")
-	# heatmap requires motiflist in sequence, with commas between them
-	motifscomma = ','.join(config.motiflist2) 
-	evhm.write("%s\n" %motifscomma)
-	evhm.write(" # -- heatmap --\n !heatmap\tmargin=1,colwidth=18,roundedcorner=1\n # -- show data value\n !showdataValue\tshow=0,fontsize=12,fontitalic=0,textalign=start\n\n")
-	for i,line in enumerate(doublematrix):
-		evhm.write("%s\t" %config.motiflist2[i])
-		linew = ""
-		for l in line:
-			linew += str(l)
-			linew += ','
-		evhm.write("%s\n" %linew[:-1])
-	evhm.close()
-
-def makeevolviewbars(cat,li,name):
-	'''
-	Takes a list of values and labels and transfers them to a file that
-	can be read directly by evolview.
-	'''
-	# Open the bar graph text file:
-	evbg = open("%s-%s.txt" %(bargraphtxt,name), "w")
-	evbg.write(" !groups\tnumber of individual motifs\n !colors\tdarkkhaki\n !itemHeightPX\t15\n")
-	for a,b in zip(cat,li):
-		evbg.write("%s\t%s\n" %(a,b))
-	evbg.close()
 
 def aacomp_det(aa1,aa2,li):
 	'''
@@ -261,11 +232,14 @@ for combo in orthin:
 		# with no ambiguous items: either score a substitution, or compare sequences...
 		# score a substitution here:
 		if e != f:
+			consdict[config.translationdict_inv2[e]][1] += 1 # score a non-conserved in the conservation dictionary
+			consdict[config.translationdict_inv2[f]][1] += 1 # for both motifs.
 			individual[e] += 1
 			individual[f] += 1
 			substitutions[frozenset([e,f])] += 1
 		# motifs are identical, so compare sequences:
 		else:
+			consdict[config.translationdict_inv2[e]][0] += 2 # score a 'conserved' in the conservation dictionary for both motifs (which are the same).
 			individual[e] += 1
 			individual[f] += 1
 			# CLAUSE TO ADD: only run this comparison for distant species#
@@ -291,6 +265,7 @@ for s in substitutions:
 	if substitutions[s] != 0:
 		a,b = list(s)
 
+'''
 #MAKE THE HEATMAP FOR AMBIGUOUS APPEARANCE + SUBSTITUTIONS#
 doublematrix3,motifcounts = [],[] #for substitution, motif count bar graphs; respectively
 for m in config.motiflist2:
@@ -317,6 +292,7 @@ for m in config.motiflist2:
 #makeevolviewheatmap(doublematrix3,"substitutions")
 
 #makeevolviewbars(config.motiflist,motifcounts,"counts")
+'''
 
 totalambiguous,totalconserved = 0,0
 for key in ambiguous:
@@ -326,6 +302,7 @@ for key in ambiguous:
 print "motifs as part of an overlapping set: %s, of which conserved in the orthologous site: %s (%s" %(totalambiguous,totalconserved,int(float(totalconserved)/totalambiguous*100)) + "%)"
 
 ### MAKE HEATMAP FOR MOTIF CONSERVATION ON SEQUENCE LEVEL ###
+##NB this only happens with comparisons distant enough to be specified by 'group1' and 'group2'
 
 countdx = {} #add a dictionary that keeps the counter separate
 for m in config.motiflist2:
