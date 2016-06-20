@@ -4,9 +4,6 @@ import numpy as np
 from random import shuffle
 
 
-# identifier name
-day = str(datetime.date.today()).replace('-','')
-idr = "%s-ZF" %day #the identifier for all input files (motif sequences)
 
 # path info
 mainfolder = "/home/barbara/Dropbox/zftest"			# Adjust this with initial setup
@@ -22,6 +19,22 @@ dbfolder = "data"
 orthfolder = "orthologs"
 compfolder = "data/compara"
 hmmfolder = "data/hmm"
+
+# identifier name
+idrpath = "%s/idr.txt" %mainfolder
+if os.path.exists(idrpath):
+	idrfile = open(idrpath)
+	for line in idrfile:
+		if len(line.strip()) != 0:
+			idr = line.strip()
+	idrfile.close()
+else:
+	idrfile = open(idrpath, "w")
+	day = str(datetime.date.today()).replace('-','')
+	idr = "%s-ZF" %day #the identifier for all input files (motif sequences)
+	idrfile.write(idr)
+	idrfile.close()
+	
 
 # define motifs
 # a complete dataset
