@@ -30,6 +30,9 @@ if len(sys.argv) <= 1:
 ### INPUT FILES ###
 infile = sys.argv[1]
 infilebrev = infile.split('/')[-1].split('_')[0]
+data_or_random = infile.split('/')[-1].split('_')[1].split('-')[-1].split('.')[0] #if this is 'random', then the file under investigation is from a random model.
+if data_or_random != 'random':
+	data_or_random = 'data'
 orthin = [line for line in csv.reader(open(infile))] #this opens the file with ortholog combinations to investigate
 motifaaseq = "%s/%s/%s-alli_allmotifs.fa" %(config.mainfolder,config.dbfolder,config.idr)
 
@@ -244,6 +247,8 @@ for combo in orthin:
 			individual[f] += 1
 			# CLAUSE TO ADD: only run this comparison for distant species#
 			# fetch species and protein ID
+			if data_or_random == 'random':
+				continue
 			sp1,prot1 = combo[0].split('|')
 			sp2,prot2 = combo[2].split('|')
 			if sp1 in group1:
@@ -299,7 +304,21 @@ for key in ambiguous:
 	totalambiguous += ambiguous[key]
 	totalconserved += orthambi[key]
 
-print "motifs as part of an overlapping set: %s, of which conserved in the orthologous site: %s (%s" %(totalambiguous,totalconserved,int(float(totalconserved)/totalambiguous*100)) + "%)"
+consdict["ambiguous"] = [totalconserved,(totalambiguous-totalconserved)]
+
+#print "motifs as part of an overlapping set: %s, of which conserved in the orthologous site: %s (%s" %(totalambiguous,totalconserved,int(float(totalconserved)/totalambiguous*100)) + "%)"
+
+### WRITE OUTPUTFILE THAT CAN BE USED TO MAKE BARGRAPH
+bargraphout = open("%s/%s/%s_bardata-%s.csv" %(config.mainfolder,config.resfolder,infilebrev,data_or_random), "w")
+bargraphout.write("Motif,Conserved,Non-conserved\n")
+for m in config.motiflist2:
+	bargraphout.write("%s,%s,%s\n" %(m,str(consdict[m][0]),str(consdict[m][1])))
+bargraphout.write("ambiguous,%s,%s\n" %(str(totalconserved),str(totalambiguous-totalconserved)))
+bargraphout.close()
+
+
+
+
 
 ### MAKE HEATMAP FOR MOTIF CONSERVATION ON SEQUENCE LEVEL ###
 ##NB this only happens with comparisons distant enough to be specified by 'group1' and 'group2'
