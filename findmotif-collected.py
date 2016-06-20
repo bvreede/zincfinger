@@ -32,7 +32,7 @@ sns.set_context("poster")
 confile = "%s/%s/%s-alli_seq.fa" %(config.mainfolder,config.dbfolder,config.idr)
 concat = open(confile, "w")
 for f in os.listdir("%s/%s" %(config.mainfolder,config.seqpfolder)):
-	#os.system("findmotif.py %s/%s/%s screen" %(config.mainfolder,config.seqpfolder,f))
+	os.system("findmotif.py %s/%s/%s screen" %(config.mainfolder,config.seqpfolder,f))
 	# add file content to concatenated sequence file
 	fo  = open("%s/%s/%s" %(config.mainfolder,config.seqpfolder,f))
 	for line in fo:
@@ -185,4 +185,5 @@ makestackedbargraph(namot,ambmot,config.sppall,"motifs-stacked")
 
 # run findmotif.py on the concatenated file, without the screen option
 os.system("findmotif.py %s" %confile)
+
 
