@@ -70,10 +70,14 @@ def replace_db(infile):
 
 
 # prep system: create all folders
-folders = [config.seqfolder,config.resfolder,config.imgfolder,config.dbfolder,config.orthfolder,config.compfolder,config.hmmfolder]
+folders = [config.seqfolder,config.resfolder,config.imgfolder,config.dbfolder,config.orthfolder,config.compfolder,config.hmmfolder,config.seqpfolder,config.seqmfolder]
 for f in folders:
 	fn = config.mainfolder+'/'+f
-	os.system("mkdir %s" %fn)
+	if os.path.exists(fn):
+		continue
+	else:
+		os.system("mkdir %s" %fn)
+
 
 # for all files in folder with ensembl downloads:
 ensembldata="%s/%s" %(config.mainfolder,config.ensemblsource)
@@ -84,10 +88,10 @@ for enf in os.listdir(ensembldata):
 	os.system("cp %s/%s %s/%s.gz" %(ensembldata,enf,ensembldata,newname))
 	# unzip the file and move it to sequences
 	os.system("gunzip %s/%s.gz" %(ensembldata,newname))
-	os.system("mv %s/%s %s/%s" %(ensembldata,newname,config.mainfolder,config.seqfolder))
+	os.system("mv %s/%s %s/%s" %(ensembldata,newname,config.mainfolder,config.seqpfolder))
 	# only save single isoform per gene
-	replace_db("%s/%s/%s" %(config.mainfolder,config.seqfolder,newname))
+	replace_db("%s/%s/%s" %(config.mainfolder,config.seqpfolder,newname))
 	# run HMMer
-	command = "%s/%s/hmmsearch -o %s/%s/%s-%s_hmmsearch.txt --incT 3.0 %s/%s %s/%s/%s" %(config.mainfolder,config.hmmerbin,config.mainfolder,config.hmmfolder,config.idr,enf[:4],config.mainfolder,config.pfamc2h2,config.mainfolder,config.seqfolder,newname)
+	command = "%s/%s/hmmsearch -o %s/%s/%s-%s_hmmsearch.txt --incT 3.0 %s/%s %s/%s/%s" %(config.mainfolder,config.hmmerbin,config.mainfolder,config.hmmfolder,config.idr,enf[:4],config.mainfolder,config.pfamc2h2,config.mainfolder,config.seqpfolder,newname)
 	os.system(command)
 
