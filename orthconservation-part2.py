@@ -174,7 +174,7 @@ def mordercheck(m,odict):
 			odict[k] = 0
 	return odict
 
-def makeheatmap(table,name,xlab,ylab):
+def makeheatmap(table,name,xlab,ylab,counter):
 	'''
 	Use 2D data (list of lists) to generate a heatmap of the data.
 	'''
@@ -195,8 +195,8 @@ def makeheatmap(table,name,xlab,ylab):
 	ax.set_yticklabels(ylab, minor=False)
 		
 	# save the figure
-	pl.savefig("%s-%s.png" %(seqconshm,name), dpi = 300)
-	pl.savefig("%s-%s.svg" %(seqconshm,name), dpi = 300)
+	pl.savefig("%s-%s-n%s.png" %(seqconshm,name,str(counter)), dpi = 300)
+	pl.savefig("%s-%s-n%s.svg" %(seqconshm,name,str(counter)), dpi = 300)
 	pl.clf()
 	pl.close("all")
 	
@@ -344,5 +344,5 @@ for m in config.motiflist2:
 	table = [consli_new] + [consli_new_r]
 	xlab = []
 	ylab = ["orthologous","random"]
-	makeheatmap(table,m,xlab,ylab)
+	makeheatmap(table,m,xlab,ylab,counter)
 
