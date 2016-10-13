@@ -11,38 +11,66 @@ Contact: b.vreede@gmail.com
 Date: 10 August 2015
 '''
 
-import config,sys
+import config,sys,os
 import numpy as np
 import matplotlib.pyplot as plt
+
+#settings for images
 plt.rcParams['xtick.labelsize']=11
 
-if len(sys.argv) <= 1:
-	sys.exit("USAGE: mlocation.py path/to/inputfile (input needs to be a motif sequence fasta file).\nPlease mind that the motif list and alphabet used to make this sequence file are unchanged for this analysis!")
+#dictionary of species sets to translate user input to a list in the config file
+setdict = {'sppall': config.sppall,'spp700':config.spp700, 'chor': config.chor,'arth': config.arth, 'eani': config.eani, 'plan':config.plan, 'prot': config.prot,'anim':config.anim}
 
-infile = sys.argv[1]
-infilebrev = infile.split('/')[-1].split('_')[0]
+#check input given: input is needed, and it needs to exist in the dictionary of species sets
+exit_message = "USAGE: mlocation.py species-set (optional e.g. arth for arthropodes, or sppall for all species in the database)\nNB: check that the species set exists in the mlocation.py dictionary."
+if len(sys.argv) <= 1:
+	sys.exit(exit_message)
+
+try:
+	sppset = setdict[sys.argv[1]]
+except KeyError:
+	sys.exit(exit_message)
+
+
+
+##GENERATE INPUT FILE##
+#concatenate the protstring motif sequences for the selected species
+dbdir = config.mainfolder + "/" + config.seqmfolder
+infile = dbdir + '/' + config.idr + '-' + sys.argv[1][:4] + '_protstring.fa'
+
+infile_write = open(infile,"w")
+
+for f in os.listdir(dbdir):
+	#isolate the species identifier
+	spp_idr = f.split(config.idr + '-')[1][:4]
+	#confirm that this identifier exists in the list of species specified by the user
+	if spp_idr not in sppset:
+		continue
+	#open the file and write its contents to the new infile
+	readfasta = open(dbdir + '/' + f)
+	for line in readfasta:
+		infile_write.write(line)
+
+infile_write.close()
+
+###NAME OUTPUT FILES###
+infilebrev = config.idr + '-' + sys.argv[1] #specifier used to name outputfiles
+outtotalsname = "%s/%s/%s_NAMEtotals.csv" %(config.mainfolder,config.resfolder,infilebrev)
+outfigure = "%s/%s/%s_NAME.svg" %(config.mainfolder,config.imgfolder,infilebrev)
+
+
 
 ### OPTION: only treat non-ambiguous zfs! ###
 # set this to 0 if you want to treat all.
 na = 1
 
-# output range
+# define the output range and labels for each analysis
 CCdata = ['CC','C-C distance',range(1,8)] 
 CHdata = ['CH','C-H distance',range(7,18)]
 HHdata = ['HH','H-H distance',range(1,8)]
 
 
-output = range(7,18)
-
-
-
-
-
-
-
-
-
-
+#output = range(7,18)
 
 
 lengths_of_series = []
@@ -51,11 +79,8 @@ lengths_of_proteins = []
 # start the dictionary containing the results
 # results are collected per motif and for the total, and consist of a list of four elements:
 # [total count] [found in first] [found in middle] [found in last]
-resultdict = {m:[0,0,0,0] for m in config.motiflist}
+resultdict = {m:[0,0,0,0] for m in config.motiflist2}
 resultdict['total'] = [0,0,0,0]
-
-# dictionary to translate a letter back to a motif
-mtranslate = {config.alphabet[a]: motif for a,motif in enumerate(config.motiflist)}
 
 
 # make dictionary out of the input file
@@ -119,7 +144,7 @@ def re2list(s):
 def first(aa):
 	global resultdict
 	for a in aa:
-		m = mtranslate[a]
+		m = config.translationdict_inv2[a]
 		resultdict[m][0] += 1
 		resultdict[m][1] += 1
 		resultdict['total'][0] += 1
@@ -128,7 +153,7 @@ def first(aa):
 def last(aa):
 	global resultdict
 	for a in aa:
-		m = mtranslate[a]
+		m = config.translationdict_inv2[a]
 		resultdict[m][0] += 1
 		resultdict[m][3] += 1
 		resultdict['total'][0] += 1
@@ -137,7 +162,7 @@ def last(aa):
 def middle(aa):
 	global resultdict
 	for a in aa:
-		m = mtranslate[a]
+		m = config.translationdict_inv2[a]
 		resultdict[m][0] += 1
 		resultdict[m][2] += 1
 		resultdict['total'][0] += 1
@@ -182,6 +207,8 @@ def barchart_loc(aadata):
 	'''
 	Make bar charts with pairs of bars grouped for easy comparison.
 	'''
+	global outtotalsname
+	global outfigure
 	# now assemble the dataset:
 	bardata = {}
 	for n in range(18):
@@ -247,13 +274,15 @@ def barchart_loc(aadata):
 	#autolabel(rects2)
 
 	name = aadata[0]
-	outtotals = open("%s/%s/%s_%stotals.csv" %(config.mainfolder,config.imgfolder,infilebrev,name), "w")
+	outtotalsname_loc = outtotalsname.replace('NAME',name)
+	outtotals = open(outtotalsname_loc, "w")
 	
 	for n,t in enumerate(totals):
 		outtotals.write("%s,%s,%s,%s,%s\n" %(aadata[2][n],t,set1[n],set2[n],set3[n]))
 	outtotals.close()
 
-	plt.savefig("%s/%s/%s_%s.svg" %(config.mainfolder,config.imgfolder,infilebrev,name))
+	outfigure_loc = outfigure.replace('NAME',name)
+	plt.savefig(outfigure_loc)
 	plt.clf()
 
 barchart_loc(CCdata)
