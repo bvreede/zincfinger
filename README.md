@@ -89,7 +89,7 @@ _Output:_
 - To do this, use the script **orthconservation-part2.py**.
 - This script uses the 'detailed' ('...-detail.csv') output files from the previous step to identify motifs that can be directly compared. This happens in two ways:
   - Motifs that remain unsubstituted between orthologs are compared amino acid by amino acid.
-  - Motifs that are substituted between orthologs are categorized to determine which motifs get substituted by which.
+  - Motifs that are substituted between orthologs are categorized to determine which motifs get substituted.
 
 _Customize:_ 
 - In the amino acid comparison of unsubstituted motifs, it is possible to only regard ortholog pairs spanning a certain evolutionary distance. This can be specified in the 'list of species for comparison', by defining two groups of species that will only be compared between (i.e. members of group1 with members of group2) but not among (i.e. members of group1 with other members of group1) the groups.
@@ -97,23 +97,11 @@ _Customize:_
 _Usage:_ orthconservation-part2.py path/to/inputfile
 
 _Output:_
-- In 'evolview':
-  - a heatmap source file that can be used as heatmap annotation with the motif "tree" (generated during step 1), showing which motif types are evolutionarily substituted by which.
-  - a bar graph source file that can be used as annotation with the motif "tree" (generated during step 1), which provides the absolute counts for each motif that were assessed during this part of the process (it is a subset, after all).
+- In 'results':
+  - a bar graph source file that can be used to generate a bar graph (recognizable by 'bardata' in the name), assessing per motif how often it is found conserved (i.e. in direct comparisons the motif is unchanged), or non-conserved (i.e. different motifs are found in the same location between orthologs).
 - In 'images':
   - heatmaps per motif where amino acid substitution is scored. Top row is substitution between amino acids of orthologous motifs; bottom row is comparisons between randomly paired motifs of the same kind. _NB: if this does not appear, check that the species you used are separated into group1 and group2; these comparisons are only made with species combinations where one is part of group1 and the other of group2._
-- Prints on terminal the percentage of conserved ambiguous (i.e. overlapping) motifs. _NB: this is different data than is part of the output for 3.3: in this case, the total number of motifs that partake in overlapping motifs are counted (e.g. if motif A overlaps with B on site 1, and in the homologous site of an ortholog motif A and C are found, then this is counted as 4 motifs, of which 2 are conserved)._
 
-### 3.3 Score conservation per motif
-- Use the script **orthconservation-part3.py**.
-- This script uses the 'detailed' output files from step 3.1 to identify motifs that can be directly compared. It scores substitution similar to the previous step, except it adds up the total number of substitutions per motif, and should be run with both the 'detail.csv' and 'detail-random.csv' files to compare real orthologs with a random model.
-
-_Usage:_ orthconservation-part3.py path/to/inputfile (run separately for each file generated in step 3.1!)
-
-_Output:_
-- In 'results':
-  - A .csv file with total counts and substitution counts for each motif, as well as ambiguous motifs.
-- Print on terminal with that same data.
 
 ## 4. Determine the order of motif types
 - Use the script **mlocation.py** to determine whether certain motifs are found in the beginning, middle or end of a connected series.
