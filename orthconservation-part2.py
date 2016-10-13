@@ -2,8 +2,8 @@
 
 '''
 This script takes the selected motif sequences that
-resulted from 'orthconservation.py' and outputs which
-motifs replace which. Further, it looks in detail at
+resulted from 'orthconservation.py' and outputs how often
+motifs are conserved. Further, it looks in detail at
 the amino acid sequences of motifs that have not been
 substituted between orthologs, to score substitutions
 in the amino acid sequence itself.
@@ -22,14 +22,10 @@ if len(sys.argv) <= 1:
 	sys.exit("USAGE: python orthconservation-part2.py path/to/inputfile (input file is the '-detail.csv' output of orthconservation.py).\nOutputfolders are indicated in the script; edit the script if you want to alter them.")
 
 
-## make stacked bargraphs, splitting the alternative and standard motifs
-## give random-model a different colour if possible
 
-
-
-### INPUT FILES ###
-infile = sys.argv[1]
-infilebrev = infile.split('/')[-1].split('_')[0]
+### INPUT FILES AND INFO ###
+infile = sys.argv[1] #the input file
+infilebrev = infile.split('/')[-1].split('_')[0] #info from the input file: what species group comparison is this about?
 data_or_random = infile.split('/')[-1].split('_')[1].split('-')[-1].split('.')[0] #if this is 'random', then the file under investigation is from a random model.
 if data_or_random != 'random':
 	data_or_random = 'data'
@@ -37,9 +33,8 @@ orthin = [line for line in csv.reader(open(infile))] #this opens the file with o
 motifaaseq = "%s/%s/%s-alli_allmotifs.fa" %(config.mainfolder,config.dbfolder,config.idr)
 
 ### OUTPUT FILES ###
-#heatmaptxt = "%s/%s/%s_conservation-heatmap" %(config.mainfolder,config.evfolder,infilebrev)
-#bargraphtxt = "%s/%s/%s_conservation-bargraph" %(config.mainfolder,config.evfolder,infilebrev)
-seqconshm =  "%s/%s/%s_sequencehm" %(config.mainfolder,config.imgfolder,infilebrev)
+seqconshm =  "%s/%s/%s_sequencehm" %(config.mainfolder,config.imgfolder,infilebrev) #heatmap of sequence conservation per motif
+bargraphdata = "%s/%s/%s_bardata-%s.csv" %(config.mainfolder,config.resfolder,infilebrev,data_or_random) #data to generate a bargraph if necessary
 
 
 ### LIST OF SPECIES FOR COMPARISON ###
@@ -270,34 +265,6 @@ for s in substitutions:
 	if substitutions[s] != 0:
 		a,b = list(s)
 
-'''
-#MAKE THE HEATMAP FOR AMBIGUOUS APPEARANCE + SUBSTITUTIONS#
-doublematrix3,motifcounts = [],[] #for substitution, motif count bar graphs; respectively
-for m in config.motiflist2:
-	line1,line2,line3 = [],[],[]
-	sumsubs = 0
-	a = config.translationdict2[m]
-	for n in config.motiflist2:
-		b = config.translationdict2[n]
-		combo = frozenset([a,b])
-		# substitution of motifs in orthologs
-		if individual[a] > 0:
-			line3.append(substitutions[combo]/float(individual[a]))
-		else:
-			line3.append(0)
-		sumsubs += substitutions[combo]
-	if individual[a] > 0:
-		totalsub = sumsubs/float(individual[a])
-	else:
-		totalsub = 0
-	line3.append(totalsub)
-	doublematrix3.append(line3)
-	# list for individual motif counts in bar graph
-	motifcounts.append(individual[a])
-#makeevolviewheatmap(doublematrix3,"substitutions")
-
-#makeevolviewbars(config.motiflist,motifcounts,"counts")
-'''
 
 totalambiguous,totalconserved = 0,0
 for key in ambiguous:
@@ -306,17 +273,14 @@ for key in ambiguous:
 
 consdict["ambiguous"] = [totalconserved,(totalambiguous-totalconserved)]
 
-#print "motifs as part of an overlapping set: %s, of which conserved in the orthologous site: %s (%s" %(totalambiguous,totalconserved,int(float(totalconserved)/totalambiguous*100)) + "%)"
 
 ### WRITE OUTPUTFILE THAT CAN BE USED TO MAKE BARGRAPH
-bargraphout = open("%s/%s/%s_bardata-%s.csv" %(config.mainfolder,config.resfolder,infilebrev,data_or_random), "w")
+bargraphout = open(bargraphdata, "w")
 bargraphout.write("Motif,Conserved,Non-conserved\n")
 for m in config.motiflist2:
 	bargraphout.write("%s,%s,%s\n" %(m,str(consdict[m][0]),str(consdict[m][1])))
 bargraphout.write("ambiguous,%s,%s\n" %(str(totalconserved),str(totalambiguous-totalconserved)))
 bargraphout.close()
-
-
 
 
 
