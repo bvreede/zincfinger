@@ -106,9 +106,9 @@ _Output:_
 ## 4. Determine the order of motif types
 - Use the script **mlocation.py** to determine whether certain motifs are found in the beginning, middle or end of a connected series.
 
-_Usage:_ `mlocation.py path/to/inputfile` (run separately for each motif sequence — result file of findmotif.py — or, preferably, on a concatenated version of all result files).
+_Usage:_ `mlocation.py species-set` (the species set is e.g. arth, for arthropodes, or sppall, for all species. Check the script for more options!)
 
 _Output:_
 - In 'images':
-  - Three .svg images with bar charts plotting the spacing between key amino acids (C-C, C-H, or H-H) to the location of motifs with these properties: either in the beginning, middle, or end of connected series.
+  - Four .svg images with bar charts plotting the spacing between key amino acids (total, C-C, C-H, or H-H) to the location of motifs with these properties: either in the beginning or at the end of connected series.
   - Three corresponding .csv files with the absolute counts of motifs that were used as the base of this chart (the chart shows percentages only).
