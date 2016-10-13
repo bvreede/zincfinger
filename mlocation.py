@@ -15,8 +15,7 @@ import config,sys,os
 import numpy as np
 import matplotlib.pyplot as plt
 
-#settings for images
-plt.rcParams['xtick.labelsize']=11
+
 
 #dictionary of species sets to translate user input to a list in the config file
 setdict = {'sppall': config.sppall,'spp700':config.spp700, 'chor': config.chor,'arth': config.arth, 'eani': config.eani, 'plan':config.plan, 'prot': config.prot,'anim':config.anim}
@@ -38,20 +37,27 @@ except KeyError:
 dbdir = config.mainfolder + "/" + config.seqmfolder
 infile = dbdir + '/' + config.idr + '-' + sys.argv[1][:4] + '_protstring.fa'
 
-infile_write = open(infile,"w")
+overwrite = 'y' #by default, the concatenated file will be generated, unless the user says no
+if os.path.isfile(infile):
+	overwrite = raw_input("The associated input for this species set already exists. Do you want to overwrite? (Y/n)")
 
-for f in os.listdir(dbdir):
-	#isolate the species identifier
-	spp_idr = f.split(config.idr + '-')[1][:4]
-	#confirm that this identifier exists in the list of species specified by the user
-	if spp_idr not in sppset:
-		continue
-	#open the file and write its contents to the new infile
-	readfasta = open(dbdir + '/' + f)
-	for line in readfasta:
-		infile_write.write(line)
+if overwrite != 'n':
+		infile_write = open(infile,"w")
 
-infile_write.close()
+if overwrite != 'n':
+	for f in os.listdir(dbdir):
+		#isolate the species identifier
+		spp_idr = f.split(config.idr + '-')[1][:4]
+		#confirm that this identifier exists in the list of species specified by the user
+		if spp_idr not in sppset:
+			continue
+		#open the file and write its contents to the new infile
+		readfasta = open(dbdir + '/' + f)
+		for line in readfasta:
+			infile_write.write(line)
+
+if overwrite != 'n':
+	infile_write.close()
 
 ###NAME OUTPUT FILES###
 infilebrev = config.idr + '-' + sys.argv[1] #specifier used to name outputfiles
@@ -65,9 +71,9 @@ outfigure = "%s/%s/%s_NAME.svg" %(config.mainfolder,config.imgfolder,infilebrev)
 na = 1
 
 # define the output range and labels for each analysis
-CCdata = ['CC','C-C distance',range(1,8)] 
-CHdata = ['CH','C-H distance',range(7,18)]
-HHdata = ['HH','H-H distance',range(1,8)]
+CCdata = ['CC','C-C distance',config.moCC] 
+CHdata = ['CH','C-H distance',config.moCH]
+HHdata = ['HH','H-H distance',config.moHH]
 
 
 #output = range(7,18)
@@ -169,10 +175,6 @@ def middle(aa):
 		resultdict['total'][2] += 1
 
 
-
-
-
-
 # start the analysis!
 for protein in fadict:
 	ssplit = fadict[protein].strip().split('Z')
@@ -202,6 +204,8 @@ for r in resultdict:
 	percdict[r] = percli
 
 
+#settings for images
+plt.rcParams['xtick.labelsize']=11
 
 def barchart_loc(aadata):
 	'''
@@ -211,6 +215,8 @@ def barchart_loc(aadata):
 	global outfigure
 	# now assemble the dataset:
 	bardata = {}
+	#keep score of all motifs in first/last position
+	firsts,lasts,tcount = 0,0,0
 	for n in range(18):
 		cfi,cmi,cen,total = 0,0,0,0
 		for p in percdict:
@@ -238,7 +244,11 @@ def barchart_loc(aadata):
 			bardata[n] = [0,0,0,0]
 		else:
 			bardata[n] = [cfi/total,cmi/total,cen/total,total]
-
+		#add up the total of motifs in first/last location
+		firsts += cfi/100
+		lasts += cen/100
+		tcount += total
+	
 	# get data for plots:
 	set1,set2,set3,totals = [],[],[],[]
 	for n in aadata[2]:
@@ -250,17 +260,18 @@ def barchart_loc(aadata):
 	n_groups = len(set1)
 	fig, ax = plt.subplots()
 	index = np.arange(n_groups)
-	bar_width = 0.25
+	bar_width = 0.4
 
-	rects1 = plt.bar(index, set1, bar_width,alpha=0.7, color='c',label='First')
-	rects2 = plt.bar(index + bar_width+0.04, set2, bar_width,alpha=0.8, color='g',label='Middle')
-	rects3 = plt.bar(index + 2*bar_width+0.08, set3, bar_width,alpha=0.5,color='r',label='Last')
+	rects1 = plt.bar(index+0.04, set1, bar_width,alpha=0.9, color='k',label='as first')
+	#rects2 = plt.bar(index + bar_width+0.04, set2, bar_width,alpha=0.8, color='g',label='as middle')
+	rects3 = plt.bar(index + bar_width+0.08, set3, bar_width,alpha=1,color='gainsboro',label='as last')
 
 	plt.xlabel(aadata[1])
-	plt.ylabel('Frequency')
+	plt.ylabel('Frequency (%)')
 	plt.title('Appearance of motif in series')
-	plt.xticks(index + bar_width, (list(aadata[2])))
+	plt.xticks(index + 0.04+bar_width, (list(aadata[2])))
 	plt.legend()
+	plt.axis(ymin=0,ymax=100)
 
 	plt.tight_layout()
 
@@ -270,8 +281,7 @@ def barchart_loc(aadata):
 	        height = rect.get_height()
 	        ax.text(rect.get_x()+rect.get_width()/2., 1.05*height, '%d'%totals[n], ha='center', va='bottom')
 
-	#autolabel(rects1)
-	#autolabel(rects2)
+	autolabel(rects1)
 
 	name = aadata[0]
 	outtotalsname_loc = outtotalsname.replace('NAME',name)
@@ -284,8 +294,57 @@ def barchart_loc(aadata):
 	outfigure_loc = outfigure.replace('NAME',name)
 	plt.savefig(outfigure_loc)
 	plt.clf()
+	return firsts,lasts,tcount
 
+
+#make the figures for CC/CH/HH
 barchart_loc(CCdata)
 barchart_loc(CHdata)
-barchart_loc(HHdata)
+firsts,lasts,tcount = barchart_loc(HHdata)
+
+#make the small chart for all firsts and lasts
+def barchart_small(firsts,lasts,tcount):
+	'''
+	Make bar charts with pairs of bars grouped for easy comparison for a single datapoint.
+	'''
+	global outfigure
+
+	# get data for plots:
+	set1 = [firsts/tcount*100]
+	set2 = [lasts/tcount*100]
+	totals = [tcount]
+
+	#set up the barchart
+	n_groups = len(set1)
+	fig, ax = plt.subplots()
+	index = np.arange(n_groups)
+	bar_width = 0.4
+
+	#visualize the data
+	rects1 = plt.bar(index+0.04, set1, bar_width,alpha=0.9, color='k',label='as first')
+	rects3 = plt.bar(index + bar_width+0.08, set2, bar_width,alpha=1,color='gainsboro',label='as last')
+
+	#specify plot characteristics
+	plt.xlabel("total")
+	plt.ylabel('Frequency (%)')
+	plt.title('Appearance of motif in series')
+	plt.xticks(index + 0.04 + bar_width, (['']))
+	plt.legend()
+	plt.axis(ymin=0,ymax=100)
+	plt.tight_layout()
+
+	#label bars with the total number in each category
+	def autolabel(rects):
+	    # attach some text labels
+	    for n,rect in enumerate(rects):
+	        height = rect.get_height()
+	        ax.text(rect.get_x()+rect.get_width()/2., 1.05*height, '%d'%totals[n], ha='center', va='bottom')
+	autolabel(rects1)
+
+	#save the figure
+	outfigure_loc = outfigure.replace('NAME','total')
+	plt.savefig(outfigure_loc)
+	plt.clf()
+
+barchart_small(firsts,lasts,tcount)
 
