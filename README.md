@@ -94,7 +94,7 @@ _Output:_
 _Customize:_ 
 - In the amino acid comparison of unsubstituted motifs, it is possible to only regard ortholog pairs spanning a certain evolutionary distance. This can be specified in the 'list of species for comparison', by defining two groups of species that will only be compared between (i.e. members of group1 with members of group2) but not among (i.e. members of group1 with other members of group1) the groups.
 
-_Usage:_ orthconservation-part2.py path/to/inputfile
+_Usage:_ `orthconservation-part2.py path/to/inputfile`
 
 _Output:_
 - In 'results':
@@ -106,7 +106,7 @@ _Output:_
 ## 4. Determine the order of motif types
 - Use the script **mlocation.py** to determine whether certain motifs are found in the beginning, middle or end of a connected series.
 
-_Usage:_ mlocation.py path/to/inputfile (run separately for each motif sequence — result file of findmotif.py — or, preferably, on a concatenated version of all result files).
+_Usage:_ `mlocation.py path/to/inputfile` (run separately for each motif sequence — result file of findmotif.py — or, preferably, on a concatenated version of all result files).
 
 _Output:_
 - In 'images':
