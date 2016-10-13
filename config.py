@@ -55,9 +55,6 @@ if os.path.isfile(semot):
 		motiflist2.append(line.strip())
 
 	
-#motiflist2 = ['1_7_3', '1_12_3', '1_12_6', '2_7_4', '2_8_3', '2_9_3', '2_10_1', '2_11_3', '2_11_4', '2_12_1', '2_12_2', '2_12_3', '2_12_4', '2_12_5', '2_12_6', '2_13_2', '2_13_3', '2_13_4', '2_14_3', '2_14_4', '2_15_4', '2_15_5', '2_17_4', '4_9_3', '4_12_3', '4_12_4', '4_12_6', '4_15_3', '5_7_6', '5_14_3', '5_15_3', '5_15_4', '5_16_2', '6_12_3', '6_14_6', '6_15_3', '6_15_4', '6_15_5', '6_17_3', '6_17_4']
-
-
 standard = ['2_12_3','2_12_4','2_12_5','4_12_3','4_12_4','4_12_5']
 alternative = [m for m in motiflist2 if m not in standard]
 
@@ -133,7 +130,6 @@ def fastadicter(fastadb):
 	fastadict[header] = sequence
 	return fastadict
 
-#plt.rcParams['xtick.labelsize']=28 #WHAT THE HELL IS THIS DOING HERE?!
 
 def makebarchart(values,labels,name):
 	'''
