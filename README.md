@@ -1,8 +1,5 @@
 # zincfinger
 
-1. Set up your system. Create a main folder with the following subfolders: "sequences", "results", "images", "databases", "evolview", "compara", "hmm", and "orthologs".
-2. 5. and run the binary hmmsearch on your downloaded Ensembl data. Save the result file in mainfolder/hmm, preferably [fileidentifier]_hmmsearch.txt. (e.g. 150602-SM00355-xtro_hmmsearch.fasta). 
-
 
 ## 0. Before you start...
 1. Download your data: protein sequences from Ensembl Biomart ([Ensembl](http://www.ensembl.org/biomart/martview/0fea912a097e984e080910d0e481bc04), [Metazoa](http://metazoa.ensembl.org/biomart/martview/41b7027ad573051d5ae6042363b08980), [Plants](http://plants.ensembl.org/biomart/martview/8e64fd02b779de836a8ad9e145548997), [Protists](http://protists.ensembl.org/biomart/martview/85097007194679c2b70acd1ceb4b668b)), ensuring that the fasta headers consist of (in this order) >geneID|genename|proteinID. Download as a zipped file, and make sure that the filename starts with a four character species specification. Optional: use the filter for SMART-domain 'SM00355' on the data prior to download.
