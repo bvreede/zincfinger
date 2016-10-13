@@ -348,3 +348,9 @@ def barchart_small(firsts,lasts,tcount):
 
 barchart_small(firsts,lasts,tcount)
 
+
+##DO STATISTICS##
+expected_first = firsts/tcount
+expected_last = lasts/tcount
+
+
