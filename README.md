@@ -9,31 +9,28 @@
 5. Run the script `prepdata.py` to prepare the protein sequences and runn HMMer. This script will clean up the data to contain only a single isoform per gene (the longest).
 
 ## 1. Find C2H2 motifs in fasta files
-Use the script **findmotif.py**. This script will function on a fasta file with protein sequences, where the headers consist of 'geneID|genename|proteinID'. It uses regular expressions to identify possible distinct C2H2 variants in the protein sequence, and cross-matches them with the HMMer results to toss out false positives.
+Use the script **findmotif-collected.py**. This script will use another script (**findmotif.py**) and functions on fasta files with protein sequences, where the headers consist of 'geneID|genename|proteinID'. It uses regular expressions to identify possible distinct C2H2 variants in the protein sequence, and cross-matches them with the HMMer results to toss out false positives. It will run the actual motif search twice; first to score the frequency of all motifs, and subsequently to identify a selection of motifs to use in further analysis.
 
 _Customize:_ 
-- Adjust the **config.py** file to determine the motifs the script will search for (called 'motiflist').
+- The criteria for motif selection can be customized in the script.
 
-_Usage:_ `findmotif.py path/to/fastafile`
+_Usage:_ `findmotif-collected.py`
 
 _Output:_
-- In 'sequences':
+- In 'sequences/motifs':
   - fasta file of protein sequences translated to motif sequences ([fileidentifier]_hmmprotstring.fa).
-- In 'databases':
+- In 'data':
   - fasta file of selected proteins ([fileidentifier]_seq.fa).
   - fasta files with the sequences of all motifs found ([fileidentifier]_hmmallmotifs.fa)
-  - individual fasta files per motif
+  - individual fasta files per motif ([fileidentifier]-motseq-[motif].fa)
   - all motifs found translated to their string notation ([fileidentifier]_hmmallmotifs.txt), as a total collection of what was found, including ambiguous motifs.
   - a csv database of each protein and locations of detected motifs ([fileidentifier]_hmmhitsdb.csv)
-- In 'evolview':
-  - a newick file with all motifs (to upload as a new "tree")
-  - a heatmap file which shows the frequency of overlap per motif, can be used as heatmap annotation with the above newick file
 - In 'images':
   - three bar graphs indicating how many motifs were found per motif type; 'stacked' splits up ambiguous and non-ambiguous; 'non-ambiguous_motifs' only shows non-ambiguous motifs.
-  - two heatmaps showing motif overlap; 'singlenorm' only shows normalization over the x axis; 'doublenorm' shows normalization over both axes.
+  - a heatmap file which shows the frequency of overlap per motif.
 - In 'results':
   - a csv database showing motif overlaps ([fileidentifier]_hmmmotifstats.csv)
-  - every time the script is run, two databases will be appended: hitcount_allspp.csv, showing the total numbers of hits per motif, with each file that was run as a new row, and hitcount_allspp-nonambg.csv, showing only non-ambiguous (i.e. non-overlapping) hits.
+  - a txt file that counts raw occurrences and non-ambiguous (i.e. non-overlapping, abbreviated as 'na') occurrences per motif, per original input fasta file ([fileidentifier]_motifcount.txt)
 
 ## 2. Identify orthologs between species
 - _NB: this is only useful if in the previous step you have worked with multiple species..._
