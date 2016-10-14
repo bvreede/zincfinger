@@ -14,6 +14,7 @@ Date: 10 August 2015
 import config,sys,os
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import chisquare
 
 
 
@@ -204,6 +205,9 @@ for r in resultdict:
 	percdict[r] = percli
 
 
+#open collection for statistics
+statslist = []
+
 #settings for images
 plt.rcParams['xtick.labelsize']=11
 
@@ -248,6 +252,12 @@ def barchart_loc(aadata):
 		firsts += cfi/100
 		lasts += cen/100
 		tcount += total
+
+		if total == 0:
+			continue
+		#save the info to a list: the name, position, firsts, and lasts, so they can be used for statistics later
+		statsinfo = [aadata[0],n,cfi/100,cmi/100,cen/100,total]
+		statslist.append(statsinfo)
 	
 	# get data for plots:
 	set1,set2,set3,totals = [],[],[],[]
@@ -350,7 +360,33 @@ barchart_small(firsts,lasts,tcount)
 
 
 ##DO STATISTICS##
+#the database statslist consists of the following data per row:
+#[0] = the category (CC/CH/HH)
+#[1] = the distance in that category (1-17)
+#[2] = the observed value for all motifs as first in a series
+#[3] = the observed value for all motifs as middle in a series
+#[4] = the observed value for all motifs as last in a series
+#[5] = all motifs in this category/distance combination
+
+#given are the following expected fractions
 expected_first = firsts/tcount
+expected_middle = (tcount-firsts-lasts)/tcount
 expected_last = lasts/tcount
 
-
+#check each category/distance combination for statistically significant deviation from this fraction
+print "Chi-square results:"
+for r in statslist:
+	observed = r[2:5]
+	e1 = expected_first * r[5]
+	e2 = expected_middle * r[5]
+	e3 = expected_last * r[5]
+	expected = [e1,e2,e3]
+	chitest = chisquare(observed,expected)
+	if chitest[1] <= 0.01:
+		conclusion = "**"
+	elif chitest[1] <= 0.05:
+		conclusion = "*"
+	else:
+		conclusion = "N/S"
+	print "%s-%s: %s (%s)" %(r[0],r[1],str(chitest[1]),conclusion)
+	#print observed,expected,chitest
