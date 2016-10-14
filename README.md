@@ -106,3 +106,6 @@ _Output:_
 - In 'images':
   - Four .svg images with bar charts plotting the spacing between key amino acids (total, C-C, C-H, or H-H) to the location of motifs with these properties: either in the beginning or at the end of connected series.
   - Three corresponding .csv files with the absolute counts of motifs that were used as the base of this chart (the chart shows percentages only).
+ 
+- Printed on the terminal:
+  - results from a chi-squared goodness-of-fit test for the locations of motifs: significant results indicate that the selection of motifs (e.g. 5 residues between CC) deviate significantly from the average distribution.
