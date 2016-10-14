@@ -374,7 +374,7 @@ expected_middle = (tcount-firsts-lasts)/tcount
 expected_last = lasts/tcount
 
 #check each category/distance combination for statistically significant deviation from this fraction
-print "Chi-square results:"
+print "Chi-square results: (* p < 0.05; ** p < 0.01; *** p <0.001"
 for r in statslist:
 	observed = r[2:5]
 	e1 = expected_first * r[5]
@@ -382,7 +382,9 @@ for r in statslist:
 	e3 = expected_last * r[5]
 	expected = [e1,e2,e3]
 	chitest = chisquare(observed,expected)
-	if chitest[1] <= 0.01:
+	if chitest[1] <= 0.001:
+		conclusion = "***"
+	elif chitest[1] <= 0.01:
 		conclusion = "**"
 	elif chitest[1] <= 0.05:
 		conclusion = "*"
